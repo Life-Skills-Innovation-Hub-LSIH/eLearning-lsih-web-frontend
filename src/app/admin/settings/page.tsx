@@ -15,24 +15,26 @@ export default function AdminSettingsPage() {
   }, [ready, user, router]);
 
   if (!ready || user?.role !== "super_admin") {
-    return <p className="text-sm text-[var(--muted)]">Super Admin only…</p>;
+    return <p className="text-sm text-[var(--muted)]">Checking access…</p>;
   }
 
   return (
-    <div className="surface max-w-xl space-y-4 p-6">
-      <h2 className="font-display text-2xl">System settings</h2>
-      <p className="text-sm text-[var(--muted)]">
-        Reserved for Super Admin. Currency, site name, and payment provider config will
-        connect to Laravel later.
-      </p>
-      <label className="block space-y-2 text-sm">
-        <span>Site name</span>
-        <input className="input" defaultValue="LSIH Learn" disabled />
-      </label>
-      <label className="block space-y-2 text-sm">
-        <span>Currency</span>
-        <input className="input" defaultValue="USD" disabled />
-      </label>
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Settings</h2>
+        <p className="mt-1 text-sm text-[var(--muted)]">Site configuration</p>
+      </div>
+
+      <div className="max-w-xl space-y-4 rounded-2xl border border-[var(--line)] bg-white p-6 shadow-[var(--shadow)]">
+        <label className="block space-y-2 text-sm">
+          <span className="font-medium text-[var(--ink)]">Site name</span>
+          <input className="input" defaultValue="Life Skills Innovation Hub" disabled />
+        </label>
+        <label className="block space-y-2 text-sm">
+          <span className="font-medium text-[var(--ink)]">Currency</span>
+          <input className="input" defaultValue="USD" disabled />
+        </label>
+      </div>
     </div>
   );
 }

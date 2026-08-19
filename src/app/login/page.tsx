@@ -1,17 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
-import { STATIC_PASSWORD, staticUsers } from "@/lib/auth/static-users";
+import { homePathForRole, STATIC_PASSWORD, staticUsers } from "@/lib/auth/static-users";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, ready } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("student@lsih.demo");
   const [password, setPassword] = useState(STATIC_PASSWORD);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!ready || !user) return;
+    router.replace(homePathForRole(user.role));
+  }, [ready, user, router]);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -21,6 +26,10 @@ export default function LoginPage() {
       return;
     }
     router.push(result.redirectTo);
+  }
+
+  if (ready && user) {
+    return null;
   }
 
   return (

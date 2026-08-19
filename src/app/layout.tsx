@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Sora } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { SiteHeader } from "@/components/layout/SiteHeader";
+import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
+import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -32,9 +32,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} h-full`}>
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
-          <SiteHeader />
+          <ConditionalHeader />
           <div className="flex-1">{children}</div>
-          <SiteFooter />
+          <ConditionalFooter />
         </AuthProvider>
       </body>
     </html>

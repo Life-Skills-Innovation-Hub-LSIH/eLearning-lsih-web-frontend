@@ -25,17 +25,21 @@ export function AdminNav() {
       : [];
 
   return (
-    <nav className="flex flex-wrap gap-2">
+    <nav className="flex flex-wrap gap-1">
       {[...links, ...extra].map((link) => {
-        const active = pathname === link.href;
+        const active =
+          link.href === "/admin"
+            ? pathname === "/admin"
+            : pathname === link.href || pathname.startsWith(`${link.href}/`);
+
         return (
           <Link
             key={link.href}
             href={link.href}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+            className={`rounded-lg px-3.5 py-2 text-sm font-medium transition ${
               active
                 ? "bg-[var(--brand)] text-white"
-                : "border border-[var(--line)] bg-white text-[var(--ink)] hover:text-[var(--brand)]"
+                : "text-[var(--ink)]/70 hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
             }`}
           >
             {link.label}
