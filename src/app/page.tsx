@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { MainBanner } from "@/components/home/MainBanner";
-import { PartnerStrip } from "@/components/home/PartnerStrip";
-import { PopularCoursesSection } from "@/components/home/PopularCoursesSection";
-import { getPublishedCourses } from "@/lib/data/mock-courses";
+import { MainBanner, PartnerStrip, PopularCoursesSection } from "@/features/home";
+import { getPublishedCourses } from "@/features/courses";
 
 export default function HomePage() {
   const courses = getPublishedCourses();

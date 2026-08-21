@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { countLessons, countQuizzes, mockCourses } from "@/lib/data/mock-courses";
+import { countLessons, countQuizzes, mockCourses } from "@/features/courses";
 
 export default function AdminCoursesPage() {
   return (

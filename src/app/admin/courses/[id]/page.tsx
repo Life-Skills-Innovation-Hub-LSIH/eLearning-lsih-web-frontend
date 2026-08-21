@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { CourseOutline } from "@/components/course/CourseOutline";
-import { mockCourses } from "@/lib/data/mock-courses";
+import { CourseOutline } from "@/features/courses";
+import { mockCourses } from "@/features/courses";
 
 export default function AdminCourseDetailPage() {
   const params = useParams<{ id: string }>();

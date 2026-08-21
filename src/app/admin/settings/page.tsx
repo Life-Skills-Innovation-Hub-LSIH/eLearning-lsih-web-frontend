@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@/features/auth";
 
 export default function AdminSettingsPage() {
   const { user, ready } = useAuth();

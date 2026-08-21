@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CourseCard } from "@/components/course/CourseCard";
-import { getPublishedCourses } from "@/lib/data/mock-courses";
+import { CourseCard } from "@/features/courses";
+import { getPublishedCourses } from "@/features/courses";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();

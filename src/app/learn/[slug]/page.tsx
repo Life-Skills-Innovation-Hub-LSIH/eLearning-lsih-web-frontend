@@ -3,12 +3,12 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { QuizPanel } from "@/components/learning/QuizPanel";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { useAuth } from "@/lib/auth/auth-context";
-import { getCourseBySlug } from "@/lib/data/mock-courses";
-import type { Lesson, Quiz } from "@/types";
+import { RequireAuth } from "@/features/auth";
+import { QuizPanel } from "@/features/learning";
+import { ProgressBar } from "@/shared/components/ui/ProgressBar";
+import { useAuth } from "@/features/auth";
+import { getCourseBySlug } from "@/features/courses";
+import type { Lesson, Quiz } from "@/shared/types";
 
 type Selection =
   | { kind: "lesson"; lesson: Lesson; moduleTitle: string }

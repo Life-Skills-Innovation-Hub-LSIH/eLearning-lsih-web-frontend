@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getCourseBySlug, getPublishedCourses } from "@/lib/data/mock-courses";
-import { CourseDetailClient } from "./CourseDetailClient";
+import { getCourseBySlug, getPublishedCourses } from "@/features/courses";
+import { CourseDetailClient } from "@/features/courses";
 
 type Props = {
   params: Promise<{ slug: string }>;

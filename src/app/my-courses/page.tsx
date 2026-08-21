@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { useAuth } from "@/lib/auth/auth-context";
-import { mockCourses } from "@/lib/data/mock-courses";
+import { RequireAuth } from "@/features/auth";
+import { ProgressBar } from "@/shared/components/ui/ProgressBar";
+import { useAuth } from "@/features/auth";
+import { mockCourses } from "@/features/courses";
 
 export default function MyCoursesPage() {
   return (

@@ -28,13 +28,13 @@ pnpm run dev
 
 App URL: `http://localhost:3000`
 
-API expected at: `http://localhost:8000/api/v1` (see backend README)
+API expected at: `http://localhost:8000/api` (see backend README)
 
 ## Environment
 
 | Variable | Purpose |
 |----------|---------|
-| `NEXT_PUBLIC_API_URL` | Laravel API base (`http://localhost:8000/api/v1`) |
+| `NEXT_PUBLIC_API_URL` | Laravel API base (`http://localhost:8000/api`) |
 | `NEXT_PUBLIC_APP_NAME` | Display name |
 
 ## Project layout (Phase 1+)

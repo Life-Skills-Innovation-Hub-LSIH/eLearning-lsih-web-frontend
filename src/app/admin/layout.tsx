@@ -1,11 +1,12 @@
 "use client";
 
-import { RequireAuth } from "@/components/auth/RequireAuth";
+import { RequireAuth } from "@/features/auth";
+import { AdminShell } from "@/features/admin";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth roles={["admin", "super_admin"]}>
-      <div className="container-page py-8">{children}</div>
+      <AdminShell>{children}</AdminShell>
     </RequireAuth>
   );
 }

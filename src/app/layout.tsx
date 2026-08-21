@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Sora } from "next/font/google";
-import { AuthProvider } from "@/lib/auth/auth-context";
-import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
-import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
+import { AuthProvider } from "@/features/auth";
+import { ConditionalHeader } from "@/shared/components/layout/ConditionalHeader";
+import { ConditionalFooter } from "@/shared/components/layout/ConditionalFooter";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
