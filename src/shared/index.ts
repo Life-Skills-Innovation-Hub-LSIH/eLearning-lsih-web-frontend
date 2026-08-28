@@ -8,5 +8,7 @@ export { SiteFooter } from "./components/layout/SiteFooter";
 export { SiteHeader } from "./components/layout/SiteHeader";
 export { ProgressBar } from "./components/ui/ProgressBar";
 export { CustomSelect } from "./components/ui/CustomSelect";
+export { UserAvatar } from "./components/ui/UserAvatar";
+export { AvatarUploadField } from "./components/ui/AvatarUploadField";
 export type { SelectOption } from "./components/ui/CustomSelect";
 export type * from "./types";

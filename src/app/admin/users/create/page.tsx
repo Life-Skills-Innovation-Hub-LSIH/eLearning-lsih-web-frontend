@@ -1,9 +1,9 @@
-import { CreateUserForm, RequireSuperAdmin } from "@/features/admin";
+import { CreateUserForm, RequireAdmin } from "@/features/admin";
 
 export default function CreateUserPage() {
   return (
-    <RequireSuperAdmin>
+    <RequireAdmin>
       <CreateUserForm />
-    </RequireSuperAdmin>
+    </RequireAdmin>
   );
 }

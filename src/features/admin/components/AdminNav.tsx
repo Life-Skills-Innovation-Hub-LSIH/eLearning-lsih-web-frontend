@@ -17,7 +17,7 @@ export function AdminNav() {
   const { user } = useAuth();
 
   const extra =
-    user?.role === "super_admin"
+    user?.role === "admin"
       ? [
           { href: "/admin/admins", label: "Admins" },
           { href: "/admin/settings", label: "Settings" },

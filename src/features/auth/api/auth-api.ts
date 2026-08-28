@@ -7,6 +7,7 @@ export type ApiUser = {
   last_name: string;
   username: string;
   email?: string;
+  avatar?: string | null;
   role: User["role"];
   status: UserPaymentStatus;
   payment_duration: PaymentDuration;
@@ -22,11 +23,17 @@ export type AuthSessionResponse = {
 };
 
 export function mapAuthUser(user: ApiUser): User {
+  const role = (user.role as string) === "super_admin" ? "admin" : user.role;
+
   return {
     id: String(user.id),
     name: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.username,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    username: user.username,
     email: user.email || `${user.username}@lsih.local`,
-    role: user.role,
+    avatar: user.avatar ?? null,
+    role: role as User["role"],
   };
 }
 

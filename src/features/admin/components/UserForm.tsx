@@ -2,24 +2,48 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { KeyRound, Shield, UserRound } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
-import { CustomSelect } from "@/shared/components/ui/CustomSelect";
+import { UserAvatar } from "@/shared/components/ui/UserAvatar";
+import { AvatarUploadField } from "@/shared/components/ui/AvatarUploadField";
+import {
+  Badge,
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/features/admin/shadcn";
 import { createUserApi, updateUserApi, type UserFormInput } from "../api/users-api";
+import {
+  AdminFormField,
+  AdminFormInput,
+  AdminFormSection,
+  AdminInfoPanel,
+  AdminInfoRow,
+  AdminReadonlyValue,
+} from "./AdminFormFields";
+import { AdminPageLayout } from "./AdminPageLayout";
+import { RoleBadge, StatusBadge } from "./RoleBadge";
+import {
+  formatAdminDate,
+  formatRoleLabel,
+  isStudentRole,
+  previewPaidSubscriptionDates,
+} from "../lib/user-store";
 import type { ManagedUser, User, UserPaymentStatus } from "@/shared/types";
 
 const roleOptions = [
   { value: "student", label: "Student" },
   { value: "admin", label: "Admin" },
-  { value: "super_admin", label: "Super Admin" },
 ];
 
 const statusOptions = [
   { value: "paid", label: "Paid" },
   { value: "unpaid", label: "Unpaid" },
 ];
-
-const PAYMENT_DURATION = "1_year" as const;
 
 type Props = {
   mode: "create" | "edit";
@@ -28,25 +52,29 @@ type Props = {
 
 export function UserForm({ mode, initialUser }: Props) {
   const router = useRouter();
-  const { token, user: currentUser } = useAuth();
+  const { token, user: currentUser, refreshUser } = useAuth();
   const [firstName, setFirstName] = useState(initialUser?.firstName ?? "");
   const [lastName, setLastName] = useState(initialUser?.lastName ?? "");
   const [username, setUsername] = useState(initialUser?.username ?? "");
   const [email, setEmail] = useState(initialUser?.email ?? "");
+  const [avatar, setAvatar] = useState(initialUser?.avatar ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<User["role"]>(initialUser?.role ?? "student");
+  const [showPasswordFields, setShowPasswordFields] = useState(mode === "create");
+  const [createRole, setCreateRole] = useState<User["role"]>("student");
   const [status, setStatus] = useState<UserPaymentStatus>(initialUser?.status ?? "unpaid");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const userRole = initialUser?.role ?? "student";
+  const isEdit = mode === "edit";
+  const effectiveRole = isEdit ? userRole : createRole;
   const isEditingSelf = mode === "edit" && currentUser?.id === initialUser?.id;
-  const title = mode === "create" ? "Create user" : "Edit user";
-  const subtitle =
-    mode === "create"
-      ? "Add a new account with role, payment status, and subscription duration."
-      : "Update account details. Leave password blank to keep the current password.";
+  const showSubscriptionFields = isStudentRole(effectiveRole);
+  const isPaidStudent = showSubscriptionFields && status === "paid";
+  const paidPreview = !isEdit && isPaidStudent ? previewPaidSubscriptionDates() : null;
+  const displayName = `${firstName} ${lastName}`.trim() || username || "User";
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -74,15 +102,10 @@ export function UserForm({ mode, initialUser }: Props) {
       lastName,
       username,
       email,
-      role,
-      status,
-      paymentDuration: PAYMENT_DURATION,
-      ...(password
-        ? {
-            password,
-            confirmPassword,
-          }
-        : {}),
+      avatar: avatar.trim() || null,
+      ...(mode === "create" ? { role: createRole } : {}),
+      ...(showSubscriptionFields ? { status } : {}),
+      ...(password ? { password, confirmPassword } : {}),
     };
 
     setSubmitting(true);
@@ -90,8 +113,8 @@ export function UserForm({ mode, initialUser }: Props) {
       if (mode === "create") {
         await createUserApi(token, {
           ...input,
-          password: password,
-          confirmPassword: confirmPassword,
+          password,
+          confirmPassword,
         });
         setSuccess("User created successfully.");
       } else if (initialUser) {
@@ -111,148 +134,315 @@ export function UserForm({ mode, initialUser }: Props) {
     }
   }
 
-  return (
-    <div className="w-full space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold text-[var(--ink)]">{title}</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">{subtitle}</p>
-      </div>
+  const aside =
+    isEdit && initialUser ? (
+      <>
+        <AdminInfoPanel title="Account overview">
+          <div className="flex flex-col items-center gap-3 py-2 text-center">
+            <UserAvatar
+              name={displayName}
+              firstName={firstName}
+              avatarUrl={avatar.trim() || null}
+              size="xl"
+            />
+            <div>
+              <p className="font-semibold">{displayName}</p>
+              <p className="text-sm text-muted-foreground">@{username}</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              <RoleBadge role={userRole} />
+              {isEditingSelf ? <Badge variant="secondary">You</Badge> : null}
+              {showSubscriptionFields ? <StatusBadge status={status} /> : null}
+            </div>
+          </div>
+          <AdminInfoRow label="Email" value={email || "—"} />
+          <AdminInfoRow label="Role" value={formatRoleLabel(userRole)} />
+          <AdminInfoRow
+            label="Member since"
+            value={formatAdminDate(initialUser.createdAt)}
+          />
+          {isPaidStudent && initialUser.subscriptionExpiresAt ? (
+            <AdminInfoRow
+              label="Subscription ends"
+              value={formatAdminDate(initialUser.subscriptionExpiresAt)}
+            />
+          ) : null}
+        </AdminInfoPanel>
 
-      <form
-        onSubmit={onSubmit}
-        className="space-y-6 rounded-xl border border-[#d8dee8] bg-white p-6 shadow-sm"
-      >
-        <section className="space-y-4">
-          <h2 className="border-b border-[#eef1f6] pb-2 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Personal information
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">First name</span>
-              <input
-                className="input"
+        <AdminInfoPanel title="Quick tips">
+          <ul className="space-y-2.5 px-1 text-xs leading-relaxed text-muted-foreground">
+            <li>Role is locked after the account is created.</li>
+            <li>Password changes take effect immediately on next login.</li>
+            <li>Profile photos are stored securely and compressed automatically.</li>
+          </ul>
+        </AdminInfoPanel>
+      </>
+    ) : null;
+
+  const footer = (
+    <div className="admin-sticky-footer flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs text-muted-foreground">
+        {isEdit
+          ? "Review changes before saving. Unsaved edits will be lost."
+          : "All fields marked * are required."}
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Button type="button" variant="outline" onClick={() => router.push("/admin/users")}>
+          Cancel
+        </Button>
+        <Button type="submit" form="user-form" disabled={submitting}>
+          {submitting ? "Saving…" : isEdit ? "Save changes" : "Create user"}
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <AdminPageLayout
+      title={isEdit ? undefined : "Add user"}
+      description={
+        isEdit ? undefined : "Create a new student or admin account for the platform."
+      }
+      backHref="/admin/users"
+      backLabel="Back to users"
+      aside={aside}
+      footer={footer}
+    >
+      <form id="user-form" onSubmit={onSubmit} autoComplete="off" className="relative space-y-6">
+        {!isEdit ? (
+          <div className="pointer-events-none absolute -z-10 h-0 overflow-hidden opacity-0" aria-hidden>
+            <input type="text" name="username" tabIndex={-1} autoComplete="username" defaultValue="" />
+            <input type="password" name="password" tabIndex={-1} autoComplete="current-password" defaultValue="" />
+          </div>
+        ) : null}
+
+        <AdminFormSection
+          step={1}
+          icon={UserRound}
+          title="Personal details"
+          description="Name, username, and contact information."
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <AdminFormField id="firstName" label="First name" required>
+              <AdminFormInput
+                id="firstName"
+                name="user_first_name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                placeholder="e.g. Vanna"
+                autoComplete="off"
                 required
               />
-            </label>
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Last name</span>
-              <input
-                className="input"
+            </AdminFormField>
+            <AdminFormField id="lastName" label="Last name" required>
+              <AdminFormInput
+                id="lastName"
+                name="user_last_name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                placeholder="e.g. Sok"
+                autoComplete="off"
                 required
               />
-            </label>
+            </AdminFormField>
           </div>
-          <label className="block space-y-2 text-sm">
-            <span className="font-medium text-[var(--ink)]">Username</span>
-            <input
-              className="input"
+
+          <AdminFormField id="username" label="Username" hint="Used for login and profile URL." required>
+            <AdminFormInput
+              id="username"
+              name="user_username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. vanna.student"
+              autoComplete="off"
               required
             />
-          </label>
-          <label className="block space-y-2 text-sm">
-            <span className="font-medium text-[var(--ink)]">Email</span>
-            <input
-              className="input"
+          </AdminFormField>
+
+          <AdminFormField id="email" label="Email address" required>
+            <AdminFormInput
+              id="email"
+              name="user_email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. vanna@gmail.com"
+              autoComplete="off"
               required
             />
-          </label>
-        </section>
+          </AdminFormField>
 
-        <section className="space-y-4">
-          <h2 className="border-b border-[#eef1f6] pb-2 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Account security
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">
-                {mode === "edit" ? "New password (optional)" : "Password"}
-              </span>
-              <input
-                className="input"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required={mode === "create"}
-                minLength={mode === "create" ? 6 : undefined}
+          {token ? (
+            <AdminFormField
+              id="avatar"
+              label="Profile photo"
+              hint="Optional. A colored letter is shown if no photo is uploaded."
+            >
+              <AvatarUploadField
+                token={token}
+                name={displayName}
+                firstName={firstName}
+                avatarUrl={avatar.trim() || null}
+                userId={isEdit ? initialUser?.id : undefined}
+                username={username}
+                isSelf={isEditingSelf}
+                compact
+                onChange={(url) => setAvatar(url ?? "")}
+                onUploaded={() => {
+                  if (isEditingSelf) {
+                    void refreshUser();
+                  }
+                }}
               />
-            </label>
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Confirm password</span>
-              <input
-                className="input"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required={mode === "create" || Boolean(password)}
-              />
-            </label>
-          </div>
-        </section>
+            </AdminFormField>
+          ) : null}
+        </AdminFormSection>
 
-        <section className="space-y-4">
-          <h2 className="border-b border-[#eef1f6] pb-2 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Role & subscription
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Role</span>
-              <CustomSelect
-                value={role}
-                options={roleOptions}
-                onChange={(value) => setRole(value as User["role"])}
-                disabled={isEditingSelf}
-              />
-            </label>
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Status</span>
-              <CustomSelect
-                value={status}
-                options={statusOptions}
-                onChange={(value) => setStatus(value as UserPaymentStatus)}
-              />
-            </label>
-          </div>
-          <p className="text-xs text-[var(--muted)]">
-            Payment duration is fixed at <span className="font-medium">1 year</span>.
-          </p>
-          {isEditingSelf ? (
-            <p className="text-xs text-amber-700">
-              You cannot change your own role away from Super Admin.
-            </p>
+        <AdminFormSection
+          step={2}
+          icon={KeyRound}
+          title="Password"
+          description={
+            isEdit
+              ? "Only fill this in if you want to set a new password."
+              : "Set a secure password for this account."
+          }
+        >
+          {isEdit && !showPasswordFields ? (
+            <Button type="button" variant="outline" onClick={() => setShowPasswordFields(true)}>
+              Change password
+            </Button>
           ) : (
-            <p className="text-xs text-[var(--muted)]">
-              Super Admin can create, edit, and remove any role, including other Super Admins.
-            </p>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <AdminFormField id="password" label="New password" required={!isEdit}>
+                <AdminFormInput
+                  id="password"
+                  name="user_password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={isEdit ? "Leave blank to keep current" : "Min. 6 characters"}
+                  autoComplete="new-password"
+                  required={!isEdit}
+                  minLength={!isEdit ? 6 : undefined}
+                />
+              </AdminFormField>
+              <AdminFormField
+                id="confirmPassword"
+                label="Confirm password"
+                required={!isEdit || Boolean(password)}
+              >
+                <AdminFormInput
+                  id="confirmPassword"
+                  name="user_password_confirm"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  autoComplete="new-password"
+                  required={!isEdit || Boolean(password)}
+                />
+              </AdminFormField>
+            </div>
           )}
-        </section>
+        </AdminFormSection>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
+        <AdminFormSection
+          step={3}
+          icon={Shield}
+          title="Access & billing"
+          description={
+            isEdit
+              ? "Account type is fixed after creation."
+              : "Choose Student or Admin. Role cannot be changed later."
+          }
+        >
+          {isEdit ? (
+            <AdminFormField id="role" label="Account type">
+              <RoleBadge role={userRole} />
+            </AdminFormField>
+          ) : (
+            <AdminFormField id="role" label="Account type" required>
+              <Select
+                value={createRole}
+                onValueChange={(value) => setCreateRole(value as User["role"])}
+              >
+                <SelectTrigger className="admin-form-input w-full max-w-md">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {roleOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </AdminFormField>
+          )}
 
-        <div className="flex flex-wrap gap-3 border-t border-[#eef1f6] pt-4">
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {submitting ? "Saving…" : mode === "create" ? "Create user" : "Save changes"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => router.push("/admin/users")}
-          >
-            Cancel
-          </button>
-        </div>
+          {showSubscriptionFields ? (
+            <>
+              <AdminFormField id="status" label="Payment status">
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value as UserPaymentStatus)}
+                >
+                  <SelectTrigger className="admin-form-input w-full max-w-md">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </AdminFormField>
+
+              {isPaidStudent ? (
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <AdminReadonlyValue label="Subscription duration" value="1 year" />
+                  <AdminReadonlyValue
+                    label="Active days"
+                    value={
+                      isEdit
+                        ? `${initialUser?.subscriptionActiveDays ?? 0} days`
+                        : `${paidPreview?.activeDays ?? 1} day`
+                    }
+                  />
+                  <AdminReadonlyValue
+                    label="Expire date"
+                    value={formatAdminDate(
+                      isEdit ? initialUser?.subscriptionExpiresAt : paidPreview?.expiresAt,
+                    )}
+                  />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                  Unpaid students have no subscription duration, active days, or expiry date.
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+              Admin accounts do not use student billing.
+            </div>
+          )}
+        </AdminFormSection>
+
+        {error ? (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+        {success ? (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {success}
+          </div>
+        ) : null}
       </form>
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -7,9 +7,13 @@ type ApiUser = {
   last_name: string;
   username: string;
   email?: string;
+  avatar?: string | null;
   role: User["role"];
   status: UserPaymentStatus;
-  payment_duration: PaymentDuration;
+  payment_duration?: PaymentDuration | null;
+  subscription_starts_at?: string | null;
+  subscription_expires_at?: string | null;
+  subscription_active_days?: number | null;
   created_at: string;
 };
 
@@ -18,11 +22,11 @@ export type UserFormInput = {
   lastName: string;
   username: string;
   email: string;
+  avatar?: string | null;
   password?: string;
   confirmPassword?: string;
-  role: User["role"];
-  status: UserPaymentStatus;
-  paymentDuration: PaymentDuration;
+  role?: User["role"];
+  status?: UserPaymentStatus;
 };
 
 function mapManagedUser(user: ApiUser): ManagedUser {
@@ -32,9 +36,13 @@ function mapManagedUser(user: ApiUser): ManagedUser {
     lastName: user.last_name,
     username: user.username,
     email: user.email || `${user.username}@lsih.local`,
-    role: user.role,
+    avatar: user.avatar ?? null,
+    role: ((user.role as string) === "super_admin" ? "admin" : user.role) as User["role"],
     status: user.status,
-    paymentDuration: user.payment_duration,
+    paymentDuration: user.payment_duration ?? null,
+    subscriptionStartsAt: user.subscription_starts_at ?? null,
+    subscriptionExpiresAt: user.subscription_expires_at ?? null,
+    subscriptionActiveDays: user.subscription_active_days ?? null,
     createdAt: user.created_at,
   };
 }
@@ -60,20 +68,25 @@ export async function fetchUser(token: string, id: string): Promise<ManagedUser>
 }
 
 export async function createUserApi(token: string, input: UserFormInput): Promise<ManagedUser> {
+  const body: Record<string, string | null> = {
+    first_name: input.firstName,
+    last_name: input.lastName,
+    username: input.username,
+    email: input.email,
+    password: input.password ?? "",
+    password_confirmation: input.confirmPassword ?? "",
+    avatar: input.avatar?.trim() ? input.avatar.trim() : null,
+    role: input.role ?? "student",
+  };
+
+  if (input.role === "student" || !input.role) {
+    body.status = input.status ?? "unpaid";
+  }
+
   const response = await apiRequest<{ data: ApiUser }>("/admin/users", {
     method: "POST",
     token,
-    body: {
-      first_name: input.firstName,
-      last_name: input.lastName,
-      username: input.username,
-      email: input.email,
-      password: input.password,
-      password_confirmation: input.confirmPassword,
-      role: input.role,
-      status: input.status,
-      payment_duration: input.paymentDuration,
-    },
+    body,
   });
   return mapManagedUser(response.data);
 }
@@ -83,15 +96,15 @@ export async function updateUserApi(
   id: string,
   input: UserFormInput,
 ): Promise<ManagedUser> {
-  const body: Record<string, string> = {
+  const body: Record<string, string | null> = {
     first_name: input.firstName,
     last_name: input.lastName,
     username: input.username,
     email: input.email,
-    role: input.role,
-    status: input.status,
-    payment_duration: input.paymentDuration,
+    avatar: input.avatar?.trim() ? input.avatar.trim() : null,
   };
+
+  if (input.status) body.status = input.status;
 
   if (input.password) {
     body.password = input.password;

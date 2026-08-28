@@ -1,70 +1,82 @@
 "use client";
 
 import Link from "next/link";
+import { Plus } from "lucide-react";
+import { AdminPageLayout } from "@/features/admin/components/AdminPageLayout";
+import { Badge, Button, Card, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/features/admin/shadcn";
 import { countLessons, countQuizzes, mockCourses } from "@/features/courses";
 
 export default function AdminCoursesPage() {
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Courses</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">{mockCourses.length} courses</p>
+    <AdminPageLayout
+      title="Courses"
+      description="Manage course catalog, modules, and lessons."
+      actions={
+        <Button disabled>
+          <Plus />
+          Add course
+        </Button>
+      }
+    >
+      <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">
+        <div className="border-b bg-muted/20 px-5 py-3.5">
+          <p className="text-sm font-semibold">
+            Catalog{" "}
+            <span className="font-normal text-muted-foreground">{mockCourses.length} courses</span>
+          </p>
         </div>
-        <button type="button" className="btn btn-primary opacity-70" disabled>
-          Create course
-        </button>
-      </div>
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-[var(--shadow)]">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-[var(--line)] bg-[var(--background)] text-[var(--muted)]">
-            <tr>
-              <th className="px-5 py-3 font-medium">Course</th>
-              <th className="px-5 py-3 font-medium">Structure</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 font-medium">Price</th>
-              <th className="px-5 py-3 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="min-w-[720px]">
+          <TableHeader>
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="px-4">Course</TableHead>
+              <TableHead className="px-4">Structure</TableHead>
+              <TableHead className="px-4">Status</TableHead>
+              <TableHead className="px-4">Price</TableHead>
+              <TableHead className="px-4" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {mockCourses.map((course) => (
-              <tr key={course.id} className="border-t border-[var(--line)]">
-                <td className="px-5 py-4">
-                  <p className="font-medium text-[var(--ink)]">{course.title}</p>
-                  <p className="text-[var(--muted)]">{course.category}</p>
-                </td>
-                <td className="px-5 py-4 text-[var(--muted)]">
+              <TableRow key={course.id}>
+                <TableCell className="px-4 py-4">
+                  <p className="font-medium">{course.title}</p>
+                  <p className="text-sm text-muted-foreground">{course.category}</p>
+                </TableCell>
+                <TableCell className="px-4 py-4 text-muted-foreground">
                   {course.modules.length} modules · {countLessons(course)} lessons ·{" "}
                   {countQuizzes(course)} quizzes
-                </td>
-                <td className="px-5 py-4">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <Badge
+                    variant="outline"
+                    className={
                       course.status === "published"
-                        ? "bg-emerald-50 text-emerald-800"
-                        : "bg-amber-50 text-amber-800"
-                    }`}
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-amber-200 bg-amber-50 text-amber-700"
+                    }
                   >
                     {course.status}
-                  </span>
-                </td>
-                <td className="px-5 py-4">
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   {course.price === 0 ? "Free" : `$${course.price}`}
-                </td>
-                <td className="px-5 py-4 text-right">
-                  <Link
-                    href={`/admin/courses/${course.id}`}
-                    className="font-semibold text-[var(--brand)] hover:underline"
+                </TableCell>
+                <TableCell className="px-4 py-4 text-right">
+                  <Button
+                    variant="link"
+                    className="h-auto p-0"
+                    nativeButton={false}
+                    render={<Link href={`/admin/courses/${course.id}`} />}
                   >
                     View
-                  </Link>
-                </td>
-              </tr>
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </TableBody>
+        </Table>
+      </Card>
+    </AdminPageLayout>
   );
 }

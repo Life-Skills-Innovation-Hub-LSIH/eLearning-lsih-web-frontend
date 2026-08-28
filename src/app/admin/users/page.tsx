@@ -1,9 +1,9 @@
-import { RequireSuperAdmin, UsersManagement } from "@/features/admin";
+import { RequireAdmin, UsersManagement } from "@/features/admin";
 
 export default function AdminUsersPage() {
   return (
-    <RequireSuperAdmin>
+    <RequireAdmin>
       <UsersManagement />
-    </RequireSuperAdmin>
+    </RequireAdmin>
   );
 }

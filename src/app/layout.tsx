@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Sora } from "next/font/google";
+import { Plus_Jakarta_Sans, Sora, Geist } from "next/font/google";
 import { AuthProvider } from "@/features/auth";
 import { ConditionalHeader } from "@/shared/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/shared/components/layout/ConditionalFooter";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-body",
@@ -29,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable} h-full`}>
+    <html lang="en" className={cn("h-full", bodyFont.variable, displayFont.variable, "font-sans", geist.variable)}>
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
           <ConditionalHeader />

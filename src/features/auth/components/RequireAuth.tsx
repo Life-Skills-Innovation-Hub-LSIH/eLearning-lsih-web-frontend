@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/auth-context";
+import { homePathForRole } from "../lib/static-users";
 import type { User } from "@/shared/types";
 
 type Props = {
@@ -21,7 +22,7 @@ export function RequireAuth({ roles, children }: Props) {
       return;
     }
     if (!roles.includes(user.role)) {
-      router.replace(user.role === "student" ? "/dashboard" : "/admin");
+      router.replace(homePathForRole(user.role));
     }
   }, [ready, user, roles, router]);
 

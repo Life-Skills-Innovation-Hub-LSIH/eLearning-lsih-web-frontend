@@ -1,4 +1,4 @@
-export type Role = "guest" | "student" | "admin" | "super_admin";
+export type Role = "guest" | "student" | "admin";
 
 export type UserPaymentStatus = "paid" | "unpaid";
 export type PaymentDuration = "1_year";
@@ -9,9 +9,13 @@ export interface ManagedUser {
   lastName: string;
   username: string;
   email: string;
+  avatar?: string | null;
   role: Exclude<Role, "guest">;
   status: UserPaymentStatus;
-  paymentDuration: PaymentDuration;
+  paymentDuration?: PaymentDuration | null;
+  subscriptionStartsAt?: string | null;
+  subscriptionExpiresAt?: string | null;
+  subscriptionActiveDays?: number | null;
   createdAt: string;
 }
 
@@ -24,7 +28,11 @@ export type CourseLevel = "beginner" | "intermediate" | "advanced";
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
   email: string;
+  avatar?: string | null;
   role: Exclude<Role, "guest">;
 }
 

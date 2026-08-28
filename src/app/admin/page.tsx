@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth";
+import { AdminPageLayout } from "@/features/admin/components/AdminPageLayout";
+import { Card, CardContent } from "@/features/admin/shadcn";
 
 export default function AdminDashboardPage() {
   const { user, ready } = useAuth();
@@ -10,20 +12,25 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!ready || !user) return;
-    if (user.role === "super_admin") {
+    if (user.role === "admin") {
       router.replace("/admin/users");
     }
   }, [ready, user, router]);
 
-  if (user?.role === "super_admin") {
+  if (user?.role === "admin") {
     return null;
   }
 
   return (
-    <div className="rounded-xl border border-[#d8dee8] bg-white p-8 text-center shadow-sm">
-      <p className="text-sm text-[var(--muted)]">
-        Admin workspace. Additional features will appear here based on your role.
-      </p>
-    </div>
+    <AdminPageLayout
+      title="Admin workspace"
+      description="More features will appear here when they are ready."
+    >
+      <Card className="py-0">
+        <CardContent className="px-8 py-10 text-center text-sm text-muted-foreground">
+          No admin pages are available for your role yet.
+        </CardContent>
+      </Card>
+    </AdminPageLayout>
   );
 }

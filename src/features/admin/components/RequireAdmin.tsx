@@ -8,7 +8,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-export function RequireSuperAdmin({ children }: Props) {
+export function RequireAdmin({ children }: Props) {
   const { user, ready } = useAuth();
   const router = useRouter();
 
@@ -18,12 +18,12 @@ export function RequireSuperAdmin({ children }: Props) {
       router.replace("/login");
       return;
     }
-    if (user.role !== "super_admin") {
+    if (user.role !== "admin") {
       router.replace("/admin");
     }
   }, [ready, user, router]);
 
-  if (!ready || !user || user.role !== "super_admin") {
+  if (!ready || !user || user.role !== "admin") {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-sm text-[var(--muted)]">
         Checking access…

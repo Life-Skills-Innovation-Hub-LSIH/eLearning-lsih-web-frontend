@@ -7,6 +7,7 @@ import { useState } from "react";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { homePathForRole } from "@/features/auth";
+import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 
 const categories = [
   {
@@ -137,6 +138,14 @@ export function SiteHeader() {
 
           {ready && user ? (
             <>
+              <UserAvatar
+                name={user.name}
+                firstName={user.firstName}
+                avatarUrl={user.avatar}
+                size="sm"
+                title={user.name}
+                className="hidden sm:inline-flex"
+              />
               <Link href={homePathForRole(user.role)} className={linkClass(homePathForRole(user.role))}>
                 {user.role === "student" ? "My Learning" : "Admin"}
               </Link>

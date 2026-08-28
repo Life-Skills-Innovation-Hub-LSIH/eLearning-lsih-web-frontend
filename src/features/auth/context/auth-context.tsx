@@ -34,6 +34,7 @@ type AuthContextValue = {
     password: string,
   ) => Promise<{ ok: true; redirectTo: string } | { ok: false; message: string }>;
   applySession: (result: { token: string; expires_at: string; user: Parameters<typeof mapAuthUser>[0] }) => string;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   enroll: (courseId: string) => void;
   isEnrolled: (courseId: string) => boolean;
@@ -115,6 +116,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
+
+  const refreshUser = useCallback(async () => {
+    const savedToken = loadToken();
+    if (!savedToken) {
+      return;
+    }
+
+    const nextUser = await fetchCurrentUser(savedToken);
+    setUser(nextUser);
+    saveUser(nextUser);
+  }, []);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -238,6 +250,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       progress,
       login,
       applySession,
+      refreshUser,
       logout,
       enroll,
       isEnrolled,
@@ -253,6 +266,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       progress,
       login,
       applySession,
+      refreshUser,
       logout,
       enroll,
       isEnrolled,
@@ -281,7 +295,7 @@ export function useCourseAccess(slug: string) {
     course,
     enrolled,
     progress,
-    canManage: user?.role === "admin" || user?.role === "super_admin",
+    canManage: user?.role === "admin",
     isStudent: user?.role === "student",
   };
 }
