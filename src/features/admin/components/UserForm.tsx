@@ -4,8 +4,22 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
+import { CustomSelect } from "@/shared/components/ui/CustomSelect";
 import { createUserApi, updateUserApi, type UserFormInput } from "../api/users-api";
-import type { ManagedUser, PaymentDuration, User, UserPaymentStatus } from "@/shared/types";
+import type { ManagedUser, User, UserPaymentStatus } from "@/shared/types";
+
+const roleOptions = [
+  { value: "student", label: "Student" },
+  { value: "admin", label: "Admin" },
+  { value: "super_admin", label: "Super Admin" },
+];
+
+const statusOptions = [
+  { value: "paid", label: "Paid" },
+  { value: "unpaid", label: "Unpaid" },
+];
+
+const PAYMENT_DURATION = "1_year" as const;
 
 type Props = {
   mode: "create" | "edit";
@@ -23,9 +37,6 @@ export function UserForm({ mode, initialUser }: Props) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<User["role"]>(initialUser?.role ?? "student");
   const [status, setStatus] = useState<UserPaymentStatus>(initialUser?.status ?? "unpaid");
-  const [paymentDuration, setPaymentDuration] = useState<PaymentDuration>(
-    initialUser?.paymentDuration ?? "1_month",
-  );
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +76,7 @@ export function UserForm({ mode, initialUser }: Props) {
       email,
       role,
       status,
-      paymentDuration,
+      paymentDuration: PAYMENT_DURATION,
       ...(password
         ? {
             password,
@@ -101,7 +112,7 @@ export function UserForm({ mode, initialUser }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-[var(--ink)]">{title}</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">{subtitle}</p>
@@ -193,43 +204,28 @@ export function UserForm({ mode, initialUser }: Props) {
           <h2 className="border-b border-[#eef1f6] pb-2 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
             Role & subscription
           </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-2 text-sm">
               <span className="font-medium text-[var(--ink)]">Role</span>
-              <select
-                className="input appearance-none"
+              <CustomSelect
                 value={role}
-                onChange={(e) => setRole(e.target.value as User["role"])}
+                options={roleOptions}
+                onChange={(value) => setRole(value as User["role"])}
                 disabled={isEditingSelf}
-              >
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
-              </select>
+              />
             </label>
             <label className="block space-y-2 text-sm">
               <span className="font-medium text-[var(--ink)]">Status</span>
-              <select
-                className="input appearance-none"
+              <CustomSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value as UserPaymentStatus)}
-              >
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-              </select>
-            </label>
-            <label className="block space-y-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Payment duration</span>
-              <select
-                className="input appearance-none"
-                value={paymentDuration}
-                onChange={(e) => setPaymentDuration(e.target.value as PaymentDuration)}
-              >
-                <option value="1_month">1 month</option>
-                <option value="1_year">1 year</option>
-              </select>
+                options={statusOptions}
+                onChange={(value) => setStatus(value as UserPaymentStatus)}
+              />
             </label>
           </div>
+          <p className="text-xs text-[var(--muted)]">
+            Payment duration is fixed at <span className="font-medium">1 year</span>.
+          </p>
           {isEditingSelf ? (
             <p className="text-xs text-amber-700">
               You cannot change your own role away from Super Admin.

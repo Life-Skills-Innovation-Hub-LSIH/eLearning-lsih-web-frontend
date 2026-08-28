@@ -1,8 +1,8 @@
 import type { PaymentDuration, UserPaymentStatus } from "@/shared/types";
 import type { User } from "@/shared/types";
 
-export function formatPaymentDuration(duration: PaymentDuration) {
-  return duration === "1_month" ? "1 month" : "1 year";
+export function formatPaymentDuration(_duration: PaymentDuration) {
+  return "1 year";
 }
 
 export function formatUserStatus(status: UserPaymentStatus) {

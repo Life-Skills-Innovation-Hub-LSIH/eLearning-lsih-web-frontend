@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
+import { CustomSelect } from "@/shared/components/ui/CustomSelect";
 import { deleteUserApi, fetchUsers } from "../api/users-api";
 import {
   formatPaymentDuration,
@@ -12,6 +13,13 @@ import {
   formatUserStatus,
 } from "../lib/user-store";
 import type { ManagedUser, User } from "@/shared/types";
+
+const roleFilterOptions = [
+  { value: "all", label: "All roles" },
+  { value: "student", label: "Student" },
+  { value: "admin", label: "Admin" },
+  { value: "super_admin", label: "Super Admin" },
+];
 
 function userInitials(user: ManagedUser) {
   return `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U";
@@ -109,16 +117,11 @@ export function UsersManagement() {
       <div className="grid gap-3 rounded-xl border border-[#d8dee8] bg-white p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
         <label className="block space-y-1 text-sm">
           <span className="font-medium text-[var(--ink)]">Filter by role</span>
-          <select
-            className="input !py-2 appearance-none"
+          <CustomSelect
             value={role}
-            onChange={(e) => setRole(e.target.value as "all" | User["role"])}
-          >
-            <option value="all">All roles</option>
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-            <option value="super_admin">Super Admin</option>
-          </select>
+            options={roleFilterOptions}
+            onChange={(value) => setRole(value as "all" | User["role"])}
+          />
         </label>
         <label className="block space-y-1 text-sm">
           <span className="font-medium text-[var(--ink)]">Created from</span>
