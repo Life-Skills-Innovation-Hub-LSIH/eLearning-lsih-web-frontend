@@ -15,7 +15,6 @@ type ApiSubject = {
 export type SubjectFormInput = {
   name: string;
   slug?: string;
-  code?: string | null;
   description?: string | null;
   status?: SubjectStatus;
 };
@@ -64,7 +63,6 @@ export async function createSubjectApi(
     body: {
       name: input.name,
       slug: input.slug?.trim() || null,
-      code: input.code?.trim() || null,
       description: input.description?.trim() || null,
       status: input.status ?? "active",
     },
@@ -83,7 +81,6 @@ export async function updateSubjectApi(
     body: {
       name: input.name,
       slug: input.slug?.trim() || null,
-      code: input.code?.trim() || null,
       description: input.description?.trim() || null,
       status: input.status ?? "active",
     },

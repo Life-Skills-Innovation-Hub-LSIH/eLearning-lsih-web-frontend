@@ -77,7 +77,6 @@ export function SubjectForm({ mode, subjectId }: Props) {
     const input: SubjectFormInput = {
       name: name.trim(),
       slug: slug.trim() || undefined,
-      code: code.trim() || null,
       description: description.trim() || null,
       status,
     };
@@ -139,7 +138,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
           step={1}
           icon={BookMarked}
           title="Subject details"
-          description="Name, code, and status for this subject."
+          description="Name and status for this subject. Code is assigned automatically."
         >
           <AdminFormField id="name" label="Subject name" required>
             <AdminFormInput
@@ -164,12 +163,16 @@ export function SubjectForm({ mode, subjectId }: Props) {
                 placeholder="e.g. infection-control"
               />
             </AdminFormField>
-            <AdminFormField id="code" label="Code" hint="Optional short code.">
+            <AdminFormField
+              id="code"
+              label="Code"
+              hint="Auto-generated as SUBJECT-01, SUBJECT-02, …"
+            >
               <AdminFormInput
                 id="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. IC-01"
+                value={isEdit ? code || "—" : "Assigned on save"}
+                readOnly
+                disabled
               />
             </AdminFormField>
           </div>
