@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/shared/api/client";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { registerWithApi } from "../api/auth-api";
 import { AuthSplitLayout } from "./AuthSplitLayout";
 import { useAuth } from "../context/auth-context";
@@ -84,51 +85,49 @@ export function RegisterForm() {
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-            <span>First name</span>
+          <label className="block space-y-2 text-sm text-[var(--ink)]">
+            <span className="font-semibold">First name</span>
             <input
-              className="input border-transparent bg-[#f3f6fb]"
+              className="input border-transparent bg-[#f3f6fb] font-normal"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
             />
           </label>
-          <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-            <span>Last name</span>
+          <label className="block space-y-2 text-sm text-[var(--ink)]">
+            <span className="font-semibold">Last name</span>
             <input
-              className="input border-transparent bg-[#f3f6fb]"
+              className="input border-transparent bg-[#f3f6fb] font-normal"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
             />
           </label>
         </div>
-        <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-          <span>Username</span>
+        <label className="block space-y-2 text-sm text-[var(--ink)]">
+          <span className="font-semibold">Username</span>
           <input
-            className="input border-transparent bg-[#f3f6fb]"
+            className="input border-transparent bg-[#f3f6fb] font-normal"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="e.g. vanna.student"
             required
           />
         </label>
-        <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-          <span>Password</span>
-          <input
-            className="input border-transparent bg-[#f3f6fb]"
-            type="password"
+        <label className="block space-y-2 text-sm text-[var(--ink)]">
+          <span className="font-semibold">Password</span>
+          <PasswordInput
+            inputClassName="input border-transparent bg-[#f3f6fb] font-normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             minLength={6}
             required
           />
         </label>
-        <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-          <span>Confirm password</span>
-          <input
-            className="input border-transparent bg-[#f3f6fb]"
-            type="password"
+        <label className="block space-y-2 text-sm text-[var(--ink)]">
+          <span className="font-semibold">Confirm password</span>
+          <PasswordInput
+            inputClassName="input border-transparent bg-[#f3f6fb] font-normal"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             minLength={6}

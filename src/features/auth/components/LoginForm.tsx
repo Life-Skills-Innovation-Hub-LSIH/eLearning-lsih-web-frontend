@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AuthSplitLayout } from "./AuthSplitLayout";
 import { useAuth } from "../context/auth-context";
 import { homePathForRole } from "../lib/static-users";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 
 export function LoginForm() {
   const { login, user, ready } = useAuth();
@@ -59,29 +60,38 @@ export function LoginForm() {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="mt-8 space-y-4">
-        <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-          <span>Username or email</span>
+      <form onSubmit={onSubmit} className="mt-8 space-y-4" autoComplete="on">
+        <div className="space-y-2 text-sm text-[var(--ink)]">
+          <label htmlFor="login-username" className="font-semibold">
+            Username or email
+          </label>
           <input
-            className="input border-transparent bg-[#f3f6fb]"
+            id="login-username"
+            className="input border-transparent bg-[#f3f6fb] text-[16px] font-normal"
             type="text"
+            name="username"
+            autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="username or email"
             required
           />
-        </label>
-        <label className="block space-y-2 text-sm font-semibold text-[var(--ink)]">
-          <span>Password</span>
-          <input
-            className="input border-transparent bg-[#f3f6fb]"
-            type="password"
+        </div>
+        <div className="space-y-2 text-sm text-[var(--ink)]">
+          <label htmlFor="login-password" className="font-semibold">
+            Password
+          </label>
+          <PasswordInput
+            id="login-password"
+            name="password"
+            autoComplete="current-password"
+            inputClassName="input border-transparent bg-[#f3f6fb] text-[16px] font-normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
           />
-        </label>
+        </div>
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
         <button
           type="submit"

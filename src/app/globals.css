@@ -114,6 +114,22 @@ a {
   text-decoration: none;
 }
 
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href],
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"],
+input:disabled {
+  cursor: not-allowed;
+}
+
 .container-page {
   width: min(1160px, calc(100% - 2rem));
   margin-inline: auto;
@@ -183,8 +199,26 @@ a {
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
   outline: none;
-  font-size: 0.9375rem;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  letter-spacing: normal !important;
+  color: var(--ink);
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ink) !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  box-shadow: 0 0 0 1000px #f3f6fb inset !important;
+  transition: background-color 99999s ease-in-out 0s;
 }
 
 textarea.input {

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronRight, GraduationCap, LogOut, Settings, Users } from "lucide-react";
+import { ChevronRight, BookMarked, GraduationCap, LogOut, Settings, Users } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 import {
@@ -37,6 +37,7 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
   { href: "/admin/students", label: "Students", icon: GraduationCap, adminOnly: true },
+  { href: "/admin/subjects", label: "Subjects", icon: BookMarked, adminOnly: true },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -50,6 +51,9 @@ function isActive(pathname: string, href: string) {
 
 function breadcrumbLabel(pathname: string) {
   if (pathname.startsWith("/admin/users/create")) return "Add user";
+  if (pathname.includes("/edit") && pathname.startsWith("/admin/subjects")) return "Edit subject";
+  if (pathname.startsWith("/admin/subjects/create")) return "Add subject";
+  if (pathname.startsWith("/admin/subjects")) return "Subjects";
   if (pathname.includes("/edit")) return "Users";
   if (pathname.startsWith("/admin/account")) return "Your account";
   if (pathname.startsWith("/admin/users")) return "Users";

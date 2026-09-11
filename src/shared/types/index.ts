@@ -98,3 +98,16 @@ export interface EnrollmentProgress {
   completedQuizIds: string[];
   percent: number;
 }
+
+export type SubjectStatus = "active" | "inactive";
+
+export interface Subject {
+  id: string;
+  name: string;
+  slug: string;
+  code: string | null;
+  description: string | null;
+  status: SubjectStatus;
+  createdAt: string;
+  updatedAt?: string;
+}

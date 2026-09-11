@@ -32,37 +32,78 @@ export function AdminPageLayout({
   width = "default",
   children,
 }: Props) {
+  const showToolbar = Boolean(backHref || actions);
+  const stickyToolbar = Boolean(actions);
+
   return (
     <div className={widthClass[width]}>
-      <div className="mb-6 flex flex-col gap-4 border-b border-border/80 pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-3">
-          {backHref ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="-ml-2 h-8 text-muted-foreground hover:text-foreground"
-              nativeButton={false}
-              render={<Link href={backHref} />}
-            >
-              <ArrowLeft />
-              {backLabel}
-            </Button>
-          ) : null}
-          {title ? (
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+      {showToolbar ? (
+        <div
+          className={
+            stickyToolbar
+              ? "sticky top-14 z-20 -mx-6 mb-6 border-b border-border/80 bg-background/95 px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:-mx-8 lg:px-8"
+              : "mb-6 space-y-4 border-b border-border/80 pb-6"
+          }
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              {backHref ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-2 h-8 text-muted-foreground hover:text-foreground"
+                  render={<Link href={backHref} />}
+                >
+                  <ArrowLeft />
+                  {backLabel}
+                </Button>
+              ) : null}
+            </div>
+            {actions ? (
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                {actions}
+              </div>
+            ) : null}
+          </div>
+
+          {!stickyToolbar && (title || description) ? (
+            <div className="mt-4">
+              {title ? (
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+              ) : null}
               {description ? (
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
                   {description}
                 </p>
               ) : null}
             </div>
-          ) : description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
           ) : null}
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
-      </div>
+      ) : null}
+
+      {stickyToolbar && (title || description) ? (
+        <div className="mb-6">
+          {title ? (
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+          ) : null}
+          {description ? (
+            <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
+              {description}
+            </p>
+          ) : null}
+        </div>
+      ) : !showToolbar && (title || description) ? (
+        <div className="mb-6 space-y-4 border-b border-border/80 pb-6">
+          {title ? (
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+          ) : null}
+          {description ? (
+            <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
+              {description}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div
         className={
@@ -72,7 +113,13 @@ export function AdminPageLayout({
         }
       >
         <div className="min-w-0 space-y-6">{children}</div>
-        {aside ? <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">{aside}</aside> : null}
+        {aside ? (
+          <aside
+            className={`space-y-4 lg:sticky lg:self-start ${stickyToolbar ? "lg:top-28" : "lg:top-24"}`}
+          >
+            {aside}
+          </aside>
+        ) : null}
       </div>
 
       {footer}

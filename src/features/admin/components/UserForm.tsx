@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 import { AvatarUploadField } from "@/shared/components/ui/AvatarUploadField";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import {
   Badge,
   Button,
@@ -179,22 +180,15 @@ export function UserForm({ mode, initialUser }: Props) {
       </>
     ) : null;
 
-  const footer = (
-    <div className="admin-sticky-footer flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-muted-foreground">
-        {isEdit
-          ? "Review changes before saving. Unsaved edits will be lost."
-          : "All fields marked * are required."}
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button type="button" variant="outline" onClick={() => router.push("/admin/users")}>
-          Cancel
-        </Button>
-        <Button type="submit" form="user-form" disabled={submitting}>
-          {submitting ? "Saving…" : isEdit ? "Save changes" : "Create user"}
-        </Button>
-      </div>
-    </div>
+  const formActions = (
+    <>
+      <Button type="button" variant="outline" onClick={() => router.push("/admin/users")}>
+        Cancel
+      </Button>
+      <Button type="submit" form="user-form" disabled={submitting}>
+        {submitting ? "Saving…" : isEdit ? "Save changes" : "Create user"}
+      </Button>
+    </>
   );
 
   return (
@@ -205,8 +199,8 @@ export function UserForm({ mode, initialUser }: Props) {
       }
       backHref="/admin/users"
       backLabel="Back to users"
+      actions={formActions}
       aside={aside}
-      footer={footer}
     >
       <form id="user-form" onSubmit={onSubmit} autoComplete="off" className="relative space-y-6">
         {!isEdit ? (
@@ -315,10 +309,10 @@ export function UserForm({ mode, initialUser }: Props) {
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               <AdminFormField id="password" label="New password" required={!isEdit}>
-                <AdminFormInput
+                <PasswordInput
                   id="password"
                   name="user_password"
-                  type="password"
+                  inputClassName="admin-form-input flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isEdit ? "Leave blank to keep current" : "Min. 6 characters"}
@@ -332,10 +326,10 @@ export function UserForm({ mode, initialUser }: Props) {
                 label="Confirm password"
                 required={!isEdit || Boolean(password)}
               >
-                <AdminFormInput
+                <PasswordInput
                   id="confirmPassword"
                   name="user_password_confirm"
-                  type="password"
+                  inputClassName="admin-form-input flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"

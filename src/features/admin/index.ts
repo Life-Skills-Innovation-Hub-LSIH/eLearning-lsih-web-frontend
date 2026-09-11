@@ -11,7 +11,17 @@ export { EditUserForm } from "./components/EditUserForm";
 export { RequireAdmin } from "./components/RequireAdmin";
 export { UserForm } from "./components/UserForm";
 export { StudentsManagement } from "./components/StudentsManagement";
+export { SubjectForm } from "./components/SubjectForm";
+export { SubjectsManagement } from "./components/SubjectsManagement";
 export { UsersManagement } from "./components/UsersManagement";
+export {
+  createSubjectApi,
+  deleteSubjectApi,
+  fetchSubject,
+  fetchSubjects,
+  updateSubjectApi,
+} from "./api/subjects-api";
+export type { SubjectFormInput } from "./api/subjects-api";
 export {
   createUserApi,
   deleteUserApi,

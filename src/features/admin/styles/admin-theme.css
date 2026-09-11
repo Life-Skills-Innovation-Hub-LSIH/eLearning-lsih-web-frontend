@@ -29,6 +29,8 @@
   --popover-foreground: var(--admin-text);
   --primary: var(--admin-brand);
   --primary-foreground: #ffffff;
+  --color-primary: var(--admin-brand);
+  --color-primary-foreground: #ffffff;
   --secondary: var(--admin-hover);
   --secondary-foreground: var(--admin-text);
   --muted: #f1f5f9;
@@ -52,6 +54,15 @@
 
 .admin-theme [data-sidebar="sidebar"] {
   border-color: var(--sidebar-border);
+}
+
+/* Primary shadcn buttons (including Link-as-button) must stay white-on-brand */
+.admin-theme [data-slot="button"].bg-primary {
+  color: #ffffff;
+}
+
+.admin-theme [data-slot="button"].bg-primary:hover {
+  color: #ffffff;
 }
 
 .admin-theme [data-slot="sidebar-menu-button"][data-active="true"] {

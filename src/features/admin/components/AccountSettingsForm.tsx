@@ -8,6 +8,7 @@ import { fetchCurrentUser } from "@/features/auth/api/auth-api";
 import { ApiError } from "@/shared/api/client";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 import { AvatarUploadField } from "@/shared/components/ui/AvatarUploadField";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { Button, Skeleton } from "@/features/admin/shadcn";
 import { updateProfileApi } from "../api/profile-api";
 import {
@@ -150,20 +151,15 @@ export function AccountSettingsForm() {
     </AdminInfoPanel>
   );
 
-  const footer = (
-    <div className="admin-sticky-footer flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs text-muted-foreground">
-        Only you can edit your own account details here.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button type="button" variant="outline" onClick={() => router.push(homeHref)}>
-          Cancel
-        </Button>
-        <Button type="submit" form="account-form" disabled={submitting}>
-          {submitting ? "Saving…" : "Save changes"}
-        </Button>
-      </div>
-    </div>
+  const formActions = (
+    <>
+      <Button type="button" variant="outline" onClick={() => router.push(homeHref)}>
+        Cancel
+      </Button>
+      <Button type="submit" form="account-form" disabled={submitting}>
+        {submitting ? "Saving…" : "Save changes"}
+      </Button>
+    </>
   );
 
   return (
@@ -171,8 +167,8 @@ export function AccountSettingsForm() {
       title="Your account"
       description="Manage your personal information, profile photo, and password."
       backHref={homeHref}
+      actions={formActions}
       aside={aside}
-      footer={footer}
     >
       <form id="account-form" onSubmit={onSubmit} className="space-y-6">
         <AdminFormSection
@@ -251,18 +247,18 @@ export function AccountSettingsForm() {
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               <AdminFormField id="password" label="New password">
-                <AdminFormInput
+                <PasswordInput
                   id="password"
-                  type="password"
+                  inputClassName="admin-form-input flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
                 />
               </AdminFormField>
               <AdminFormField id="confirmPassword" label="Confirm password">
-                <AdminFormInput
+                <PasswordInput
                   id="confirmPassword"
-                  type="password"
+                  inputClassName="admin-form-input flex h-10 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"

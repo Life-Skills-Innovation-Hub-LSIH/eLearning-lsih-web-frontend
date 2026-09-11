@@ -32,7 +32,7 @@ export function AdminProfileMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 outline-none transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 outline-none transition hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
       >
         <UserAvatar
           name={profileName}
