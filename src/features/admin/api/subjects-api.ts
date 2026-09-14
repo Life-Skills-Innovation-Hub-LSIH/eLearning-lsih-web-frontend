@@ -7,6 +7,7 @@ type ApiSubject = {
   slug: string;
   code?: string | null;
   description?: string | null;
+  icon?: string | null;
   status: SubjectStatus;
   created_at: string;
   updated_at?: string;
@@ -16,6 +17,7 @@ export type SubjectFormInput = {
   name: string;
   slug?: string;
   description?: string | null;
+  icon?: string | null;
   status?: SubjectStatus;
 };
 
@@ -26,6 +28,7 @@ function mapSubject(subject: ApiSubject): Subject {
     slug: subject.slug,
     code: subject.code ?? null,
     description: subject.description ?? null,
+    icon: subject.icon ?? null,
     status: subject.status,
     createdAt: subject.created_at,
     updatedAt: subject.updated_at,
@@ -64,6 +67,7 @@ export async function createSubjectApi(
       name: input.name,
       slug: input.slug?.trim() || null,
       description: input.description?.trim() || null,
+      icon: input.icon?.trim() || null,
       status: input.status ?? "active",
     },
   });
@@ -82,6 +86,7 @@ export async function updateSubjectApi(
       name: input.name,
       slug: input.slug?.trim() || null,
       description: input.description?.trim() || null,
+      icon: input.icon?.trim() || null,
       status: input.status ?? "active",
     },
   });

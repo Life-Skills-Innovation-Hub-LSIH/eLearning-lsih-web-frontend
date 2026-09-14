@@ -22,6 +22,7 @@ import {
 } from "../api/subjects-api";
 import { AdminFormField, AdminFormInput, AdminFormSection } from "./AdminFormFields";
 import { AdminPageLayout } from "./AdminPageLayout";
+import { SubjectIconUploadField } from "./SubjectIconUploadField";
 import type { Subject, SubjectStatus } from "@/shared/types";
 
 type Props = {
@@ -37,6 +38,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
   const [slug, setSlug] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState("");
   const [status, setStatus] = useState<SubjectStatus>("active");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -56,6 +58,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
         setSlug(subject.slug);
         setCode(subject.code ?? "");
         setDescription(subject.description ?? "");
+        setIcon(subject.icon ?? "");
         setStatus(subject.status);
       })
       .catch((err) => {
@@ -78,6 +81,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
       name: name.trim(),
       slug: slug.trim() || undefined,
       description: description.trim() || null,
+      icon: icon.trim() || null,
       status,
     };
 
@@ -138,7 +142,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
           step={1}
           icon={BookMarked}
           title="Subject details"
-          description="Name and status for this subject. Code is assigned automatically."
+          description="Name, icon, and status for this subject. Code is assigned automatically."
         >
           <AdminFormField id="name" label="Subject name" required>
             <AdminFormInput
@@ -149,6 +153,21 @@ export function SubjectForm({ mode, subjectId }: Props) {
               required
             />
           </AdminFormField>
+
+          {token ? (
+            <AdminFormField
+              id="icon"
+              label="Icon"
+              hint="Optional. Shown in subject lists and course catalogs."
+            >
+              <SubjectIconUploadField
+                token={token}
+                iconUrl={icon.trim() || null}
+                slug={slug}
+                onChange={(url) => setIcon(url ?? "")}
+              />
+            </AdminFormField>
+          ) : null}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField

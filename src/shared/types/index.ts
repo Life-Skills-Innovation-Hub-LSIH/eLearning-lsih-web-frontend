@@ -107,6 +107,7 @@ export interface Subject {
   slug: string;
   code: string | null;
   description: string | null;
+  icon?: string | null;
   status: SubjectStatus;
   createdAt: string;
   updatedAt?: string;

@@ -25,7 +25,7 @@ export function RequireAdmin({ children }: Props) {
 
   if (!ready || !user || user.role !== "admin") {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-[var(--muted)]">
+      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
         Checking access…
       </div>
     );

@@ -200,8 +200,13 @@ export function SubjectsManagement() {
                 <TableRow key={subject.id}>
                   <TableCell className="px-4 py-4">
                     <div className="flex items-start gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <BookMarked className="size-4" />
+                      <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary/10 text-primary">
+                        {subject.icon ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={subject.icon} alt="" className="size-full object-cover" />
+                        ) : (
+                          <BookMarked className="size-4" />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium">{subject.name}</p>
