@@ -1,5 +1,6 @@
 import { Suspense } from "react";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 
 export default function CoursesLayout({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<div className="container-page py-12">Loading courses…</div>}>{children}</Suspense>;
+  return <Suspense fallback={<PageLoader label="Loading courses…" />}>{children}</Suspense>;
 }

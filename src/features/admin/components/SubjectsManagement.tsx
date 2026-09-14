@@ -21,6 +21,7 @@ import {
 import { deleteSubjectApi, fetchSubjects } from "../api/subjects-api";
 import { ActionMenu } from "./ActionMenu";
 import { AdminPageLayout } from "./AdminPageLayout";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { Subject } from "@/shared/types";
 
 function formatDate(value: string) {
@@ -170,8 +171,8 @@ export function SubjectsManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
-                  Loading subjects…
+                <TableCell colSpan={5} className="px-4 py-8">
+                  <PageLoader compact label="Loading subjects…" />
                 </TableCell>
               </TableRow>
             ) : loadError ? (

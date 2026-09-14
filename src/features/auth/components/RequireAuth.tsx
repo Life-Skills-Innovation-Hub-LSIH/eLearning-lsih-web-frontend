@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/auth-context";
 import { homePathForRole } from "../lib/static-users";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { User } from "@/shared/types";
 
 type Props = {
@@ -27,11 +28,7 @@ export function RequireAuth({ roles, children }: Props) {
   }, [ready, user, roles, router]);
 
   if (!ready || !user || !roles.includes(user.role)) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center text-sm text-[var(--muted)]">
-        Checking access…
-      </div>
-    );
+    return <PageLoader label="Checking access…" />;
   }
 
   return <>{children}</>;

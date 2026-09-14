@@ -13,6 +13,8 @@ export { UserForm } from "./components/UserForm";
 export { StudentsManagement } from "./components/StudentsManagement";
 export { SubjectForm } from "./components/SubjectForm";
 export { SubjectsManagement } from "./components/SubjectsManagement";
+export { LecturerForm } from "./components/LecturerForm";
+export { LecturersManagement } from "./components/LecturersManagement";
 export { UsersManagement } from "./components/UsersManagement";
 export {
   createSubjectApi,
@@ -22,6 +24,14 @@ export {
   updateSubjectApi,
 } from "./api/subjects-api";
 export type { SubjectFormInput } from "./api/subjects-api";
+export {
+  createLecturerApi,
+  deleteLecturerApi,
+  fetchLecturer,
+  fetchLecturers,
+  updateLecturerApi,
+} from "./api/lecturers-api";
+export type { LecturerFormInput } from "./api/lecturers-api";
 export {
   createUserApi,
   deleteUserApi,

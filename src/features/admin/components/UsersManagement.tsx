@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 import {
   Button,
   Card,
@@ -322,8 +323,8 @@ export function UsersManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
-                  Loading users…
+                <TableCell colSpan={5} className="px-4 py-8">
+                  <PageLoader compact label="Loading users…" />
                 </TableCell>
               </TableRow>
             ) : loadError ? (

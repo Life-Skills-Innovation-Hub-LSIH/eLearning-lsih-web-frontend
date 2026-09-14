@@ -4,6 +4,7 @@
  *
  * Docs: https://ui.shadcn.com/
  */
+export { Checkbox } from "@/components/ui/checkbox";
 export { Badge } from "@/components/ui/badge";
 export { Button } from "@/components/ui/button";
 export {

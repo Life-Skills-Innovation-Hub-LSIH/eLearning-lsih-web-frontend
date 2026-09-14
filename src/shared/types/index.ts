@@ -112,3 +112,26 @@ export interface Subject {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type LecturerStatus = "active" | "inactive";
+
+export interface Lecturer {
+  id: string;
+  name: string;
+  title: string | null;
+  slug: string;
+  code: string | null;
+  email: string | null;
+  avatar?: string | null;
+  bio: string | null;
+  status: LecturerStatus;
+  subjectIds?: string[];
+  subjects?: Array<{
+    id: string;
+    name: string;
+    code: string | null;
+    slug: string;
+  }>;
+  createdAt: string;
+  updatedAt?: string;
+}

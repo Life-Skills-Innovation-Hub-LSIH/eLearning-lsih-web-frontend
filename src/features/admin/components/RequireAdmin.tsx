@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 
 type Props = {
   children: React.ReactNode;
@@ -24,11 +25,7 @@ export function RequireAdmin({ children }: Props) {
   }, [ready, user, router]);
 
   if (!ready || !user || user.role !== "admin") {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
-        Checking access…
-      </div>
-    );
+    return <PageLoader label="Checking access…" />;
   }
 
   return <>{children}</>;

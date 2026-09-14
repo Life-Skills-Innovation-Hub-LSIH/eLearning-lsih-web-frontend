@@ -12,7 +12,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Skeleton,
 } from "@/features/admin/shadcn";
 import {
   createSubjectApi,
@@ -23,6 +22,7 @@ import {
 import { AdminFormField, AdminFormInput, AdminFormSection } from "./AdminFormFields";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { SubjectIconUploadField } from "./SubjectIconUploadField";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { Subject, SubjectStatus } from "@/shared/types";
 
 type Props = {
@@ -120,9 +120,8 @@ export function SubjectForm({ mode, subjectId }: Props) {
 
   if (loading) {
     return (
-      <div className="admin-page space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64 w-full rounded-xl" />
+      <div className="admin-page">
+        <PageLoader label="Loading subject…" />
       </div>
     );
   }

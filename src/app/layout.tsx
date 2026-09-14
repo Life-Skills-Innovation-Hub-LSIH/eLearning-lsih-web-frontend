@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Sora, Geist } from "next/font/google";
 import { AuthProvider } from "@/features/auth";
 import { ConditionalHeader } from "@/shared/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/shared/components/layout/ConditionalFooter";
+import { NavigationProgressHost } from "@/shared/components/ui/NavigationProgressHost";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={cn("h-full", bodyFont.variable, displayFont.variable, "font-sans", geist.variable)}>
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
+          <NavigationProgressHost />
           <ConditionalHeader />
           <div className="flex-1">{children}</div>
           <ConditionalFooter />
