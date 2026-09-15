@@ -65,7 +65,6 @@ export async function createSubjectApi(
     token,
     body: {
       name: input.name,
-      slug: input.slug?.trim() || null,
       description: input.description?.trim() || null,
       icon: input.icon?.trim() || null,
       status: input.status ?? "active",
@@ -84,7 +83,6 @@ export async function updateSubjectApi(
     token,
     body: {
       name: input.name,
-      slug: input.slug?.trim() || null,
       description: input.description?.trim() || null,
       icon: input.icon?.trim() || null,
       status: input.status ?? "active",

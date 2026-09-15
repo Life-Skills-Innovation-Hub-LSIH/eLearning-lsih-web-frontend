@@ -33,11 +33,6 @@ function formatDate(value: string) {
   });
 }
 
-function formatPrice(price: number) {
-  if (price <= 0) return "Free";
-  return `$${price.toFixed(price % 1 === 0 ? 0 : 2)}`;
-}
-
 export function CoursesManagement() {
   const router = useRouter();
   const { token } = useAuth();
@@ -117,7 +112,7 @@ export function CoursesManagement() {
   return (
     <AdminPageLayout
       title="Courses"
-      description="Manage course catalog, subjects, and lecturers."
+      description="Create a course first, then add modules, lessons, and quizzes inside it."
       actions={
         <Button render={<Link href="/admin/courses/create" />}>
           <Plus />
@@ -186,7 +181,6 @@ export function CoursesManagement() {
               <TableHead className="px-4">Course</TableHead>
               <TableHead className="px-4">Subjects</TableHead>
               <TableHead className="px-4">Status</TableHead>
-              <TableHead className="px-4">Price</TableHead>
               <TableHead className="px-4">Date added</TableHead>
               <TableHead className="px-4 text-right">Actions</TableHead>
             </TableRow>
@@ -194,18 +188,18 @@ export function CoursesManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="px-4 py-8">
+                <TableCell colSpan={5} className="px-4 py-8">
                   <PageLoader compact label="Loading courses…" />
                 </TableCell>
               </TableRow>
             ) : filteredCourses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
                   {search.trim() ? (
                     "No courses match your search."
                   ) : (
                     <>
-                      No courses yet.{" "}
+                      No courses yet. Modules and lessons are added after you create a course.{" "}
                       <Link href="/admin/courses/create" className="font-semibold text-primary">
                         Add the first course
                       </Link>
@@ -266,26 +260,37 @@ export function CoursesManagement() {
                     </Badge>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-muted-foreground">
-                    {formatPrice(course.price)}
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-muted-foreground">
                     {formatDate(course.createdAt)}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-right">
-                    <ActionMenu
-                      items={[
-                        {
-                          label: "Edit course",
-                          onClick: () => router.push(`/admin/courses/${course.id}/edit`),
-                        },
-                        {
-                          label: "Delete course",
-                          destructive: true,
-                          disabled: deletingId === course.id,
-                          onClick: () => void onDelete(course),
-                        },
-                      ]}
-                    />
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/admin/courses/${course.id}/content`)}
+                      >
+                        Modules
+                      </Button>
+                      <ActionMenu
+                        items={[
+                          {
+                            label: "Manage content",
+                            onClick: () => router.push(`/admin/courses/${course.id}/content`),
+                          },
+                          {
+                            label: "Edit course",
+                            onClick: () => router.push(`/admin/courses/${course.id}/edit`),
+                          },
+                          {
+                            label: "Delete course",
+                            destructive: true,
+                            disabled: deletingId === course.id,
+                            onClick: () => void onDelete(course),
+                          },
+                        ]}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

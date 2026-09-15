@@ -49,7 +49,6 @@ export function CourseForm({ mode, courseId }: Props) {
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [level, setLevel] = useState<CourseLevel | "">("");
-  const [price, setPrice] = useState("0");
   const [status, setStatus] = useState<CoursePublishStatus>("draft");
   const [lecturerId, setLecturerId] = useState("");
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
@@ -59,6 +58,24 @@ export function CourseForm({ mode, courseId }: Props) {
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const isEdit = mode === "edit";
+
+  const levelItems = [
+    { value: "__none__", label: "Not set" },
+    { value: "beginner", label: "Beginner" },
+    { value: "intermediate", label: "Intermediate" },
+    { value: "advanced", label: "Advanced" },
+  ];
+  const statusItems = [
+    { value: "draft", label: "Draft" },
+    { value: "published", label: "Published" },
+  ];
+  const lecturerItems = [
+    { value: "__none__", label: "No lecturer" },
+    ...lecturers.map((lecturer) => ({
+      value: lecturer.id,
+      label: lecturer.code ? `${lecturer.name} (${lecturer.code})` : lecturer.name,
+    })),
+  ];
 
   useEffect(() => {
     if (!token) {
@@ -92,7 +109,6 @@ export function CourseForm({ mode, courseId }: Props) {
           setDescription(course.description ?? "");
           setCoverImage(course.coverImage ?? "");
           setLevel(course.level ?? "");
-          setPrice(String(course.price ?? 0));
           setStatus(course.status);
           setLecturerId(course.lecturerId ?? "");
           setSubjectIds(selectedIds);
@@ -121,20 +137,13 @@ export function CourseForm({ mode, courseId }: Props) {
       return;
     }
 
-    const parsedPrice = Number(price);
-    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      setError("Price must be a valid number.");
-      return;
-    }
-
     const input: CourseFormInput = {
       title: title.trim(),
-      slug: slug.trim() || undefined,
+      slug: undefined,
       shortDescription: shortDescription.trim() || null,
       description: description.trim() || null,
       coverImage: coverImage.trim() || null,
       level: level || null,
-      price: parsedPrice,
       status,
       lecturerId: lecturerId || null,
       subjectIds,
@@ -145,11 +154,12 @@ export function CourseForm({ mode, courseId }: Props) {
       if (isEdit && courseId) {
         await updateCourseApi(token, courseId, input);
         setSuccess("Course updated successfully.");
+        setTimeout(() => router.push("/admin/courses"), 700);
       } else {
-        await createCourseApi(token, input);
-        setSuccess("Course created successfully.");
+        const created = await createCourseApi(token, input);
+        setSuccess("Course created. Add modules next…");
+        setTimeout(() => router.push(`/admin/courses/${created.id}/content`), 700);
       }
-      setTimeout(() => router.push("/admin/courses"), 700);
     } catch (err) {
       if (err instanceof ApiError) {
         const firstError = Object.values(err.body?.errors ?? {})[0]?.[0];
@@ -167,6 +177,15 @@ export function CourseForm({ mode, courseId }: Props) {
       <Button type="button" variant="outline" onClick={() => router.push("/admin/courses")}>
         Cancel
       </Button>
+      {isEdit && courseId ? (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push(`/admin/courses/${courseId}/content`)}
+        >
+          Manage content
+        </Button>
+      ) : null}
       <Button type="submit" form="course-form" disabled={submitting || loading}>
         {submitting ? "Saving…" : isEdit ? "Save changes" : "Create course"}
       </Button>
@@ -227,18 +246,6 @@ export function CourseForm({ mode, courseId }: Props) {
           </AdminFormField>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <AdminFormField
-              id="slug"
-              label="Slug"
-              hint="Optional. Leave blank to auto-generate from the title."
-            >
-              <AdminFormInput
-                id="slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g. infection-control-essentials"
-              />
-            </AdminFormField>
             <AdminFormField id="code" label="Code" hint="Auto-generated as COURSE-01, COURSE-02, …">
               <AdminFormInput
                 id="code"
@@ -247,46 +254,47 @@ export function CourseForm({ mode, courseId }: Props) {
                 disabled
               />
             </AdminFormField>
+            {isEdit ? (
+              <AdminFormField id="slug" label="Slug" hint="Auto-generated from the title.">
+                <AdminFormInput id="slug" value={slug || "—"} readOnly disabled />
+              </AdminFormField>
+            ) : null}
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField id="level" label="Level">
               <Select
                 value={level || "__none__"}
                 onValueChange={(value) => setLevel(value === "__none__" ? "" : (value as CourseLevel))}
-              >
-                <SelectTrigger className="admin-form-input w-full">
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Not set</SelectItem>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </AdminFormField>
-            <AdminFormField id="price" label="Price (USD)">
-              <AdminFormInput
-                id="price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-            </AdminFormField>
-            <AdminFormField id="status" label="Status" required>
-              <Select
-                value={status}
-                onValueChange={(value) => setStatus(value as CoursePublishStatus)}
+                items={levelItems}
               >
                 <SelectTrigger className="admin-form-input w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
+                  {levelItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </AdminFormField>
+            <AdminFormField id="status" label="Status" required>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value as CoursePublishStatus)}
+                items={statusItems}
+              >
+                <SelectTrigger className="admin-form-input w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </AdminFormField>
@@ -296,16 +304,15 @@ export function CourseForm({ mode, courseId }: Props) {
             <Select
               value={lecturerId || "__none__"}
               onValueChange={(value) => setLecturerId(value === "__none__" ? "" : value)}
+              items={lecturerItems}
             >
               <SelectTrigger className="admin-form-input w-full max-w-md">
-                <SelectValue placeholder="Select lecturer" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">No lecturer</SelectItem>
-                {lecturers.map((lecturer) => (
-                  <SelectItem key={lecturer.id} value={lecturer.id}>
-                    {lecturer.name}
-                    {lecturer.code ? ` (${lecturer.code})` : ""}
+                {lecturerItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>

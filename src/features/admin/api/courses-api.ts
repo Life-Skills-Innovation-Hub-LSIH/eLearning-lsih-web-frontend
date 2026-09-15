@@ -85,12 +85,10 @@ function mapCourse(course: ApiCourse): ManagedCourse {
 function bodyFromInput(input: CourseFormInput) {
   return {
     title: input.title,
-    slug: input.slug?.trim() || null,
     short_description: input.shortDescription?.trim() || null,
     description: input.description?.trim() || null,
     cover_image: input.coverImage?.trim() || null,
     level: input.level || null,
-    price: input.price ?? 0,
     status: input.status ?? "draft",
     lecturer_id: input.lecturerId ? Number(input.lecturerId) : null,
     subject_ids: (input.subjectIds ?? []).map((id) => Number(id)),

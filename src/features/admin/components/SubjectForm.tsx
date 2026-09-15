@@ -79,7 +79,7 @@ export function SubjectForm({ mode, subjectId }: Props) {
 
     const input: SubjectFormInput = {
       name: name.trim(),
-      slug: slug.trim() || undefined,
+      slug: undefined,
       description: description.trim() || null,
       icon: icon.trim() || null,
       status,
@@ -170,18 +170,6 @@ export function SubjectForm({ mode, subjectId }: Props) {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
-              id="slug"
-              label="Slug"
-              hint="Optional. Leave blank to auto-generate from the name."
-            >
-              <AdminFormInput
-                id="slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g. infection-control"
-              />
-            </AdminFormField>
-            <AdminFormField
               id="code"
               label="Code"
               hint="Auto-generated as SUBJECT-01, SUBJECT-02, …"
@@ -193,6 +181,11 @@ export function SubjectForm({ mode, subjectId }: Props) {
                 disabled
               />
             </AdminFormField>
+            {isEdit ? (
+              <AdminFormField id="slug" label="Slug" hint="Auto-generated from the name.">
+                <AdminFormInput id="slug" value={slug || "—"} readOnly disabled />
+              </AdminFormField>
+            ) : null}
           </div>
 
           <AdminFormField id="status" label="Status" required>

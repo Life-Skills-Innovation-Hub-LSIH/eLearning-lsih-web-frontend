@@ -11,20 +11,44 @@ import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 
 const categories = [
   {
-    title: "Skills",
-    items: ["Problem Solving", "Financial Literacy", "Time Management", "Self Confidence"],
+    title: "ប្រឡងបាក់ឌុប",
+    items: [
+      "មុខវិជ្ជា គណិតវិទ្យា",
+      "មុខវិជ្ជា ភាសាខ្មែរ",
+      "មុខវិជ្ជា គីមីវិទ្យា",
+      "មុខវិជ្ជា រូបវិទ្យា",
+      "មុខវិជ្ជា ជីវវិទ្យា",
+      "មុខវិជ្ជា ប្រវត្តិវិទ្យា",
+      "មុខវិជ្ជា អង់គ្លេស",
+    ],
   },
   {
-    title: "Leadership",
-    items: ["Public Speaking", "Teamwork", "Personal Leadership", "Emotional Leadership"],
+    title: "ជំនាញ",
+    items: [
+      "ការគិត និងដោះស្រាយបញ្ហា",
+      "ចំណេះដឹងហិរញ្ញវត្ថុ",
+      "ការគ្រប់គ្រងពេលវេលា",
+      "ដំណោះស្រាយជម្លោះ និងបញ្ញាស្មារតីអារម្មណ៍",
+      "ទំនុកចិត្តខ្លួនឯង និងរៀបចំគោលដៅជីវិត",
+    ],
   },
   {
-    title: "Career Ready",
-    items: ["Resume Writing", "Interview Prep", "Networking", "Digital Literacy"],
+    title: "ភាពជាអ្នកដឹកនាំ",
+    items: [
+      "ការនិយាយសាធារណៈ",
+      "ការងារក្រុម និងគ្រប់គ្រងគម្រោង",
+      "ភាពជាអ្នកដឹកនាំផ្ទាល់ខ្លួន",
+      "ដឹកនាំដោយការយល់ចិត្ត និងតម្លៃ",
+    ],
   },
   {
-    title: "Clinical",
-    items: ["Infection Control", "Patient Communication", "Triage Basics", "Service Excellence"],
+    title: "ត្រៀមសម្រាប់ការងារ",
+    items: [
+      "ការសរសេរប្រវត្តិរូបសង្ខេប",
+      "ត្រៀមក្នុងកិច្ចសម្ភាសន៍",
+      "កន្លែងប្រាស្រ័យទាក់ទង",
+      "អក្ខរកម្មឌីជីថល (email, MS Office, etc.)",
+    ],
   },
 ];
 
@@ -65,21 +89,21 @@ export function SiteHeader() {
               onFocus={() => setExploreOpen(true)}
               aria-expanded={exploreOpen}
             >
-              Explore
+              រុករក
               <ChevronDown className={`h-4 w-4 transition ${exploreOpen ? "rotate-180" : ""}`} />
             </button>
             {exploreOpen ? (
               <div
-                className="absolute left-0 top-[calc(100%+8px)] z-50 w-[min(90vw,820px)] rounded-2xl border border-[var(--line)] bg-white p-6 shadow-[var(--shadow-hover)]"
+                className="absolute left-0 top-[calc(100%+8px)] z-50 w-[min(96vw,1120px)] min-h-[420px] rounded-2xl border border-[var(--line)] bg-white px-8 py-8 shadow-[var(--shadow-hover)]"
                 onMouseLeave={() => setExploreOpen(false)}
               >
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid min-h-[300px] gap-8 sm:grid-cols-2 lg:grid-cols-4">
                   {categories.map((group) => (
                     <div key={group.title}>
-                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+                      <p className="mb-4 text-base font-semibold text-[var(--brand)]">
                         {group.title}
                       </p>
-                      <ul className="space-y-2 text-sm text-[var(--ink)]">
+                      <ul className="space-y-3 text-[0.9375rem] leading-relaxed text-[var(--ink)]">
                         {group.items.map((item) => (
                           <li key={item}>
                             <Link
@@ -95,13 +119,13 @@ export function SiteHeader() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 border-t border-[var(--line)] pt-4 text-center">
+                <div className="mt-8 border-t border-[var(--line)] pt-5 text-center">
                   <Link
                     href="/courses"
                     className="text-sm font-semibold text-[var(--brand)] hover:underline"
                     onClick={() => setExploreOpen(false)}
                   >
-                    View all courses →
+                    មើលវគ្គសិក្សាទាំងអស់ →
                   </Link>
                 </div>
               </div>
@@ -119,7 +143,7 @@ export function SiteHeader() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search courses"
+              placeholder="ស្វែងរកវគ្គសិក្សា"
               className="h-9 w-[220px] rounded-full border border-[var(--line)] bg-[var(--background)] pl-9 pr-3 text-sm outline-none transition focus:border-[var(--brand)] focus:bg-white xl:w-[260px]"
             />
           </form>
@@ -127,13 +151,13 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-6 lg:flex">
           <Link href="/" className={linkClass("/")}>
-            Home
+            ទំព័រដើម
           </Link>
           <Link href="/courses" className={linkClass("/courses")}>
-            Courses
+            វគ្គសិក្សា
           </Link>
           <Link href="/about" className={linkClass("/about")}>
-            About
+            អំពីយើង
           </Link>
 
           {ready && user ? (
@@ -147,23 +171,23 @@ export function SiteHeader() {
                 className="hidden sm:inline-flex"
               />
               <Link href={homePathForRole(user.role)} className={linkClass(homePathForRole(user.role))}>
-                {user.role === "student" ? "My Learning" : "Admin"}
+                {user.role === "student" ? "ការរៀនរបស់ខ្ញុំ" : "Admin"}
               </Link>
               <button
                 type="button"
                 onClick={logout}
                 className="rounded-full border border-[var(--line)] px-3.5 py-2 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--brand)]/30 hover:bg-[var(--brand-soft)]"
               >
-                Log out
+                ចាកចេញ
               </button>
             </>
           ) : (
             <>
               <Link href="/login" className={linkClass("/login")}>
-                Log in
+                ចូលគណនី
               </Link>
               <Link href="/register" className="btn btn-primary !rounded-full !px-4 !py-2 text-sm">
-                Register
+                ចុះឈ្មោះ
               </Link>
             </>
           )}
@@ -183,9 +207,9 @@ export function SiteHeader() {
         <div className="absolute left-0 right-0 top-full border-b border-[var(--line)] bg-white px-4 py-5 shadow-lg lg:hidden">
           <div className="space-y-1">
             {[
-              { href: "/", label: "Home" },
-              { href: "/courses", label: "Courses" },
-              { href: "/about", label: "About" },
+              { href: "/", label: "ទំព័រដើម" },
+              { href: "/courses", label: "វគ្គសិក្សា" },
+              { href: "/about", label: "អំពីយើង" },
             ].map((item) => (
               <Link
                 key={item.href}
@@ -203,14 +227,14 @@ export function SiteHeader() {
                   className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Account
+                  គណនី
                 </Link>
                 <button
                   type="button"
                   onClick={logout}
                   className="block w-full rounded-[var(--radius)] px-3 py-2.5 text-left text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
                 >
-                  Log out
+                  ចាកចេញ
                 </button>
               </>
             ) : (
@@ -220,14 +244,14 @@ export function SiteHeader() {
                   className="btn btn-secondary flex-1 !py-2.5 text-sm"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Log in
+                  ចូលគណនី
                 </Link>
                 <Link
                   href="/register"
                   className="btn btn-primary flex-1 !py-2.5 text-sm"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Register
+                  ចុះឈ្មោះ
                 </Link>
               </div>
             )}

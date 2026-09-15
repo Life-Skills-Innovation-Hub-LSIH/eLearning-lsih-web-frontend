@@ -86,7 +86,6 @@ function bodyFromInput(input: LecturerFormInput) {
   return {
     name: input.name,
     title: input.title?.trim() || null,
-    slug: input.slug?.trim() || null,
     email: input.email?.trim() || null,
     avatar: input.avatar?.trim() || null,
     bio: input.bio?.trim() || null,

@@ -96,8 +96,11 @@ export function AdminReadonlyValue({
   );
 }
 
-export function AdminFormInput(props: React.ComponentProps<typeof Input>) {
-  return <Input className="admin-form-input" {...props} />;
+export function AdminFormInput({
+  className,
+  ...props
+}: React.ComponentProps<typeof Input>) {
+  return <Input className={cn("admin-form-input", className)} {...props} />;
 }
 
 export function AdminInfoPanel({

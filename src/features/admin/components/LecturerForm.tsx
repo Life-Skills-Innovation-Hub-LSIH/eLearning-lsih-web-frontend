@@ -108,7 +108,7 @@ export function LecturerForm({ mode, lecturerId }: Props) {
     const input: LecturerFormInput = {
       name: name.trim(),
       title: title.trim() || null,
-      slug: slug.trim() || undefined,
+      slug: undefined,
       email: email.trim() || null,
       bio: bio.trim() || null,
       avatar: avatar.trim() || null,
@@ -215,18 +215,6 @@ export function LecturerForm({ mode, lecturerId }: Props) {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
-              id="slug"
-              label="Slug"
-              hint="Optional. Leave blank to auto-generate from the name."
-            >
-              <AdminFormInput
-                id="slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g. sokha-chan"
-              />
-            </AdminFormField>
-            <AdminFormField
               id="code"
               label="Code"
               hint="Auto-generated as LECTURER-01, LECTURER-02, …"
@@ -238,6 +226,11 @@ export function LecturerForm({ mode, lecturerId }: Props) {
                 disabled
               />
             </AdminFormField>
+            {isEdit ? (
+              <AdminFormField id="slug" label="Slug" hint="Auto-generated from the name.">
+                <AdminFormInput id="slug" value={slug || "—"} readOnly disabled />
+              </AdminFormField>
+            ) : null}
           </div>
 
           <AdminFormField id="status" label="Status" required>

@@ -21,7 +21,11 @@ export interface ManagedUser {
 
 export type LessonType = "video" | "pdf";
 
+export type LessonContentType = "video" | "text" | "file";
+
 export type QuizLevel = "module" | "course";
+
+export type QuizQuestionType = "multiple_choice" | "true_false";
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
 
@@ -52,6 +56,68 @@ export interface ManagedCourse {
     code: string | null;
     slug: string;
   }>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ManagedLesson {
+  id: string;
+  moduleId: string;
+  title: string;
+  slug: string;
+  contentType: LessonContentType;
+  body: string | null;
+  mediaUrl: string | null;
+  durationMinutes: number | null;
+  position: number;
+  status: CoursePublishStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ManagedQuizOption {
+  id?: string;
+  optionText: string;
+  isCorrect: boolean;
+  position: number;
+}
+
+export interface ManagedQuizQuestion {
+  id?: string;
+  questionText: string;
+  type: QuizQuestionType;
+  position: number;
+  options: ManagedQuizOption[];
+}
+
+export interface ManagedQuiz {
+  id: string;
+  moduleId: string;
+  lessonId: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  passScore: number;
+  position: number;
+  status: CoursePublishStatus;
+  questionsCount?: number;
+  questions?: ManagedQuizQuestion[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ManagedModule {
+  id: string;
+  courseId: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  position: number;
+  status: CoursePublishStatus;
+  lessonsCount?: number;
+  quizzesCount?: number;
+  lessons?: ManagedLesson[];
+  quizzes?: ManagedQuiz[];
   createdAt: string;
   updatedAt?: string;
 }

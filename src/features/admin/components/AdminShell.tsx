@@ -53,6 +53,7 @@ function isActive(pathname: string, href: string) {
 
 function breadcrumbLabel(pathname: string) {
   if (pathname.startsWith("/admin/users/create")) return "Add user";
+  if (pathname.includes("/content") && pathname.startsWith("/admin/courses")) return "Course content";
   if (pathname.includes("/edit") && pathname.startsWith("/admin/courses")) return "Edit course";
   if (pathname.startsWith("/admin/courses/create")) return "Add course";
   if (pathname.startsWith("/admin/courses")) return "Courses";
