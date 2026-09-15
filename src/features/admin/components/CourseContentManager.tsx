@@ -19,6 +19,12 @@ import {
   Badge,
   Button,
   Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -39,6 +45,7 @@ import {
 } from "../api/course-content-api";
 import { AdminFormField, AdminFormInput, AdminFormSection } from "./AdminFormFields";
 import { AdminPageLayout } from "./AdminPageLayout";
+import { LessonMediaUploadField } from "./LessonMediaUploadField";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type {
   CoursePublishStatus,
@@ -61,9 +68,9 @@ const statusItems = [
 ];
 
 const contentTypeItems = [
-  { value: "text", label: "Text" },
   { value: "video", label: "Video" },
-  { value: "file", label: "File" },
+  { value: "file", label: "PDF" },
+  { value: "text", label: "Text only" },
 ];
 
 function emptyQuestion(): ManagedQuizQuestion {
@@ -195,7 +202,6 @@ export function CourseContentManager({ courseId }: Props) {
     >
       <div className="space-y-6">
         <AdminFormSection
-          step={1}
           icon={Layers}
           title="Add module"
           description="Modules are sections of the course (e.g. Week 1)."
@@ -247,7 +253,6 @@ export function CourseContentManager({ courseId }: Props) {
         </AdminFormSection>
 
         <AdminFormSection
-          step={2}
           icon={BookOpen}
           title="Modules"
           description={
@@ -260,7 +265,7 @@ export function CourseContentManager({ courseId }: Props) {
             <p className="text-sm text-muted-foreground">Create a module to start adding lessons.</p>
           ) : (
             <div className="space-y-3">
-              {modules.map((module) => {
+              {modules.map((module, moduleIndex) => {
                 const open = expandedId === module.id;
                 return (
                   <div key={module.id} className="rounded-xl border border-border overflow-hidden">
@@ -275,6 +280,9 @@ export function CourseContentManager({ courseId }: Props) {
                         ) : (
                           <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                         )}
+                        <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                          {moduleIndex + 1}
+                        </span>
                         <span className="truncate font-medium">{module.title}</span>
                         <Badge variant="outline" className="shrink-0 font-normal">
                           {module.status}
@@ -344,18 +352,20 @@ function ModuleEditor({
   const [saving, setSaving] = useState(false);
 
   const [lessonTitle, setLessonTitle] = useState("");
-  const [lessonType, setLessonType] = useState<LessonContentType>("text");
+  const [lessonType, setLessonType] = useState<LessonContentType>("video");
   const [lessonBody, setLessonBody] = useState("");
   const [lessonMedia, setLessonMedia] = useState("");
   const [lessonDuration, setLessonDuration] = useState("");
   const [lessonStatus, setLessonStatus] = useState<CoursePublishStatus>("draft");
   const [savingLesson, setSavingLesson] = useState(false);
+  const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
 
   const [quizTitle, setQuizTitle] = useState("");
   const [quizPass, setQuizPass] = useState("70");
   const [quizStatus, setQuizStatus] = useState<CoursePublishStatus>("draft");
   const [questions, setQuestions] = useState<ManagedQuizQuestion[]>([emptyQuestion()]);
   const [savingQuiz, setSavingQuiz] = useState(false);
+  const [quizDialogOpen, setQuizDialogOpen] = useState(false);
 
   async function saveModule(event: FormEvent) {
     event.preventDefault();
@@ -378,13 +388,19 @@ function ModuleEditor({
   async function addLesson(event: FormEvent) {
     event.preventDefault();
     if (!lessonTitle.trim()) return;
+
+    if ((lessonType === "video" || lessonType === "file") && !lessonMedia.trim()) {
+      onError(lessonType === "video" ? "Please upload a video." : "Please upload a PDF.");
+      return;
+    }
+
     setSavingLesson(true);
     try {
       const created = await createLessonApi(token, module.id, {
         title: lessonTitle.trim(),
         contentType: lessonType,
         body: lessonBody.trim() || null,
-        mediaUrl: lessonMedia.trim() || null,
+        mediaUrl: lessonType === "text" ? null : lessonMedia.trim() || null,
         durationMinutes: lessonDuration ? Number(lessonDuration) : null,
         status: lessonStatus,
       });
@@ -397,8 +413,9 @@ function ModuleEditor({
       setLessonBody("");
       setLessonMedia("");
       setLessonDuration("");
-      setLessonType("text");
+      setLessonType("video");
       setLessonStatus("draft");
+      setLessonDialogOpen(false);
       onSuccess("Lesson created.");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Failed to create lesson.");
@@ -480,6 +497,7 @@ function ModuleEditor({
       setQuizPass("70");
       setQuizStatus("draft");
       setQuestions([emptyQuestion()]);
+      setQuizDialogOpen(false);
       onSuccess("Quiz created.");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Failed to create quiz.");
@@ -503,7 +521,7 @@ function ModuleEditor({
   }
 
   return (
-    <div className="space-y-6 border-t border-border p-4 sm:p-5">
+    <div className="space-y-8 border-t border-border p-4 sm:p-5">
       <form onSubmit={saveModule} className="grid gap-3 sm:grid-cols-[1fr_160px_auto]">
         <AdminFormInput
           value={title}
@@ -538,352 +556,491 @@ function ModuleEditor({
         />
       </form>
 
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <FileText className="size-4 text-primary" />
-          Lessons
+      <section className="overflow-hidden rounded-xl border border-sky-200/80 bg-sky-50/40 shadow-sm dark:border-sky-900/50 dark:bg-sky-950/20">
+        <div className="flex items-center justify-between gap-3 border-b border-sky-200/70 bg-sky-100/60 px-4 py-3 dark:border-sky-900/40 dark:bg-sky-950/40">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-sky-600 text-white">
+              <FileText className="size-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Lessons</h3>
+              <p className="text-xs text-muted-foreground">Videos, PDFs, or text inside this module</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="border-sky-300 bg-white/80 font-normal dark:border-sky-800 dark:bg-sky-950/60">
+            {(module.lessons ?? []).length} lesson{(module.lessons ?? []).length === 1 ? "" : "s"}
+          </Badge>
         </div>
-        {(module.lessons ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No lessons in this module yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {(module.lessons ?? []).map((lesson) => (
-              <li
-                key={lesson.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+
+        <div className="space-y-4 p-4">
+          {(module.lessons ?? []).length === 0 ? (
+            <p className="rounded-lg border border-dashed border-sky-200 bg-white/70 px-3 py-4 text-sm text-muted-foreground dark:border-sky-900/50 dark:bg-sky-950/30">
+              No lessons in this module yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {(module.lessons ?? []).map((lesson, lessonIndex) => (
+                <li
+                  key={lesson.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 text-sm font-medium">
+                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white">
+                        {lessonIndex + 1}
+                      </span>
+                      {lesson.contentType === "video" ? (
+                        <Video className="size-3.5 text-muted-foreground" />
+                      ) : (
+                        <FileText className="size-3.5 text-muted-foreground" />
+                      )}
+                      {lesson.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {lesson.contentType === "file" ? "PDF" : lesson.contentType}
+                      {lesson.durationMinutes ? ` · ${lesson.durationMinutes} min` : ""}
+                      {lesson.mediaUrl ? (
+                        <>
+                          {" · "}
+                          <a
+                            href={lesson.mediaUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            Open
+                          </a>
+                        </>
+                      ) : null}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void toggleLessonStatus(lesson)}
+                    >
+                      {lesson.status === "published" ? "Unpublish" : "Publish"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive"
+                      onClick={() => void removeLesson(lesson)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                className="bg-sky-600 text-white hover:bg-sky-700"
+                onClick={() => setLessonDialogOpen(true)}
               >
-                <div className="min-w-0">
-                  <p className="flex items-center gap-2 text-sm font-medium">
-                    {lesson.contentType === "video" ? (
-                      <Video className="size-3.5 text-muted-foreground" />
-                    ) : (
-                      <FileText className="size-3.5 text-muted-foreground" />
-                    )}
-                    {lesson.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {lesson.contentType}
-                    {lesson.durationMinutes ? ` · ${lesson.durationMinutes} min` : ""}
-                  </p>
+                <Plus className="size-4" />
+                Add lesson
+              </Button>
+            </div>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <span className="flex size-7 items-center justify-center rounded-md bg-sky-600 text-white">
+                    <FileText className="size-3.5" />
+                  </span>
+                  Add lesson
+                </DialogTitle>
+                <DialogDescription>
+                  Create a video, PDF, or text lesson for this module.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={addLesson} className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <AdminFormInput
+                    value={lessonTitle}
+                    onChange={(e) => setLessonTitle(e.target.value)}
+                    placeholder="Lesson title"
+                    required
+                  />
+                  <Select
+                    value={lessonType}
+                    onValueChange={(value) => {
+                      const next = value as LessonContentType;
+                      setLessonType(next);
+                      setLessonMedia("");
+                    }}
+                    items={contentTypeItems}
+                  >
+                    <SelectTrigger className="admin-form-input w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contentTypeItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(lessonType === "video" || lessonType === "file") && (
+                    <LessonMediaUploadField
+                      token={token}
+                      type={lessonType}
+                      mediaUrl={lessonMedia || null}
+                      slug={module.slug}
+                      onChange={(url) => setLessonMedia(url ?? "")}
+                    />
+                  )}
+                  <textarea
+                    className="admin-form-input min-h-20 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm sm:col-span-2"
+                    value={lessonBody}
+                    onChange={(e) => setLessonBody(e.target.value)}
+                    placeholder="Lesson text / notes (optional)"
+                  />
+                  {lessonType === "video" ? (
+                    <AdminFormInput
+                      type="number"
+                      min="0"
+                      value={lessonDuration}
+                      onChange={(e) => setLessonDuration(e.target.value)}
+                      placeholder="Duration (minutes)"
+                    />
+                  ) : null}
+                  <Select
+                    value={lessonStatus}
+                    onValueChange={(value) => setLessonStatus(value as CoursePublishStatus)}
+                    items={statusItems}
+                  >
+                    <SelectTrigger className="admin-form-input w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button type="button" size="sm" variant="outline" onClick={() => void toggleLessonStatus(lesson)}>
-                    {lesson.status === "published" ? "Unpublish" : "Publish"}
+                <DialogFooter className="-mx-0 -mb-0 rounded-lg border bg-muted/40 sm:justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setLessonDialogOpen(false)}
+                  >
+                    Cancel
                   </Button>
+                  <Button type="submit" disabled={savingLesson || !lessonTitle.trim()}>
+                    <Plus className="size-4" />
+                    {savingLesson ? "Saving…" : "Add lesson"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
+
+      <div className="flex items-center gap-3 py-1">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          Then add quizzes
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-violet-200/80 bg-violet-50/40 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/20">
+        <div className="flex items-center justify-between gap-3 border-b border-violet-200/70 bg-violet-100/60 px-4 py-3 dark:border-violet-900/40 dark:bg-violet-950/40">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-violet-600 text-white">
+              <HelpCircle className="size-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Quizzes</h3>
+              <p className="text-xs text-muted-foreground">Questions to check understanding after lessons</p>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            className="border-violet-300 bg-white/80 font-normal dark:border-violet-800 dark:bg-violet-950/60"
+          >
+            {(module.quizzes ?? []).length} quiz{(module.quizzes ?? []).length === 1 ? "" : "zes"}
+          </Badge>
+        </div>
+
+        <div className="space-y-4 p-4">
+          {(module.quizzes ?? []).length === 0 ? (
+            <p className="rounded-lg border border-dashed border-violet-200 bg-white/70 px-3 py-4 text-sm text-muted-foreground dark:border-violet-900/50 dark:bg-violet-950/30">
+              No quizzes in this module yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {(module.quizzes ?? []).map((quiz, quizIndex) => (
+                <li
+                  key={quiz.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm"
+                >
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-medium">
+                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">
+                        {quizIndex + 1}
+                      </span>
+                      {quiz.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Pass {quiz.passScore}% · {(quiz.questions ?? []).length || quiz.questionsCount || 0}{" "}
+                      questions · {quiz.status}
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     size="sm"
                     variant="ghost"
                     className="text-destructive"
-                    onClick={() => void removeLesson(lesson)}
+                    onClick={() => void removeQuiz(quiz)}
                   >
                     <Trash2 className="size-4" />
                   </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                </li>
+              ))}
+            </ul>
+          )}
 
-        <form onSubmit={addLesson} className="space-y-3 rounded-lg border border-dashed border-border p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Add lesson
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <AdminFormInput
-              value={lessonTitle}
-              onChange={(e) => setLessonTitle(e.target.value)}
-              placeholder="Lesson title"
-              required
-            />
-            <Select
-              value={lessonType}
-              onValueChange={(value) => setLessonType(value as LessonContentType)}
-              items={contentTypeItems}
-            >
-              <SelectTrigger className="admin-form-input w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {contentTypeItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {(lessonType === "video" || lessonType === "file") && (
-              <AdminFormInput
-                value={lessonMedia}
-                onChange={(e) => setLessonMedia(e.target.value)}
-                placeholder={lessonType === "video" ? "Video URL" : "File URL"}
-                className="sm:col-span-2"
-              />
-            )}
-            <textarea
-              className="admin-form-input min-h-20 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm sm:col-span-2"
-              value={lessonBody}
-              onChange={(e) => setLessonBody(e.target.value)}
-              placeholder="Lesson text / notes"
-            />
-            <AdminFormInput
-              type="number"
-              min="0"
-              value={lessonDuration}
-              onChange={(e) => setLessonDuration(e.target.value)}
-              placeholder="Duration (minutes)"
-            />
-            <Select
-              value={lessonStatus}
-              onValueChange={(value) => setLessonStatus(value as CoursePublishStatus)}
-              items={statusItems}
-            >
-              <SelectTrigger className="admin-form-input w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button type="submit" size="sm" disabled={savingLesson || !lessonTitle.trim()}>
-            <Plus className="size-4" />
-            {savingLesson ? "Saving…" : "Add lesson"}
-          </Button>
-        </form>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <HelpCircle className="size-4 text-primary" />
-          Quizzes
-        </div>
-        {(module.quizzes ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No quizzes in this module yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {(module.quizzes ?? []).map((quiz) => (
-              <li
-                key={quiz.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+          <Dialog open={quizDialogOpen} onOpenChange={setQuizDialogOpen}>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                className="bg-violet-600 text-white hover:bg-violet-700"
+                onClick={() => setQuizDialogOpen(true)}
               >
-                <div>
-                  <p className="text-sm font-medium">{quiz.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Pass {quiz.passScore}% · {(quiz.questions ?? []).length || quiz.questionsCount || 0}{" "}
-                    questions · {quiz.status}
-                  </p>
+                <Plus className="size-4" />
+                Add quiz
+              </Button>
+            </div>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <span className="flex size-7 items-center justify-center rounded-md bg-violet-600 text-white">
+                    <HelpCircle className="size-3.5" />
+                  </span>
+                  Add quiz
+                </DialogTitle>
+                <DialogDescription>
+                  Build questions to check understanding after the lessons.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={addQuiz} className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <AdminFormInput
+                    value={quizTitle}
+                    onChange={(e) => setQuizTitle(e.target.value)}
+                    placeholder="Quiz title"
+                    required
+                    className="sm:col-span-2"
+                  />
+                  <AdminFormInput
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={quizPass}
+                    onChange={(e) => setQuizPass(e.target.value)}
+                    placeholder="Pass score %"
+                  />
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive"
-                  onClick={() => void removeQuiz(quiz)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
 
-        <form onSubmit={addQuiz} className="space-y-3 rounded-lg border border-dashed border-border p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Add quiz
-          </p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <AdminFormInput
-              value={quizTitle}
-              onChange={(e) => setQuizTitle(e.target.value)}
-              placeholder="Quiz title"
-              required
-              className="sm:col-span-2"
-            />
-            <AdminFormInput
-              type="number"
-              min="0"
-              max="100"
-              value={quizPass}
-              onChange={(e) => setQuizPass(e.target.value)}
-              placeholder="Pass score %"
-            />
-          </div>
-
-          {questions.map((question, questionIndex) => (
-            <div key={questionIndex} className="space-y-2 rounded-lg bg-muted/30 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-semibold text-muted-foreground">
-                  Question {questionIndex + 1}
-                </p>
-                <Select
-                  value={question.type}
-                  onValueChange={(value) => {
-                    const type = value as QuizQuestionType;
-                    setQuestions((prev) =>
-                      prev.map((item, index) =>
-                        index === questionIndex
-                          ? {
-                              ...item,
-                              type,
-                              options:
-                                type === "true_false"
-                                  ? [
-                                      { optionText: "True", isCorrect: true, position: 1 },
-                                      { optionText: "False", isCorrect: false, position: 2 },
-                                    ]
-                                  : item.options.length
-                                    ? item.options
-                                    : emptyQuestion().options,
-                            }
-                          : item,
-                      ),
-                    );
-                  }}
-                  items={[
-                    { value: "multiple_choice", label: "Multiple choice" },
-                    { value: "true_false", label: "True / False" },
-                  ]}
-                >
-                  <SelectTrigger className="admin-form-input w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="multiple_choice">Multiple choice</SelectItem>
-                    <SelectItem value="true_false">True / False</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <AdminFormInput
-                value={question.questionText}
-                onChange={(e) =>
-                  setQuestions((prev) =>
-                    prev.map((item, index) =>
-                      index === questionIndex ? { ...item, questionText: e.target.value } : item,
-                    ),
-                  )
-                }
-                placeholder="Question text"
-                required
-              />
-              <div className="space-y-2">
-                {question.options.map((option, optionIndex) => (
-                  <label key={optionIndex} className="flex cursor-pointer items-center gap-2">
-                    <Checkbox
-                      checked={option.isCorrect}
-                      onCheckedChange={(checked) =>
-                        setQuestions((prev) =>
-                          prev.map((item, index) =>
-                            index === questionIndex
-                              ? {
-                                  ...item,
-                                  options: item.options.map((opt, oi) => ({
-                                    ...opt,
-                                    isCorrect:
-                                      item.type === "true_false"
-                                        ? oi === optionIndex
-                                        : oi === optionIndex
-                                          ? checked === true
-                                          : opt.isCorrect,
-                                  })),
-                                }
-                              : item,
-                          ),
-                        )
-                      }
-                    />
+                {questions.map((question, questionIndex) => (
+                  <div key={questionIndex} className="space-y-2 rounded-lg bg-muted/30 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        Question {questionIndex + 1}
+                      </p>
+                      <Select
+                        value={question.type}
+                        onValueChange={(value) => {
+                          const type = value as QuizQuestionType;
+                          setQuestions((prev) =>
+                            prev.map((item, index) =>
+                              index === questionIndex
+                                ? {
+                                    ...item,
+                                    type,
+                                    options:
+                                      type === "true_false"
+                                        ? [
+                                            { optionText: "True", isCorrect: true, position: 1 },
+                                            { optionText: "False", isCorrect: false, position: 2 },
+                                          ]
+                                        : item.options.length
+                                          ? item.options
+                                          : emptyQuestion().options,
+                                  }
+                                : item,
+                            ),
+                          );
+                        }}
+                        items={[
+                          { value: "multiple_choice", label: "Multiple choice" },
+                          { value: "true_false", label: "True / False" },
+                        ]}
+                      >
+                        <SelectTrigger className="admin-form-input w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="multiple_choice">Multiple choice</SelectItem>
+                          <SelectItem value="true_false">True / False</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <AdminFormInput
-                      value={option.optionText}
+                      value={question.questionText}
                       onChange={(e) =>
                         setQuestions((prev) =>
                           prev.map((item, index) =>
-                            index === questionIndex
-                              ? {
-                                  ...item,
-                                  options: item.options.map((opt, oi) =>
-                                    oi === optionIndex
-                                      ? { ...opt, optionText: e.target.value }
-                                      : opt,
-                                  ),
-                                }
-                              : item,
+                            index === questionIndex ? { ...item, questionText: e.target.value } : item,
                           ),
                         )
                       }
-                      placeholder={`Option ${optionIndex + 1}`}
-                      disabled={question.type === "true_false"}
-                      className="flex-1"
+                      placeholder="Question text"
+                      required
                     />
-                  </label>
+                    <div className="space-y-2">
+                      {question.options.map((option, optionIndex) => (
+                        <label key={optionIndex} className="flex cursor-pointer items-center gap-2">
+                          <Checkbox
+                            checked={option.isCorrect}
+                            onCheckedChange={(checked) =>
+                              setQuestions((prev) =>
+                                prev.map((item, index) =>
+                                  index === questionIndex
+                                    ? {
+                                        ...item,
+                                        options: item.options.map((opt, oi) => ({
+                                          ...opt,
+                                          isCorrect:
+                                            item.type === "true_false"
+                                              ? oi === optionIndex
+                                              : oi === optionIndex
+                                                ? checked === true
+                                                : opt.isCorrect,
+                                        })),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                          />
+                          <AdminFormInput
+                            value={option.optionText}
+                            onChange={(e) =>
+                              setQuestions((prev) =>
+                                prev.map((item, index) =>
+                                  index === questionIndex
+                                    ? {
+                                        ...item,
+                                        options: item.options.map((opt, oi) =>
+                                          oi === optionIndex
+                                            ? { ...opt, optionText: e.target.value }
+                                            : opt,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            placeholder={`Option ${optionIndex + 1}`}
+                            disabled={question.type === "true_false"}
+                            className="flex-1"
+                          />
+                        </label>
+                      ))}
+                      {question.type === "multiple_choice" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setQuestions((prev) =>
+                              prev.map((item, index) =>
+                                index === questionIndex
+                                  ? {
+                                      ...item,
+                                      options: [
+                                        ...item.options,
+                                        {
+                                          optionText: "",
+                                          isCorrect: false,
+                                          position: item.options.length + 1,
+                                        },
+                                      ],
+                                    }
+                                  : item,
+                              ),
+                            )
+                          }
+                        >
+                          Add option
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
                 ))}
-                {question.type === "multiple_choice" ? (
+
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() =>
-                      setQuestions((prev) =>
-                        prev.map((item, index) =>
-                          index === questionIndex
-                            ? {
-                                ...item,
-                                options: [
-                                  ...item.options,
-                                  {
-                                    optionText: "",
-                                    isCorrect: false,
-                                    position: item.options.length + 1,
-                                  },
-                                ],
-                              }
-                            : item,
-                        ),
-                      )
-                    }
+                    onClick={() => setQuestions((prev) => [...prev, emptyQuestion()])}
                   >
-                    Add option
+                    Add question
                   </Button>
-                ) : null}
-              </div>
-            </div>
-          ))}
+                  <Select
+                    value={quizStatus}
+                    onValueChange={(value) => setQuizStatus(value as CoursePublishStatus)}
+                    items={statusItems}
+                  >
+                    <SelectTrigger className="admin-form-input w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setQuestions((prev) => [...prev, emptyQuestion()])}
-            >
-              Add question
-            </Button>
-            <Select
-              value={quizStatus}
-              onValueChange={(value) => setQuizStatus(value as CoursePublishStatus)}
-              items={statusItems}
-            >
-              <SelectTrigger className="admin-form-input w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button type="submit" size="sm" disabled={savingQuiz || !quizTitle.trim()}>
-              <Plus className="size-4" />
-              {savingQuiz ? "Saving…" : "Add quiz"}
-            </Button>
-          </div>
-        </form>
-      </div>
+                <DialogFooter className="-mx-0 -mb-0 rounded-lg border bg-muted/40 sm:justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setQuizDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={savingQuiz || !quizTitle.trim()}>
+                    <Plus className="size-4" />
+                    {savingQuiz ? "Saving…" : "Add quiz"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
     </div>
   );
 }

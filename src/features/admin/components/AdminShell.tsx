@@ -92,7 +92,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="admin-theme">
       <SidebarProvider>
         <Sidebar collapsible="icon" className="border-r-0">
           <SidebarHeader className="border-b border-white/8 px-3 py-4">
@@ -220,6 +219,5 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="flex-1 px-6 py-6 lg:px-8 lg:py-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
-    </div>
   );
 }

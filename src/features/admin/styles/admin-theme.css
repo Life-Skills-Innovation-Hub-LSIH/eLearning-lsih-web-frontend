@@ -19,6 +19,7 @@
   --admin-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
   --admin-radius: 0.5rem;
   --admin-radius-lg: 0.75rem;
+  --accent-brand: var(--admin-brand);
 
   /* shadcn tokens scoped to admin */
   --background: var(--admin-bg);
@@ -116,4 +117,72 @@
   background: color-mix(in srgb, var(--admin-surface) 92%, transparent);
   box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.06);
   backdrop-filter: blur(8px);
+}
+
+/* Admin dark mode */
+.admin-theme.dark {
+  --admin-bg: #0b1220;
+  --admin-surface: #111827;
+  --admin-border: #1f2a3d;
+  --admin-border-strong: #334155;
+  --admin-text: #e5eefb;
+  --admin-muted: #94a3b8;
+  --admin-subtle: #64748b;
+  --admin-hover: #1a2436;
+  --admin-brand: #3b82f6;
+  --admin-brand-hover: #60a5fa;
+  --admin-brand-soft: rgba(59, 130, 246, 0.16);
+  --admin-sidebar-bg: #070d18;
+  --admin-sidebar-fg: #e2e8f0;
+  --admin-sidebar-muted: #94a3b8;
+  --admin-sidebar-active: #3b82f6;
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --admin-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --accent-brand: var(--admin-brand);
+
+  --background: var(--admin-bg);
+  --foreground: var(--admin-text);
+  --card: var(--admin-surface);
+  --card-foreground: var(--admin-text);
+  --popover: var(--admin-surface);
+  --popover-foreground: var(--admin-text);
+  --primary: var(--admin-brand);
+  --primary-foreground: #ffffff;
+  --color-primary: var(--admin-brand);
+  --color-primary-foreground: #ffffff;
+  --secondary: var(--admin-hover);
+  --secondary-foreground: var(--admin-text);
+  --muted: #162033;
+  --muted-foreground: var(--admin-muted);
+  --accent: var(--admin-hover);
+  --accent-foreground: var(--admin-text);
+  --destructive: #f87171;
+  --border: var(--admin-border);
+  --input: var(--admin-border-strong);
+  --ring: var(--admin-brand);
+  --sidebar: var(--admin-sidebar-bg);
+  --sidebar-foreground: var(--admin-sidebar-fg);
+  --sidebar-primary: var(--admin-brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(59, 130, 246, 0.2);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: var(--admin-brand);
+}
+
+.admin-theme.dark .admin-sticky-footer {
+  background: color-mix(in srgb, var(--admin-surface) 88%, transparent);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.admin-theme.dark .admin-stat-card,
+.admin-theme.dark [data-slot="card"] {
+  background: var(--admin-surface);
+  border-color: var(--admin-border);
+}
+
+.admin-theme.dark .admin-form-input {
+  background: #0f172a;
+  border-color: var(--admin-border-strong);
+  color: var(--admin-text);
 }

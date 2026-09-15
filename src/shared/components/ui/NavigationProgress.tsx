@@ -74,7 +74,7 @@ export function NavigationProgress() {
       aria-hidden
     >
       <div
-        className="h-full origin-left rounded-r-full bg-[var(--accent-brand)] shadow-[0_0_12px_rgba(240,90,37,0.55)] transition-[width,opacity] duration-300 ease-out"
+        className="h-full origin-left rounded-r-full bg-[var(--accent-brand)] shadow-[0_0_12px_color-mix(in_srgb,var(--accent-brand)_55%,transparent)] transition-[width,opacity] duration-300 ease-out"
         style={{
           width: `${width}%`,
           opacity: visible ? 1 : 0,

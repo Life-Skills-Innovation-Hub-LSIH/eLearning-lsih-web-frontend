@@ -16,6 +16,16 @@ export {
   CardTitle,
 } from "@/components/ui/card";
 export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+export {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -33,7 +43,7 @@ export {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-export { Separator } from "@/components/ui/separator";
+export { Switch } from "@/components/ui/switch";
 export { Skeleton } from "@/components/ui/skeleton";
 export {
   Table,
