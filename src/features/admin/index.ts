@@ -15,6 +15,8 @@ export { SubjectForm } from "./components/SubjectForm";
 export { SubjectsManagement } from "./components/SubjectsManagement";
 export { LecturerForm } from "./components/LecturerForm";
 export { LecturersManagement } from "./components/LecturersManagement";
+export { CourseForm } from "./components/CourseForm";
+export { CoursesManagement } from "./components/CoursesManagement";
 export { UsersManagement } from "./components/UsersManagement";
 export {
   createSubjectApi,
@@ -32,6 +34,14 @@ export {
   updateLecturerApi,
 } from "./api/lecturers-api";
 export type { LecturerFormInput } from "./api/lecturers-api";
+export {
+  createCourseApi,
+  deleteCourseApi,
+  fetchCourse,
+  fetchCourses,
+  updateCourseApi,
+} from "./api/courses-api";
+export type { CourseFormInput } from "./api/courses-api";
 export {
   createUserApi,
   deleteUserApi,

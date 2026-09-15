@@ -25,6 +25,37 @@ export type QuizLevel = "module" | "course";
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
 
+export type CoursePublishStatus = "draft" | "published";
+
+export interface ManagedCourse {
+  id: string;
+  title: string;
+  slug: string;
+  code: string | null;
+  shortDescription: string | null;
+  description: string | null;
+  coverImage?: string | null;
+  level: CourseLevel | null;
+  price: number;
+  status: CoursePublishStatus;
+  lecturerId: string | null;
+  lecturer?: {
+    id: string;
+    name: string;
+    code: string | null;
+    slug: string;
+  } | null;
+  subjectIds?: string[];
+  subjects?: Array<{
+    id: string;
+    name: string;
+    code: string | null;
+    slug: string;
+  }>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;

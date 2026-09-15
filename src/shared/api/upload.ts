@@ -165,3 +165,37 @@ export async function uploadLecturerAvatarApi(
   return data?.data?.avatar ?? data?.data?.url ?? "";
 }
 
+export async function uploadCourseCoverApi(
+  token: string,
+  file: File,
+  options?: { slug?: string },
+): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (options?.slug) {
+    formData.append("slug", options.slug);
+  }
+
+  const response = await fetch(`${getApiBaseUrl()}/admin/upload/course-cover`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = (await response.json().catch(() => null)) as {
+    message?: string;
+    data?: { url?: string; cover_image?: string; path?: string };
+    errors?: Record<string, string[]>;
+  } | null;
+
+  if (!response.ok) {
+    const firstError = data?.errors ? Object.values(data.errors)[0]?.[0] : undefined;
+    throw new ApiError(response.status, firstError ?? data?.message ?? "Upload failed.", data);
+  }
+
+  return data?.data?.cover_image ?? data?.data?.url ?? "";
+}
+
