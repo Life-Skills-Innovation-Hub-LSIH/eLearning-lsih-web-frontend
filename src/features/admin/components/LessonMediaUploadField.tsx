@@ -56,7 +56,12 @@ export function LessonMediaUploadField({ token, type, mediaUrl, slug, onChange }
       setPhase(null);
       if (err instanceof ApiError) {
         const firstError = Object.values(err.body?.errors ?? {})[0]?.[0];
-        setError(firstError ?? err.message);
+        const raw = firstError ?? err.message;
+        setError(
+          raw === "The file failed to upload."
+            ? "Upload rejected by the server. Video must be under 100 MB, and PHP upload_max_filesize must be at least 100M (restart php artisan serve after changing it)."
+            : raw,
+        );
       } else {
         setError(err instanceof Error ? err.message : "Upload failed.");
       }

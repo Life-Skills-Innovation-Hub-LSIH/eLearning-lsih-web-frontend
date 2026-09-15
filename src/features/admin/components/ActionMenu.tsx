@@ -110,7 +110,7 @@ export function ActionMenu({ items, align = "right" }: Props) {
           left: position?.left ?? -9999,
           visibility: position ? "visible" : "hidden",
         }}
-        className="z-[200] min-w-[180px] rounded-lg border border-[#eaecf0] bg-white py-1 shadow-[0_12px_16px_-4px_rgba(16,24,40,0.08),0_4px_6px_-2px_rgba(16,24,40,0.03)]"
+        className="z-[200] min-w-[180px] rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-lg"
       >
         {items.map((item) => (
           <button
@@ -123,8 +123,8 @@ export function ActionMenu({ items, align = "right" }: Props) {
               setOpen(false);
               item.onClick();
             }}
-            className={`flex w-full cursor-pointer px-3 py-2 text-left text-sm transition hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-50 ${
-              item.destructive ? "text-[#b42318]" : "text-[#344054]"
+            className={`flex w-full cursor-pointer px-3 py-2 text-left text-sm transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 ${
+              item.destructive ? "text-destructive" : "text-foreground"
             }`}
           >
             {item.label}
@@ -142,7 +142,7 @@ export function ActionMenu({ items, align = "right" }: Props) {
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-[#667085] transition hover:bg-[#f2f4f7] hover:text-[#101828]"
+        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
       >
         <MoreVertical className="h-4 w-4" />
       </button>
