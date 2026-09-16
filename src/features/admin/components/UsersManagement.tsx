@@ -183,7 +183,7 @@ export function UsersManagement() {
   return (
     <AdminPageLayout
       title="Users"
-      description="Manage student accounts, admin access, and subscription status."
+      description="Manage student accounts, admin access and subscription status."
       actions={
         <Button render={<Link href="/admin/users/create" />}>
           <Plus />

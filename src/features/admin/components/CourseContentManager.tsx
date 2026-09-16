@@ -37,6 +37,7 @@ import {
   fetchCourseModules,
   updateLessonApi,
   updateModuleApi,
+  updateQuizApi,
 } from "../api/course-content-api";
 import { ActionMenu } from "./ActionMenu";
 import { AdminFormField, AdminFormInput } from "./AdminFormFields";
@@ -93,10 +94,14 @@ export function CourseContentManager({ courseId }: Props) {
 
   const [addModuleOpen, setAddModuleOpen] = useState(false);
   const [editModule, setEditModule] = useState<ManagedModule | null>(null);
-  const [lessonModule, setLessonModule] = useState<ManagedModule | null>(null);
-  const [quizTarget, setQuizTarget] = useState<{
+  const [lessonDialog, setLessonDialog] = useState<{
+    module: ManagedModule;
+    lesson?: ManagedLesson;
+  } | null>(null);
+  const [quizDialog, setQuizDialog] = useState<{
     module: ManagedModule;
     lesson: ManagedLesson;
+    quiz?: ManagedQuiz;
   } | null>(null);
 
   const [moduleTitle, setModuleTitle] = useState("");
@@ -147,11 +152,19 @@ export function CourseContentManager({ courseId }: Props) {
 
   function replaceModule(updated: ManagedModule) {
     setModules((prev) => prev.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
-    if (lessonModule?.id === updated.id) setLessonModule(updated);
-    if (quizTarget?.module.id === updated.id) {
+    if (lessonDialog?.module.id === updated.id) {
+      const lesson = lessonDialog.lesson
+        ? (updated.lessons ?? []).find((item) => item.id === lessonDialog.lesson!.id) ?? lessonDialog.lesson
+        : undefined;
+      setLessonDialog({ module: updated, lesson });
+    }
+    if (quizDialog?.module.id === updated.id) {
       const lesson =
-        (updated.lessons ?? []).find((item) => item.id === quizTarget.lesson.id) ?? quizTarget.lesson;
-      setQuizTarget({ module: updated, lesson });
+        (updated.lessons ?? []).find((item) => item.id === quizDialog.lesson.id) ?? quizDialog.lesson;
+      const quiz = quizDialog.quiz
+        ? (updated.quizzes ?? []).find((item) => item.id === quizDialog.quiz!.id) ?? quizDialog.quiz
+        : undefined;
+      setQuizDialog({ module: updated, lesson, quiz });
     }
     if (editModule?.id === updated.id) setEditModule(updated);
   }
@@ -268,22 +281,21 @@ export function CourseContentManager({ courseId }: Props) {
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          <span>
-            <span className="font-semibold text-foreground">{modules.length}</span> modules
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{modules.length}</span>
+            modules
           </span>
-          <span className="text-border">·</span>
-          <span>
-            <span className="font-semibold text-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
               {modules.reduce((sum, item) => sum + (item.lessons ?? []).length, 0)}
-            </span>{" "}
+            </span>
             lessons
           </span>
-          <span className="text-border">·</span>
-          <span>
-            <span className="font-semibold text-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
               {modules.reduce((sum, item) => sum + (item.quizzes ?? []).length, 0)}
-            </span>{" "}
+            </span>
             quizzes
           </span>
         </div>
@@ -332,11 +344,8 @@ export function CourseContentManager({ courseId }: Props) {
                         className="flex min-w-0 flex-1 items-center gap-3 text-left"
                         onClick={toggleModule}
                       >
-                        <span className="inline-flex rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-primary uppercase">
-                          Module
-                        </span>
-                        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
-                          {moduleIndex + 1}
+                        <span className="inline-flex shrink-0 items-center rounded-md bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
+                          Module {moduleIndex + 1}
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
@@ -344,23 +353,26 @@ export function CourseContentManager({ courseId }: Props) {
                               {module.title}
                             </p>
                             <span
-                              className={`text-xs ${
+                              className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${
                                 module.status === "published"
-                                  ? "text-emerald-600"
-                                  : "text-amber-600"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                               }`}
                             >
                               {module.status === "published" ? "Published" : "Draft"}
                             </span>
+                            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+                              {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+                            </span>
+                            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+                              {quizCount} quiz{quizCount === 1 ? "" : "zes"}
+                            </span>
                           </div>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-                            {" · "}
-                            {quizCount} quiz{quizCount === 1 ? "" : "zes"}
-                            {module.description?.trim()
-                              ? ` · ${module.description.trim()}`
-                              : ""}
-                          </p>
+                          {module.description?.trim() ? (
+                            <p className="mt-0.5 truncate text-xs text-foreground/70">
+                              {module.description.trim()}
+                            </p>
+                          ) : null}
                         </div>
                       </button>
 
@@ -377,7 +389,7 @@ export function CourseContentManager({ courseId }: Props) {
                                 setCollapsedModuleIds((prev) =>
                                   prev.filter((id) => id !== module.id),
                                 );
-                                setLessonModule(module);
+                                setLessonDialog({ module });
                               },
                             },
                             {
@@ -398,7 +410,9 @@ export function CourseContentManager({ courseId }: Props) {
                           onChange={replaceModule}
                           onError={setError}
                           onSuccess={setSuccess}
-                          onAddQuiz={(lesson) => setQuizTarget({ module, lesson })}
+                          onEditLesson={(lesson) => setLessonDialog({ module, lesson })}
+                          onAddQuiz={(lesson) => setQuizDialog({ module, lesson })}
+                          onEditQuiz={(lesson, quiz) => setQuizDialog({ module, lesson, quiz })}
                         />
                       </div>
                     ) : null}
@@ -444,29 +458,31 @@ export function CourseContentManager({ courseId }: Props) {
         onSubmit={onUpdateModule}
       />
 
-      {lessonModule && token ? (
-        <AddLessonDialog
-          open={Boolean(lessonModule)}
+      {lessonDialog && token ? (
+        <LessonFormDialog
+          open={Boolean(lessonDialog)}
           onOpenChange={(open) => {
-            if (!open) setLessonModule(null);
+            if (!open) setLessonDialog(null);
           }}
           token={token}
-          module={lessonModule}
+          module={lessonDialog.module}
+          lesson={lessonDialog.lesson}
           onChange={replaceModule}
           onError={setError}
           onSuccess={setSuccess}
         />
       ) : null}
 
-      {quizTarget && token ? (
-        <AddQuizDialog
-          open={Boolean(quizTarget)}
+      {quizDialog && token ? (
+        <QuizFormDialog
+          open={Boolean(quizDialog)}
           onOpenChange={(open) => {
-            if (!open) setQuizTarget(null);
+            if (!open) setQuizDialog(null);
           }}
           token={token}
-          module={quizTarget.module}
-          lesson={quizTarget.lesson}
+          module={quizDialog.module}
+          lesson={quizDialog.lesson}
+          quiz={quizDialog.quiz}
           onChange={replaceModule}
           onError={setError}
           onSuccess={setSuccess}
@@ -734,18 +750,24 @@ function ModuleExpandedPanel({
   onChange,
   onError,
   onSuccess,
+  onEditLesson,
   onAddQuiz,
+  onEditQuiz,
 }: {
   token: string;
   module: ManagedModule;
   onChange: (module: ManagedModule) => void;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
+  onEditLesson: (lesson: ManagedLesson) => void;
   onAddQuiz: (lesson: ManagedLesson) => void;
+  onEditQuiz: (lesson: ManagedLesson, quiz: ManagedQuiz) => void;
 }) {
   const quizzes = module.quizzes ?? [];
   const orphanQuizzes = quizzes.filter((quiz) => !quiz.lessonId);
-  const [collapsedLessonIds, setCollapsedLessonIds] = useState<string[]>([]);
+  // Lessons start collapsed so video/PDF previews stay hidden until opened.
+  // Multiple lessons can be open at the same time.
+  const [expandedLessonIds, setExpandedLessonIds] = useState<string[]>([]);
 
   async function removeLesson(lesson: ManagedLesson) {
     if (!window.confirm(`Delete lesson "${lesson.title}"?`)) return;
@@ -756,7 +778,7 @@ function ModuleExpandedPanel({
         lessons: (module.lessons ?? []).filter((item) => item.id !== lesson.id),
         quizzes: quizzes.filter((quiz) => quiz.lessonId !== lesson.id),
       });
-      setCollapsedLessonIds((prev) => prev.filter((id) => id !== lesson.id));
+      setExpandedLessonIds((prev) => prev.filter((id) => id !== lesson.id));
       onSuccess("Lesson deleted.");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Failed to delete lesson.");
@@ -806,11 +828,11 @@ function ModuleExpandedPanel({
         <ul className="space-y-2">
           {(module.lessons ?? []).map((lesson, lessonIndex) => {
             const lessonQuizzes = quizzes.filter((quiz) => quiz.lessonId === lesson.id);
-            const lessonOpen = !collapsedLessonIds.includes(lesson.id);
+            const lessonOpen = expandedLessonIds.includes(lesson.id);
 
             function toggleLesson() {
-              setCollapsedLessonIds((prev) =>
-                lessonOpen ? [...prev, lesson.id] : prev.filter((id) => id !== lesson.id),
+              setExpandedLessonIds((prev) =>
+                lessonOpen ? prev.filter((id) => id !== lesson.id) : [...prev, lesson.id],
               );
             }
 
@@ -839,28 +861,37 @@ function ModuleExpandedPanel({
                     className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
                     onClick={toggleLesson}
                   >
-                    <span className="inline-flex rounded-md bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-sky-400 uppercase">
-                      Lesson
-                    </span>
-                    <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-300">
-                      {lessonIndex + 1}
+                    <span className="inline-flex shrink-0 items-center rounded-md bg-sky-600 px-2 py-1 text-xs font-bold text-white">
+                      Lesson {lessonIndex + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{lesson.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {lesson.contentType === "file"
-                          ? "PDF"
-                          : lesson.contentType === "video"
-                            ? "Video"
-                            : "Text"}
-                        {lesson.durationMinutes ? ` · ${lesson.durationMinutes} min` : ""}
-                        {` · ${lessonQuizzes.length} quiz${lessonQuizzes.length === 1 ? "" : "zes"}`}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold">{lesson.title}</p>
+                        <span className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+                          {lesson.contentType === "file"
+                            ? "PDF"
+                            : lesson.contentType === "video"
+                              ? "Video"
+                              : "Text"}
+                        </span>
+                        {lesson.durationMinutes ? (
+                          <span className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+                            {lesson.durationMinutes} min
+                          </span>
+                        ) : null}
+                        <span className="inline-flex items-center rounded-md border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold text-sky-800 dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-200">
+                          {lessonQuizzes.length} quiz{lessonQuizzes.length === 1 ? "" : "zes"}
+                        </span>
+                      </div>
                     </div>
                   </button>
 
                   <ActionMenu
                     items={[
+                      {
+                        label: "Edit lesson",
+                        onClick: () => onEditLesson(lesson),
+                      },
                       {
                         label: "Add Quiz",
                         onClick: () => onAddQuiz(lesson),
@@ -903,18 +934,19 @@ function ModuleExpandedPanel({
                               className="rounded-lg border border-border/60 bg-card px-3 py-2.5"
                             >
                               <div className="flex items-start gap-2">
-                                <span className="inline-flex rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-violet-300 uppercase">
-                                  Quiz
-                                </span>
-                                <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-[10px] font-bold text-violet-200">
-                                  {quizIndex + 1}
+                                <span className="inline-flex shrink-0 items-center rounded-md bg-violet-600 px-2 py-1 text-xs font-bold text-white">
+                                  Quiz {quizIndex + 1}
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium">{quiz.title}</p>
-                                  <p className="truncate text-xs text-muted-foreground">
-                                    Pass {quiz.passScore}% · {questionCount} question
-                                    {questionCount === 1 ? "" : "s"}
-                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="truncate text-sm font-medium">{quiz.title}</p>
+                                    <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
+                                      Pass {quiz.passScore}%
+                                    </span>
+                                    <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
+                                      {questionCount} question{questionCount === 1 ? "" : "s"}
+                                    </span>
+                                  </div>
                                   {(quiz.questions ?? []).length > 0 ? (
                                     <ul className="mt-2 space-y-1.5">
                                       {(quiz.questions ?? []).map((question, questionIndex) => (
@@ -953,15 +985,19 @@ function ModuleExpandedPanel({
                                     </ul>
                                   ) : null}
                                 </div>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  className="size-8 shrink-0 p-0 text-muted-foreground hover:text-destructive"
-                                  onClick={() => void removeQuiz(quiz)}
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </Button>
+                                <ActionMenu
+                                  items={[
+                                    {
+                                      label: "Edit quiz",
+                                      onClick: () => onEditQuiz(lesson, quiz),
+                                    },
+                                    {
+                                      label: "Delete quiz",
+                                      destructive: true,
+                                      onClick: () => void removeQuiz(quiz),
+                                    },
+                                  ]}
+                                />
                               </div>
                             </li>
                           );
@@ -988,15 +1024,17 @@ function ModuleExpandedPanel({
                 className="flex items-center justify-between gap-2 py-1.5 text-sm"
               >
                 <span className="truncate">{quiz.title}</span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="size-8 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => void removeQuiz(quiz)}
-                >
-                  <Trash2 className="size-3.5" />
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <ActionMenu
+                    items={[
+                      {
+                        label: "Delete quiz",
+                        destructive: true,
+                        onClick: () => void removeQuiz(quiz),
+                      },
+                    ]}
+                  />
+                </div>
               </li>
             ))}
           </ul>
@@ -1006,11 +1044,18 @@ function ModuleExpandedPanel({
   );
 }
 
-function AddLessonDialog({
+function inferVideoSource(url: string | null | undefined): "upload" | "link" {
+  if (!url) return "upload";
+  if (/youtube\.com|youtu\.be|vimeo\.com/i.test(url)) return "link";
+  return "upload";
+}
+
+function LessonFormDialog({
   open,
   onOpenChange,
   token,
   module,
+  lesson,
   onChange,
   onError,
   onSuccess,
@@ -1019,10 +1064,12 @@ function AddLessonDialog({
   onOpenChange: (open: boolean) => void;
   token: string;
   module: ManagedModule;
+  lesson?: ManagedLesson;
   onChange: (module: ManagedModule) => void;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
 }) {
+  const isEdit = Boolean(lesson);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonType, setLessonType] = useState<LessonContentType>("video");
   const [lessonBody, setLessonBody] = useState("");
@@ -1032,7 +1079,30 @@ function AddLessonDialog({
   const [lessonStatus, setLessonStatus] = useState<CoursePublishStatus>("draft");
   const [savingLesson, setSavingLesson] = useState(false);
 
-  async function addLesson(event: FormEvent) {
+  useEffect(() => {
+    if (!open) return;
+    if (lesson) {
+      setLessonTitle(lesson.title);
+      setLessonType(lesson.contentType);
+      setLessonBody(lesson.body ?? "");
+      setLessonMedia(lesson.mediaUrl ?? "");
+      setVideoSource(inferVideoSource(lesson.mediaUrl));
+      setLessonDuration(
+        lesson.durationMinutes != null ? String(lesson.durationMinutes) : "",
+      );
+      setLessonStatus(lesson.status);
+      return;
+    }
+    setLessonTitle("");
+    setLessonType("video");
+    setLessonBody("");
+    setLessonMedia("");
+    setVideoSource("upload");
+    setLessonDuration("");
+    setLessonStatus("draft");
+  }, [open, lesson]);
+
+  async function saveLesson(event: FormEvent) {
     event.preventDefault();
     if (!lessonTitle.trim()) return;
 
@@ -1056,32 +1126,44 @@ function AddLessonDialog({
       }
     }
 
+    const payload = {
+      title: lessonTitle.trim(),
+      contentType: lessonType,
+      body: lessonBody.trim() || null,
+      mediaUrl: lessonType === "text" ? null : lessonMedia.trim() || null,
+      durationMinutes: lessonDuration ? Number(lessonDuration) : null,
+      status: lessonStatus,
+    };
+
     setSavingLesson(true);
     try {
-      const created = await createLessonApi(token, module.id, {
-        title: lessonTitle.trim(),
-        contentType: lessonType,
-        body: lessonBody.trim() || null,
-        mediaUrl: lessonType === "text" ? null : lessonMedia.trim() || null,
-        durationMinutes: lessonDuration ? Number(lessonDuration) : null,
-        status: lessonStatus,
-      });
-      onChange({
-        ...module,
-        lessons: [...(module.lessons ?? []), created],
-        lessonsCount: (module.lessonsCount ?? 0) + 1,
-      });
-      setLessonTitle("");
-      setLessonBody("");
-      setLessonMedia("");
-      setVideoSource("upload");
-      setLessonDuration("");
-      setLessonType("video");
-      setLessonStatus("draft");
+      if (lesson) {
+        const updated = await updateLessonApi(token, lesson.id, payload);
+        onChange({
+          ...module,
+          lessons: (module.lessons ?? []).map((item) =>
+            item.id === lesson.id ? { ...item, ...updated } : item,
+          ),
+        });
+        onSuccess("Lesson updated.");
+      } else {
+        const created = await createLessonApi(token, module.id, payload);
+        onChange({
+          ...module,
+          lessons: [...(module.lessons ?? []), created],
+          lessonsCount: (module.lessonsCount ?? 0) + 1,
+        });
+        onSuccess("Lesson created.");
+      }
       onOpenChange(false);
-      onSuccess("Lesson created.");
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Failed to create lesson.");
+      onError(
+        err instanceof Error
+          ? err.message
+          : isEdit
+            ? "Failed to update lesson."
+            : "Failed to create lesson.",
+      );
     } finally {
       setSavingLesson(false);
     }
@@ -1095,13 +1177,14 @@ function AddLessonDialog({
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <FileText className="size-4" />
             </span>
-            Add lesson
+            {isEdit ? "Edit lesson" : "Add lesson"}
           </DialogTitle>
           <DialogDescription>
-            Add a video, PDF, or text lesson to <span className="font-medium text-foreground">{module.title}</span>.
+            {isEdit ? "Update" : "Add a video, PDF, or text lesson to"}{" "}
+            <span className="font-medium text-foreground">{module.title}</span>.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={addLesson} className="space-y-4 overflow-y-auto px-5 py-4">
+        <form onSubmit={saveLesson} className="space-y-4 overflow-y-auto px-5 py-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <AdminFormField id="lesson-title" label="Lesson title" required>
               <AdminFormInput
@@ -1260,8 +1343,8 @@ function AddLessonDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={savingLesson || !lessonTitle.trim()}>
-              <Plus className="size-4" />
-              {savingLesson ? "Saving…" : "Add lesson"}
+              {isEdit ? null : <Plus className="size-4" />}
+              {savingLesson ? "Saving…" : isEdit ? "Save lesson" : "Add lesson"}
             </Button>
           </div>
         </form>
@@ -1270,12 +1353,13 @@ function AddLessonDialog({
   );
 }
 
-function AddQuizDialog({
+function QuizFormDialog({
   open,
   onOpenChange,
   token,
   module,
   lesson,
+  quiz,
   onChange,
   onError,
   onSuccess,
@@ -1285,17 +1369,44 @@ function AddQuizDialog({
   token: string;
   module: ManagedModule;
   lesson: ManagedLesson;
+  quiz?: ManagedQuiz;
   onChange: (module: ManagedModule) => void;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
 }) {
+  const isEdit = Boolean(quiz);
   const [quizTitle, setQuizTitle] = useState("");
   const [quizPass, setQuizPass] = useState("70");
   const [quizStatus, setQuizStatus] = useState<CoursePublishStatus>("draft");
   const [questions, setQuestions] = useState<ManagedQuizQuestion[]>([emptyQuestion()]);
   const [savingQuiz, setSavingQuiz] = useState(false);
 
-  async function addQuiz(event: FormEvent) {
+  useEffect(() => {
+    if (!open) return;
+    if (quiz) {
+      setQuizTitle(quiz.title);
+      setQuizPass(String(quiz.passScore ?? 70));
+      setQuizStatus(quiz.status);
+      setQuestions(
+        (quiz.questions ?? []).length > 0
+          ? quiz.questions!.map((question) => ({
+              ...question,
+              options:
+                question.options.length > 0
+                  ? question.options
+                  : emptyQuestion().options,
+            }))
+          : [emptyQuestion()],
+      );
+      return;
+    }
+    setQuizTitle("");
+    setQuizPass("70");
+    setQuizStatus("draft");
+    setQuestions([emptyQuestion()]);
+  }, [open, quiz]);
+
+  async function saveQuiz(event: FormEvent) {
     event.preventDefault();
     if (!quizTitle.trim()) return;
     const cleaned = questions
@@ -1318,28 +1429,43 @@ function AddQuizDialog({
       return;
     }
 
+    const payload = {
+      title: quizTitle.trim(),
+      lessonId: lesson.id,
+      passScore: Number(quizPass) || 70,
+      status: quizStatus,
+      questions: cleaned,
+    };
+
     setSavingQuiz(true);
     try {
-      const created = await createQuizApi(token, module.id, {
-        title: quizTitle.trim(),
-        lessonId: lesson.id,
-        passScore: Number(quizPass) || 70,
-        status: quizStatus,
-        questions: cleaned,
-      });
-      onChange({
-        ...module,
-        quizzes: [...(module.quizzes ?? []), created],
-        quizzesCount: (module.quizzesCount ?? 0) + 1,
-      });
-      setQuizTitle("");
-      setQuizPass("70");
-      setQuizStatus("draft");
-      setQuestions([emptyQuestion()]);
+      if (quiz) {
+        const updated = await updateQuizApi(token, quiz.id, payload);
+        onChange({
+          ...module,
+          quizzes: (module.quizzes ?? []).map((item) =>
+            item.id === quiz.id ? { ...item, ...updated } : item,
+          ),
+        });
+        onSuccess("Quiz updated.");
+      } else {
+        const created = await createQuizApi(token, module.id, payload);
+        onChange({
+          ...module,
+          quizzes: [...(module.quizzes ?? []), created],
+          quizzesCount: (module.quizzesCount ?? 0) + 1,
+        });
+        onSuccess("Quiz created.");
+      }
       onOpenChange(false);
-      onSuccess("Quiz created.");
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Failed to create quiz.");
+      onError(
+        err instanceof Error
+          ? err.message
+          : isEdit
+            ? "Failed to update quiz."
+            : "Failed to create quiz.",
+      );
     } finally {
       setSavingQuiz(false);
     }
@@ -1349,7 +1475,9 @@ function AddQuizDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden border-border/60 p-0 shadow-2xl sm:max-w-2xl sm:rounded-2xl">
         <DialogHeader className="shrink-0 space-y-2 px-6 pt-5 pb-4">
-          <DialogTitle className="text-xl font-semibold tracking-tight">Add quiz</DialogTitle>
+          <DialogTitle className="text-xl font-semibold tracking-tight">
+            {isEdit ? "Edit quiz" : "Add quiz"}
+          </DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-1.5 text-sm">
             <span className="text-muted-foreground">for</span>
             <span className="inline-flex max-w-full items-center rounded-full border border-border/80 px-2.5 py-0.5 text-xs font-medium text-foreground">
@@ -1358,7 +1486,7 @@ function AddQuizDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={addQuiz} className="flex min-h-0 flex-1 flex-col">
+        <form onSubmit={saveQuiz} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 pb-2">
             <div className="grid gap-4 sm:grid-cols-[1fr_100px_130px]">
               <AdminFormField id="quiz-title" label="Quiz title" required>
@@ -1510,23 +1638,20 @@ function AddQuizDialog({
                         >
                           {String.fromCharCode(65 + optionIndex)}
                         </span>
-                        <Checkbox
-                          checked={option.isCorrect}
+                        <input
+                          type="radio"
                           className="sr-only"
-                          onCheckedChange={(checked) =>
+                          name={`question-${questionIndex}-correct`}
+                          checked={option.isCorrect}
+                          onChange={() =>
                             setQuestions((prev) =>
                               prev.map((item, index) =>
                                 index === questionIndex
                                   ? {
                                       ...item,
-                                      options: item.options.map((opt, oi) => ({
+                                      options: item.options.map((opt, optIndex) => ({
                                         ...opt,
-                                        isCorrect:
-                                          item.type === "true_false"
-                                            ? oi === optionIndex
-                                            : oi === optionIndex
-                                              ? checked === true
-                                              : opt.isCorrect,
+                                        isCorrect: optIndex === optionIndex,
                                       })),
                                     }
                                   : item,
@@ -1534,45 +1659,34 @@ function AddQuizDialog({
                             )
                           }
                         />
-                        {question.type === "true_false" ? (
-                          <span className="flex-1 text-sm font-medium text-foreground">
-                            {option.optionText}
-                          </span>
-                        ) : (
-                          <input
-                            value={option.optionText}
-                            onChange={(e) =>
-                              setQuestions((prev) =>
-                                prev.map((item, index) =>
-                                  index === questionIndex
-                                    ? {
-                                        ...item,
-                                        options: item.options.map((opt, oi) =>
-                                          oi === optionIndex
-                                            ? { ...opt, optionText: e.target.value }
-                                            : opt,
-                                        ),
-                                      }
-                                    : item,
-                                ),
-                              )
-                            }
-                            placeholder={`Option ${optionIndex + 1}`}
-                            className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                          />
-                        )}
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase transition ${
-                            option.isCorrect
-                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                              : "invisible"
-                          }`}
-                        >
-                          Correct
-                        </span>
+                        <input
+                          className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                          value={option.optionText}
+                          onChange={(e) =>
+                            setQuestions((prev) =>
+                              prev.map((item, index) =>
+                                index === questionIndex
+                                  ? {
+                                      ...item,
+                                      options: item.options.map((opt, optIndex) =>
+                                        optIndex === optionIndex
+                                          ? { ...opt, optionText: e.target.value }
+                                          : opt,
+                                      ),
+                                    }
+                                  : item,
+                              ),
+                            )
+                          }
+                          placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`}
+                          required
+                          disabled={question.type === "true_false"}
+                        />
+                        {option.isCorrect ? (
+                          <span className="text-[11px] font-semibold text-emerald-600">Correct</span>
+                        ) : null}
                       </label>
                     ))}
-
                     {question.type === "multiple_choice" ? (
                       <button
                         type="button"
@@ -1630,7 +1744,7 @@ function AddQuizDialog({
               className="rounded-full px-5"
               disabled={savingQuiz || !quizTitle.trim()}
             >
-              {savingQuiz ? "Saving…" : "Add quiz"}
+              {savingQuiz ? "Saving…" : isEdit ? "Save quiz" : "Add quiz"}
             </Button>
           </div>
         </form>
