@@ -1,31 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CourseCard } from "@/features/courses";
-import { getPublishedCourses } from "@/features/courses";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
+import {
+  fetchCatalogCourses,
+  type CatalogCourse,
+} from "@/features/learning/api/enrollment-api";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
   const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState("all");
+  const [courses, setCourses] = useState<CatalogCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const courses = getPublishedCourses();
-  const categories = ["all", ...Array.from(new Set(courses.map((c) => c.category)))];
+  useEffect(() => {
+    setLoading(true);
+    setError("");
+    fetchCatalogCourses()
+      .then(setCourses)
+      .catch((err) => {
+        setCourses([]);
+        setError(err instanceof Error ? err.message : "Failed to load courses.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return courses;
     return courses.filter((course) => {
-      const matchCategory = category === "all" || course.category === category;
-      const q = query.trim().toLowerCase();
-      const matchQuery =
-        !q ||
-        course.title.toLowerCase().includes(q) ||
-        course.shortDescription.toLowerCase().includes(q) ||
-        course.instructor.toLowerCase().includes(q);
-      return matchCategory && matchQuery;
+      const haystack = [
+        course.title,
+        course.short_description ?? "",
+        course.lecturer?.name ?? "",
+        ...(course.subjects ?? []).map((s) => s.name),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
     });
-  }, [courses, category, query]);
+  }, [courses, query]);
 
   return (
     <main>
@@ -36,67 +54,69 @@ export default function CoursesPage() {
               Explore courses
             </h1>
             <p className="text-[var(--muted)] leading-relaxed">
-              Browse by category or search. Each course includes modules, lessons, and quizzes.
+              Browse published courses. Enroll to track your lesson and quiz progress.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <input
-              className="input max-w-md"
-              placeholder="Search courses..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <select
-              className="input max-w-xs appearance-none"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {item === "all" ? "All categories" : item}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {categories.map((item) => {
-              const active = category === item;
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setCategory(item)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                    active
-                      ? "bg-[var(--brand)] text-white"
-                      : "bg-[var(--brand-soft)] text-[var(--brand)] hover:bg-[var(--brand)]/15"
-                  }`}
-                >
-                  {item === "all" ? "All" : item}
-                </button>
-              );
-            })}
-          </div>
+          <input
+            className="input max-w-md"
+            placeholder="Search courses..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
       </section>
 
-      <div className="container-page py-10 sm:py-12">
-        <p className="mb-6 text-sm text-[var(--muted)]">
-          {filtered.length} course{filtered.length === 1 ? "" : "s"}
-        </p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
-        {filtered.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-[var(--line)] bg-white px-6 py-16 text-center text-[var(--muted)]">
-            No courses match your search.
-          </p>
-        ) : null}
-      </div>
+      <section className="container-page py-10">
+        {loading ? (
+          <PageLoader label="Loading courses…" />
+        ) : error ? (
+          <p className="text-red-600">{error}</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-[var(--muted)]">No published courses found.</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((course) => (
+              <Link
+                key={String(course.id)}
+                href={`/courses/${course.slug}`}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-[var(--shadow)] transition hover:-translate-y-1"
+              >
+                <div className="relative h-[168px] overflow-hidden bg-[var(--brand)]">
+                  {course.cover_image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={course.cover_image}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-end p-4 text-white/90">
+                      <span className="text-sm font-medium">{course.level ?? "Course"}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="line-clamp-2 font-display text-base font-semibold text-[var(--ink)] group-hover:text-[var(--brand)]">
+                    {course.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-2 text-sm text-[var(--muted)]">
+                    {course.short_description || "No description"}
+                  </p>
+                  <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--line)] pt-4 text-sm">
+                    <span className="truncate text-[var(--ink)]">
+                      {course.lecturer?.name ?? "Instructor TBA"}
+                    </span>
+                    <span className="font-semibold text-[var(--brand)]">
+                      {!course.price ? "Free" : `$${course.price}`}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }

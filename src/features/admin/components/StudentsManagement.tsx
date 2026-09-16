@@ -19,11 +19,19 @@ import {
   TableRow,
 } from "@/features/admin/shadcn";
 import { fetchUsers } from "../api/users-api";
+import { fetchStudentProgressAdmin, type EnrollmentRecord } from "@/features/learning/api/enrollment-api";
 import { ActionMenu } from "./ActionMenu";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { StatusBadge } from "./RoleBadge";
 import { formatAdminDate } from "../lib/user-store";
 import type { ManagedUser } from "@/shared/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/features/admin/shadcn";
 
 function studentDisplayName(user: ManagedUser) {
   return `${user.firstName} ${user.lastName}`.trim() || user.username;
@@ -45,6 +53,32 @@ export function StudentsManagement() {
   const [search, setSearch] = useState("");
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [progressError, setProgressError] = useState("");
+  const [progressStudent, setProgressStudent] = useState<ManagedUser | null>(null);
+  const [progressEnrollments, setProgressEnrollments] = useState<EnrollmentRecord[]>([]);
+
+  async function openProgress(student: ManagedUser) {
+    if (!token) return;
+    setProgressStudent(student);
+    setProgressOpen(true);
+    setProgressLoading(true);
+    setProgressError("");
+    try {
+      const data = await fetchStudentProgressAdmin(token, student.id);
+      setProgressEnrollments(
+        Array.isArray(data.enrollments)
+          ? data.enrollments
+          : ((data.enrollments as { data?: EnrollmentRecord[] })?.data ?? []),
+      );
+    } catch (error) {
+      setProgressEnrollments([]);
+      setProgressError(error instanceof Error ? error.message : "Failed to load progress.");
+    } finally {
+      setProgressLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!token) {
@@ -92,7 +126,7 @@ export function StudentsManagement() {
   return (
     <AdminPageLayout
       title="Students"
-      description="Student accounts from your database. Course progress will appear here when courses are enabled."
+      description="Student accounts and course progress."
       actions={
         <Button render={<Link href="/admin/users/create" />}>
           <Plus />
@@ -206,6 +240,10 @@ export function StudentsManagement() {
                       <ActionMenu
                         items={[
                           {
+                            label: "View progress",
+                            onClick: () => void openProgress(student),
+                          },
+                          {
                             label: "Edit student",
                             onClick: () => router.push(`/admin/users/${student.id}/edit`),
                           },
@@ -219,6 +257,58 @@ export function StudentsManagement() {
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={progressOpen} onOpenChange={setProgressOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              Progress · {progressStudent ? studentDisplayName(progressStudent) : "Student"}
+            </DialogTitle>
+            <DialogDescription>
+              Enrolled courses and completion for this student.
+            </DialogDescription>
+          </DialogHeader>
+          {progressLoading ? (
+            <PageLoader compact label="Loading progress…" />
+          ) : progressError ? (
+            <p className="text-sm text-destructive">{progressError}</p>
+          ) : progressEnrollments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No course enrollments yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {progressEnrollments.map((item) => (
+                <li
+                  key={String(item.id)}
+                  className="rounded-xl border border-border/70 px-3 py-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {item.course?.title ?? `Course #${item.course_id}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {item.status}
+                        {item.progress
+                          ? ` · ${item.progress.completed_lessons}/${item.progress.total_lessons} lessons · ${item.progress.passed_quizzes}/${item.progress.total_quizzes} quizzes`
+                          : ""}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums">
+                      {item.progress?.percent ?? 0}%
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${item.progress?.percent ?? 0}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminPageLayout>
   );
 }

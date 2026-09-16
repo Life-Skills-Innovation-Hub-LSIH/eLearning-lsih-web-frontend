@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import { normalizeEmail } from "@/shared/lib/email";
 import type { Lecturer, LecturerStatus } from "@/shared/types";
 
 type ApiLecturerSubject = {
@@ -86,7 +87,7 @@ function bodyFromInput(input: LecturerFormInput) {
   return {
     name: input.name,
     title: input.title?.trim() || null,
-    email: input.email?.trim() || null,
+    email: input.email ? normalizeEmail(input.email) || null : null,
     avatar: input.avatar?.trim() || null,
     bio: input.bio?.trim() || null,
     status: input.status ?? "active",

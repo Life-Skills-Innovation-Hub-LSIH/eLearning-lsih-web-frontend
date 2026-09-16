@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import { normalizeEmail } from "@/shared/lib/email";
 import type { ManagedUser, PaymentDuration, User, UserPaymentStatus } from "@/shared/types";
 
 type ApiUser = {
@@ -72,7 +73,7 @@ export async function createUserApi(token: string, input: UserFormInput): Promis
     first_name: input.firstName,
     last_name: input.lastName,
     username: input.username,
-    email: input.email,
+    email: normalizeEmail(input.email),
     password: input.password ?? "",
     password_confirmation: input.confirmPassword ?? "",
     avatar: input.avatar?.trim() ? input.avatar.trim() : null,
@@ -100,7 +101,7 @@ export async function updateUserApi(
     first_name: input.firstName,
     last_name: input.lastName,
     username: input.username,
-    email: input.email,
+    email: normalizeEmail(input.email),
     avatar: input.avatar?.trim() ? input.avatar.trim() : null,
   };
 

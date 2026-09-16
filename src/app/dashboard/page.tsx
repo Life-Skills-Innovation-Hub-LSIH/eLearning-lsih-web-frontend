@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { RequireAuth } from "@/features/auth";
+import { RequireAuth, useAuth } from "@/features/auth";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
-import { useAuth } from "@/features/auth";
-import { mockCourses } from "@/features/courses";
 
 export default function StudentDashboardPage() {
   return (
@@ -15,8 +13,7 @@ export default function StudentDashboardPage() {
 }
 
 function DashboardContent() {
-  const { user, enrollments, getProgress } = useAuth();
-  const myCourses = mockCourses.filter((course) => enrollments.includes(course.id));
+  const { user, enrollmentRecords, ready } = useAuth();
 
   return (
     <main className="container-page py-12">
@@ -41,33 +38,43 @@ function DashboardContent() {
         </Link>
       </div>
 
-      {myCourses.length === 0 ? (
+      {!ready ? (
+        <div className="surface p-8 text-[var(--muted)]">Loading…</div>
+      ) : enrollmentRecords.length === 0 ? (
         <div className="surface p-8 text-[var(--muted)]">
           No enrollments yet. Open a course and click enroll.
         </div>
       ) : (
         <div className="grid gap-4">
-          {myCourses.map((course) => {
-            const progress = getProgress(course.id);
-            return (
-              <div key={course.id} className="surface p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-display text-2xl text-[var(--ink)]">{course.title}</h2>
-                    <p className="mt-1 text-sm text-[var(--muted)]">
-                      {course.modules.length} modules · video + PDF lessons · quizzes
-                    </p>
-                  </div>
-                  <Link href={`/learn/${course.slug}`} className="btn btn-primary !py-2">
-                    Continue
-                  </Link>
+          {enrollmentRecords.map((item) => (
+            <div key={String(item.id)} className="surface p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-2xl text-[var(--ink)]">
+                    {item.course?.title ?? `Course #${item.course_id}`}
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--muted)] capitalize">
+                    {item.status}
+                    {item.progress
+                      ? ` · ${item.progress.completed_lessons}/${item.progress.total_lessons} lessons · ${item.progress.passed_quizzes}/${item.progress.total_quizzes} quizzes`
+                      : null}
+                  </p>
                 </div>
-                <div className="mt-4">
-                  <ProgressBar value={progress?.percent ?? 0} label="Course progress" />
-                </div>
+                <Link
+                  href={`/learn/${item.course?.slug ?? item.course_id}`}
+                  className="btn btn-primary !py-2"
+                >
+                  Continue
+                </Link>
               </div>
-            );
-          })}
+              <div className="mt-4">
+                <ProgressBar
+                  value={item.progress?.percent ?? 0}
+                  label="Course progress"
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </main>

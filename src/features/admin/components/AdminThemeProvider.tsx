@@ -19,22 +19,23 @@ type AdminThemeContextValue = {
   toggleTheme: () => void;
 };
 
-const STORAGE_KEY = "lsih-admin-theme";
+const STORAGE_KEY = "lsih-admin-theme-v2";
 
 const AdminThemeContext = createContext<AdminThemeContextValue | null>(null);
 
 function readStoredTheme(): AdminTheme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "dark" ? "dark" : "light";
+    if (stored === "light" || stored === "dark") return stored;
+    return "dark";
   } catch {
-    return "light";
+    return "dark";
   }
 }
 
 export function AdminThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<AdminTheme>("light");
+  const [theme, setThemeState] = useState<AdminTheme>("dark");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

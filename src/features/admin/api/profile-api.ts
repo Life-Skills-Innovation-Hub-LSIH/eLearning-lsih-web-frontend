@@ -1,6 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
 import type { ApiUser } from "@/features/auth/api/auth-api";
 import { mapAuthUser } from "@/features/auth/api/auth-api";
+import { normalizeEmail } from "@/shared/lib/email";
 import type { User } from "@/shared/types";
 
 export type ProfileFormInput = {
@@ -18,7 +19,7 @@ export async function updateProfileApi(token: string, input: ProfileFormInput): 
     first_name: input.firstName,
     last_name: input.lastName,
     username: input.username,
-    email: input.email,
+    email: normalizeEmail(input.email),
     avatar: input.avatar?.trim() ? input.avatar.trim() : null,
   };
 

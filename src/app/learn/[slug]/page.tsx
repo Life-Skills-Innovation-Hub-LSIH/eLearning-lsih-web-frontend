@@ -1,18 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { RequireAuth } from "@/features/auth";
+import { RequireAuth, useAuth } from "@/features/auth";
 import { QuizPanel } from "@/features/learning";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
-import { useAuth } from "@/features/auth";
-import { getCourseBySlug } from "@/features/courses";
-import type { Lesson, Quiz } from "@/shared/types";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
+import { ApiError } from "@/shared/api/client";
+import {
+  fetchCatalogCourse,
+  fetchLearnCourse,
+  type CatalogLesson,
+  type CatalogModule,
+  type CatalogQuiz,
+  type ProgressSummary,
+} from "@/features/learning/api/enrollment-api";
 
 type Selection =
-  | { kind: "lesson"; lesson: Lesson; moduleTitle: string }
-  | { kind: "quiz"; quiz: Quiz; moduleTitle?: string };
+  | { kind: "lesson"; lesson: CatalogLesson; moduleTitle: string }
+  | { kind: "quiz"; quiz: CatalogQuiz; moduleTitle: string };
 
 export default function LearnPage() {
   return (
@@ -24,70 +31,151 @@ export default function LearnPage() {
 
 function LearnContent() {
   const params = useParams<{ slug: string }>();
-  const course = getCourseBySlug(params.slug);
-  const { isEnrolled, getProgress, markLessonComplete, markQuizComplete, enroll } = useAuth();
+  const { token, enroll, applyProgressSummary, markLessonComplete, markQuizComplete } =
+    useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [needsEnroll, setNeedsEnroll] = useState(false);
+  const [courseTitle, setCourseTitle] = useState("");
+  const [courseId, setCourseId] = useState("");
+  const [modules, setModules] = useState<CatalogModule[]>([]);
+  const [progress, setProgress] = useState<ProgressSummary | null>(null);
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const [lessonSaving, setLessonSaving] = useState(false);
 
-  const firstLesson = course?.modules[0]?.lessons[0] ?? null;
-  const [selection, setSelection] = useState<Selection | null>(
-    firstLesson
-      ? { kind: "lesson", lesson: firstLesson, moduleTitle: course?.modules[0].title ?? "" }
-      : null,
+  async function load() {
+    if (!token || !params.slug) {
+      setLoading(false);
+      setError("Please log in again.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setNeedsEnroll(false);
+    try {
+      const data = await fetchLearnCourse(token, params.slug);
+      setCourseTitle(data.course.title);
+      setCourseId(String(data.course.id));
+      setModules(data.modules ?? []);
+      setProgress(data.progress);
+      applyProgressSummary(String(data.course.id), data.progress);
+
+      const firstModule = data.modules?.[0];
+      const firstLesson = firstModule?.lessons?.[0];
+      if (firstLesson && firstModule) {
+        setSelection({
+          kind: "lesson",
+          lesson: firstLesson,
+          moduleTitle: firstModule.title,
+        });
+      } else {
+        setSelection(null);
+      }
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        setNeedsEnroll(true);
+        try {
+          const catalog = await fetchCatalogCourse(params.slug);
+          setCourseTitle(catalog.title);
+          setCourseId(String(catalog.id));
+        } catch {
+          // ignore
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load course.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, params.slug]);
+
+  const completedLessonIds = useMemo(
+    () => new Set((progress?.completed_lesson_ids ?? []).map(String)),
+    [progress],
+  );
+  const completedQuizIds = useMemo(
+    () => new Set((progress?.completed_quiz_ids ?? []).map(String)),
+    [progress],
   );
 
-  const progress = course ? getProgress(course.id) : null;
-  const enrolled = course ? isEnrolled(course.id) : false;
-
   const items = useMemo(() => {
-    if (!course) return [];
-    return course.modules.flatMap((module) => [
-      ...module.lessons.map((lesson) => ({
-        key: lesson.id,
+    return modules.flatMap((module) => [
+      ...(module.lessons ?? []).map((lesson) => ({
+        key: `lesson-${lesson.id}`,
         label: lesson.title,
-        meta: `${lesson.type.toUpperCase()} · ${lesson.durationMinutes}m`,
+        meta: `${lesson.content_type === "file" ? "PDF" : lesson.content_type}${
+          lesson.duration_minutes ? ` · ${lesson.duration_minutes}m` : ""
+        }`,
+        done: completedLessonIds.has(String(lesson.id)),
         select: () =>
           setSelection({ kind: "lesson", lesson, moduleTitle: module.title }),
-        done: progress?.completedLessonIds.includes(lesson.id) ?? false,
       })),
-      ...(module.quiz
-        ? [
-            {
-              key: module.quiz.id,
-              label: `Quiz: ${module.quiz.title}`,
-              meta: "End of module",
-              select: () =>
-                setSelection({
-                  kind: "quiz",
-                  quiz: module.quiz!,
-                  moduleTitle: module.title,
-                }),
-              done: progress?.completedQuizIds.includes(module.quiz.id) ?? false,
-            },
-          ]
-        : []),
+      ...(module.quizzes ?? []).map((quiz) => ({
+        key: `quiz-${quiz.id}`,
+        label: `Quiz: ${quiz.title}`,
+        meta: `Pass ${quiz.pass_score}%`,
+        done: completedQuizIds.has(String(quiz.id)),
+        select: () => setSelection({ kind: "quiz", quiz, moduleTitle: module.title }),
+      })),
     ]);
-  }, [course, progress]);
+  }, [modules, completedLessonIds, completedQuizIds]);
 
-  if (!course || course.status !== "published") {
+  if (loading) {
     return (
       <main className="container-page py-12">
-        <p>Course not found.</p>
-        <Link href="/courses" className="text-[var(--brand)]">
-          Back to courses
-        </Link>
+        <PageLoader label="Loading course…" />
       </main>
     );
   }
 
-  if (!enrolled) {
+  if (needsEnroll) {
     return (
       <main className="container-page py-12">
         <div className="surface max-w-xl space-y-4 p-6">
-          <h1 className="font-display text-3xl">{course.title}</h1>
-          <p className="text-[var(--muted)]">Enroll to access lessons and quizzes.</p>
-          <button type="button" className="btn btn-primary" onClick={() => enroll(course.id)}>
-            Enroll now (demo)
+          <h1 className="font-display text-3xl">{courseTitle || "Course"}</h1>
+          <p className="text-[var(--muted)]">
+            Enroll to access lessons and quizzes.
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={enrolling || !courseId}
+            onClick={() => {
+              setEnrolling(true);
+              setError("");
+              void enroll(courseId)
+                .then(() => load())
+                .catch((err) =>
+                  setError(err instanceof Error ? err.message : "Failed to enroll."),
+                )
+                .finally(() => setEnrolling(false));
+            }}
+          >
+            {enrolling ? "Enrolling…" : "Enroll now"}
           </button>
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          <Link href="/courses" className="text-[var(--brand)]">
+            Back to courses
+          </Link>
         </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="container-page py-12">
+        <p className="text-red-600">{error}</p>
+        <Link href="/courses" className="text-[var(--brand)]">
+          Back to courses
+        </Link>
       </main>
     );
   }
@@ -98,7 +186,7 @@ function LearnContent() {
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--brand)]">
           Course player
         </p>
-        <h1 className="mt-2 font-display text-xl leading-snug">{course.title}</h1>
+        <h1 className="mt-2 font-display text-xl leading-snug">{courseTitle}</h1>
         <div className="mt-4">
           <ProgressBar value={progress?.percent ?? 0} label="Progress" />
         </div>
@@ -118,23 +206,6 @@ function LearnContent() {
               <p className="text-[var(--muted)]">{item.meta}</p>
             </button>
           ))}
-
-          {course.courseQuiz ? (
-            <button
-              type="button"
-              onClick={() =>
-                setSelection({ kind: "quiz", quiz: course.courseQuiz! })
-              }
-              className="w-full rounded-xl border border-dashed border-[var(--accent)]/40 px-3 py-2.5 text-left text-sm"
-            >
-              <p className="font-medium text-[var(--ink)]">
-                {(progress?.completedQuizIds.includes(course.courseQuiz.id)
-                  ? "✓ "
-                  : "") + `Final: ${course.courseQuiz.title}`}
-              </p>
-              <p className="text-[var(--muted)]">End of course quiz</p>
-            </button>
-          ) : null}
         </div>
       </aside>
 
@@ -148,25 +219,26 @@ function LearnContent() {
               <h2 className="mt-1 font-display text-3xl text-[var(--ink)]">
                 {selection.lesson.title}
               </h2>
-              <p className="mt-2 text-[var(--muted)]">{selection.lesson.description}</p>
             </div>
 
-            {selection.lesson.type === "video" ? (
+            {selection.lesson.content_type === "video" && selection.lesson.media_url ? (
               <video
-                key={selection.lesson.id}
+                key={String(selection.lesson.id)}
                 controls
                 className="aspect-video w-full rounded-2xl bg-black"
-                src={selection.lesson.mediaUrl}
+                src={selection.lesson.media_url}
               />
-            ) : (
+            ) : null}
+
+            {selection.lesson.content_type === "file" && selection.lesson.media_url ? (
               <div className="space-y-3">
                 <iframe
                   title={selection.lesson.title}
-                  src={selection.lesson.mediaUrl}
+                  src={selection.lesson.media_url}
                   className="h-[70vh] w-full rounded-2xl border border-[var(--line)] bg-white"
                 />
                 <a
-                  href={selection.lesson.mediaUrl}
+                  href={selection.lesson.media_url}
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-secondary"
@@ -174,21 +246,49 @@ function LearnContent() {
                   Open PDF
                 </a>
               </div>
-            )}
+            ) : null}
+
+            {selection.lesson.body ? (
+              <div className="text-sm text-[var(--ink)] whitespace-pre-wrap">
+                {selection.lesson.body}
+              </div>
+            ) : null}
 
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => markLessonComplete(course.id, selection.lesson.id)}
+              disabled={
+                completedLessonIds.has(String(selection.lesson.id)) || lessonSaving
+              }
+              onClick={() => {
+                setLessonSaving(true);
+                void markLessonComplete(courseId, String(selection.lesson.id))
+                  .then((next) => {
+                    if (next) setProgress(next);
+                  })
+                  .finally(() => setLessonSaving(false));
+              }}
             >
-              Mark lesson complete
+              {completedLessonIds.has(String(selection.lesson.id))
+                ? "Lesson completed"
+                : lessonSaving
+                  ? "Saving…"
+                  : "Mark lesson complete"}
             </button>
           </div>
         ) : (
           <QuizPanel
             quiz={selection.quiz}
-            completed={progress?.completedQuizIds.includes(selection.quiz.id) ?? false}
-            onPassed={() => markQuizComplete(course.id, selection.quiz.id)}
+            completed={completedQuizIds.has(String(selection.quiz.id))}
+            onSubmit={async (answers) => {
+              const result = await markQuizComplete(
+                courseId,
+                String(selection.quiz.id),
+                answers,
+              );
+              setProgress(result.progress);
+              return result;
+            }}
           />
         )}
       </section>

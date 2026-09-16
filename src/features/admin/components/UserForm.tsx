@@ -35,6 +35,7 @@ import {
   previewPaidSubscriptionDates,
 } from "../lib/user-store";
 import type { ManagedUser, User, UserPaymentStatus } from "@/shared/types";
+import { normalizeEmail, validateEmailInput } from "@/shared/lib/email";
 
 const roleOptions = [
   { value: "student", label: "Student" },
@@ -93,6 +94,16 @@ export function UserForm({ mode, initialUser }: Props) {
       }
     }
 
+    const normalizedEmail = normalizeEmail(email);
+    if (normalizedEmail !== email) {
+      setEmail(normalizedEmail);
+    }
+    const emailError = validateEmailInput(normalizedEmail);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+
     if (!token) {
       setError("Please log in again to continue.");
       return;
@@ -102,7 +113,7 @@ export function UserForm({ mode, initialUser }: Props) {
       firstName,
       lastName,
       username,
-      email,
+      email: normalizedEmail,
       avatar: avatar.trim() || null,
       ...(mode === "create" ? { role: createRole } : {}),
       ...(showSubscriptionFields ? { status } : {}),
@@ -253,13 +264,23 @@ export function UserForm({ mode, initialUser }: Props) {
             />
           </AdminFormField>
 
-          <AdminFormField id="email" label="Email address" required>
+          <AdminFormField
+            id="email"
+            label="Email address"
+            hint="Spaces and capitals are cleaned up automatically."
+            required
+          >
             <AdminFormInput
               id="email"
               name="user_email"
-              type="email"
+              type="text"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmail(normalizeEmail(email))}
               placeholder="e.g. vanna@gmail.com"
               autoComplete="off"
               required

@@ -13,64 +13,90 @@ import { ApiError } from "@/shared/api/client";
 import { fetchCurrentUser, loginWithApi, logoutWithApi, mapAuthUser } from "../api/auth-api";
 import { homePathForRole } from "../lib/static-users";
 import {
-  loadEnrollments,
-  loadProgress,
   loadToken,
-  saveEnrollments,
-  saveProgress,
   saveToken,
   saveUser,
 } from "../lib/storage";
-import { getCourseBySlug, mockCourses } from "@/features/courses";
+import {
+  completeLessonApi,
+  enrollInCourseApi,
+  fetchMyEnrollments,
+  mapProgressSummary,
+  submitQuizAttemptApi,
+  type EnrollmentRecord,
+  type ProgressSummary,
+} from "@/features/learning/api/enrollment-api";
 
 type AuthContextValue = {
   user: User | null;
   token: string | null;
   ready: boolean;
   enrollments: string[];
+  enrollmentRecords: EnrollmentRecord[];
   progress: EnrollmentProgress[];
   login: (
     email: string,
     password: string,
   ) => Promise<{ ok: true; redirectTo: string } | { ok: false; message: string }>;
-  applySession: (result: { token: string; expires_at: string; user: Parameters<typeof mapAuthUser>[0] }) => string;
+  applySession: (result: {
+    token: string;
+    expires_at: string;
+    user: Parameters<typeof mapAuthUser>[0];
+  }) => string;
   refreshUser: () => Promise<void>;
+  refreshEnrollments: () => Promise<void>;
   logout: () => void;
-  enroll: (courseId: string) => void;
+  enroll: (courseId: string) => Promise<EnrollmentRecord>;
   isEnrolled: (courseId: string) => boolean;
   getProgress: (courseId: string) => EnrollmentProgress | null;
-  markLessonComplete: (courseId: string, lessonId: string) => void;
-  markQuizComplete: (courseId: string, quizId: string) => void;
+  markLessonComplete: (courseId: string, lessonId: string) => Promise<ProgressSummary | null>;
+  markQuizComplete: (
+    courseId: string,
+    quizId: string,
+    answers: Record<string, number | number[]>,
+  ) => Promise<{
+    score_percent: number;
+    passed: boolean;
+    pass_score: number;
+    progress: ProgressSummary;
+  }>;
+  applyProgressSummary: (courseId: string, summary: ProgressSummary) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function calcPercent(courseId: string, completedLessonIds: string[], completedQuizIds: string[]) {
-  const course = mockCourses.find((item) => item.id === courseId);
-  if (!course) return 0;
-
-  const lessonIds = course.modules.flatMap((module) => module.lessons.map((lesson) => lesson.id));
-  const quizIds = [
-    ...course.modules.map((module) => module.quiz?.id).filter(Boolean),
-    course.courseQuiz?.id,
-  ].filter(Boolean) as string[];
-
-  const total = lessonIds.length + quizIds.length;
-  if (total === 0) return 0;
-
-  const done =
-    lessonIds.filter((id) => completedLessonIds.includes(id)).length +
-    quizIds.filter((id) => completedQuizIds.includes(id)).length;
-
-  return Math.round((done / total) * 100);
+function recordsToState(records: EnrollmentRecord[]) {
+  const enrollments = records.map((item) => String(item.course_id));
+  const progress = records.map((item) =>
+    mapProgressSummary(String(item.course_id), item.progress),
+  );
+  return { enrollments, progress };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [enrollmentRecords, setEnrollmentRecords] = useState<EnrollmentRecord[]>([]);
   const [enrollments, setEnrollments] = useState<string[]>([]);
   const [progress, setProgress] = useState<EnrollmentProgress[]>([]);
+
+  const applyEnrollmentRecords = useCallback((records: EnrollmentRecord[]) => {
+    setEnrollmentRecords(records);
+    const next = recordsToState(records);
+    setEnrollments(next.enrollments);
+    setProgress(next.progress);
+  }, []);
+
+  const refreshEnrollments = useCallback(async () => {
+    const savedToken = token ?? loadToken();
+    if (!savedToken) {
+      applyEnrollmentRecords([]);
+      return;
+    }
+    const records = await fetchMyEnrollments(savedToken);
+    applyEnrollmentRecords(records);
+  }, [applyEnrollmentRecords, token]);
 
   useEffect(() => {
     async function restoreSession() {
@@ -79,8 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         saveUser(null);
         setUser(null);
         setToken(null);
-        setEnrollments(loadEnrollments());
-        setProgress(loadProgress());
+        applyEnrollmentRecords([]);
         setReady(true);
         return;
       }
@@ -90,31 +115,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(savedToken);
         setUser(nextUser);
         saveUser(nextUser);
+        if (nextUser.role === "student") {
+          const records = await fetchMyEnrollments(savedToken);
+          applyEnrollmentRecords(records);
+        } else {
+          applyEnrollmentRecords([]);
+        }
       } catch {
         saveToken(null);
         saveUser(null);
         setToken(null);
         setUser(null);
+        applyEnrollmentRecords([]);
       }
 
-      setEnrollments(loadEnrollments());
-      setProgress(loadProgress());
       setReady(true);
     }
 
     void restoreSession();
-  }, []);
+  }, [applyEnrollmentRecords]);
 
   const applySession = useCallback(
-    (result: { token: string; expires_at: string; user: Parameters<typeof mapAuthUser>[0] }) => {
+    (result: {
+      token: string;
+      expires_at: string;
+      user: Parameters<typeof mapAuthUser>[0];
+    }) => {
       const nextUser = mapAuthUser(result.user);
       setUser(nextUser);
       setToken(result.token);
       saveUser(nextUser);
       saveToken(result.token, result.expires_at);
+      if (nextUser.role === "student") {
+        void fetchMyEnrollments(result.token)
+          .then(applyEnrollmentRecords)
+          .catch(() => applyEnrollmentRecords([]));
+      } else {
+        applyEnrollmentRecords([]);
+      }
       return homePathForRole(nextUser.role);
     },
-    [],
+    [applyEnrollmentRecords],
   );
 
   const refreshUser = useCallback(async () => {
@@ -153,92 +194,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     saveUser(null);
     saveToken(null);
-  }, [token]);
+    applyEnrollmentRecords([]);
+  }, [applyEnrollmentRecords, token]);
 
-  const enroll = useCallback((courseId: string) => {
-    setEnrollments((prev) => {
-      if (prev.includes(courseId)) return prev;
-      const next = [...prev, courseId];
-      saveEnrollments(next);
-      return next;
-    });
+  const applyProgressSummary = useCallback((courseId: string, summary: ProgressSummary) => {
     setProgress((prev) => {
-      if (prev.some((item) => item.courseId === courseId)) return prev;
-      const next = [
-        ...prev,
-        {
-          courseId,
-          completedLessonIds: [],
-          completedQuizIds: [],
-          percent: 0,
-        },
-      ];
-      saveProgress(next);
-      return next;
+      const mapped = mapProgressSummary(courseId, summary);
+      return [...prev.filter((item) => item.courseId !== courseId), mapped];
     });
+    setEnrollmentRecords((prev) =>
+      prev.map((item) =>
+        String(item.course_id) === courseId ? { ...item, progress: summary } : item,
+      ),
+    );
   }, []);
 
+  const enroll = useCallback(
+    async (courseId: string) => {
+      const savedToken = token ?? loadToken();
+      if (!savedToken) {
+        throw new Error("Please log in to enroll.");
+      }
+
+      const record = await enrollInCourseApi(savedToken, courseId);
+      setEnrollmentRecords((prev) => {
+        const without = prev.filter((item) => String(item.course_id) !== String(courseId));
+        return [record, ...without];
+      });
+      setEnrollments((prev) =>
+        prev.includes(String(courseId)) ? prev : [...prev, String(courseId)],
+      );
+      applyProgressSummary(
+        String(courseId),
+        record.progress ?? {
+          percent: 0,
+          total_lessons: 0,
+          total_quizzes: 0,
+          completed_lessons: 0,
+          passed_quizzes: 0,
+          completed_lesson_ids: [],
+          completed_quiz_ids: [],
+        },
+      );
+      return record;
+    },
+    [applyProgressSummary, token],
+  );
+
   const isEnrolled = useCallback(
-    (courseId: string) => enrollments.includes(courseId),
+    (courseId: string) => enrollments.includes(String(courseId)),
     [enrollments],
   );
 
   const getProgress = useCallback(
-    (courseId: string) => progress.find((item) => item.courseId === courseId) ?? null,
+    (courseId: string) =>
+      progress.find((item) => item.courseId === String(courseId)) ?? null,
     [progress],
   );
 
-  const updateProgress = useCallback(
-    (
-      courseId: string,
-      updater: (current: EnrollmentProgress) => EnrollmentProgress,
-    ) => {
-      setProgress((prev) => {
-        const existing = prev.find((item) => item.courseId === courseId) ?? {
-          courseId,
-          completedLessonIds: [],
-          completedQuizIds: [],
-          percent: 0,
-        };
-        const updated = updater(existing);
-        updated.percent = calcPercent(
-          courseId,
-          updated.completedLessonIds,
-          updated.completedQuizIds,
-        );
-        const next = [
-          ...prev.filter((item) => item.courseId !== courseId),
-          updated,
-        ];
-        saveProgress(next);
-        return next;
-      });
-    },
-    [],
-  );
-
   const markLessonComplete = useCallback(
-    (courseId: string, lessonId: string) => {
-      updateProgress(courseId, (current) => ({
-        ...current,
-        completedLessonIds: current.completedLessonIds.includes(lessonId)
-          ? current.completedLessonIds
-          : [...current.completedLessonIds, lessonId],
-      }));
+    async (courseId: string, lessonId: string) => {
+      const savedToken = token ?? loadToken();
+      if (!savedToken) return null;
+      const result = await completeLessonApi(savedToken, lessonId);
+      applyProgressSummary(String(courseId), result.progress);
+      return result.progress;
     },
-    [updateProgress],
+    [applyProgressSummary, token],
   );
 
   const markQuizComplete = useCallback(
-    (courseId: string, quizId: string) => {
-      updateProgress(courseId, (current) => ({
-        ...current,
-        completedQuizIds: current.completedQuizIds.includes(quizId)
-          ? current.completedQuizIds
-          : [...current.completedQuizIds, quizId],
-      }));
+    async (
+      courseId: string,
+      quizId: string,
+      answers: Record<string, number | number[]>,
+    ) => {
+      const savedToken = token ?? loadToken();
+      if (!savedToken) {
+        throw new Error("Please log in again.");
+      }
+      const result = await submitQuizAttemptApi(savedToken, quizId, answers);
+      applyProgressSummary(String(courseId), result.progress);
+      return result;
     },
-    [updateProgress],
+    [applyProgressSummary, token],
   );
 
   const value = useMemo(
@@ -247,32 +286,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       ready,
       enrollments,
+      enrollmentRecords,
       progress,
       login,
       applySession,
       refreshUser,
+      refreshEnrollments,
       logout,
       enroll,
       isEnrolled,
       getProgress,
       markLessonComplete,
       markQuizComplete,
+      applyProgressSummary,
     }),
     [
       user,
       token,
       ready,
       enrollments,
+      enrollmentRecords,
       progress,
       login,
       applySession,
       refreshUser,
+      refreshEnrollments,
       logout,
       enroll,
       isEnrolled,
       getProgress,
       markLessonComplete,
       markQuizComplete,
+      applyProgressSummary,
     ],
   );
 
@@ -283,19 +328,4 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
-}
-
-export function useCourseAccess(slug: string) {
-  const { user, isEnrolled, getProgress } = useAuth();
-  const course = getCourseBySlug(slug);
-  const enrolled = course ? isEnrolled(course.id) : false;
-  const progress = course ? getProgress(course.id) : null;
-
-  return {
-    course,
-    enrolled,
-    progress,
-    canManage: user?.role === "admin",
-    isStudent: user?.role === "student",
-  };
 }

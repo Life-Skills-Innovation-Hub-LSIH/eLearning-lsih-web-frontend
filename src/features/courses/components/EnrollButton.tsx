@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "@/features/auth";
+import { ApiError } from "@/shared/api/client";
 
 type Props = {
   courseId: string;
@@ -11,8 +13,10 @@ type Props = {
 };
 
 export function EnrollButton({ courseId, slug, price }: Props) {
-  const { user, ready, isEnrolled, enroll } = useAuth();
+  const { user, ready, token, isEnrolled, enroll } = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const enrolled = isEnrolled(courseId);
 
   if (!ready) {
@@ -44,15 +48,35 @@ export function EnrollButton({ courseId, slug, price }: Props) {
   }
 
   return (
-    <button
-      type="button"
-      className="btn btn-primary w-full"
-      onClick={() => {
-        enroll(courseId);
-        router.push(`/learn/${slug}`);
-      }}
-    >
-      {price === 0 ? "Enroll for free" : "Purchase & enroll (demo)"}
-    </button>
+    <div className="space-y-2">
+      <button
+        type="button"
+        className="btn btn-primary w-full"
+        disabled={loading || !token}
+        onClick={() => {
+          setLoading(true);
+          setError("");
+          void enroll(courseId)
+            .then(() => router.push(`/learn/${slug}`))
+            .catch((err) => {
+              setError(
+                err instanceof ApiError
+                  ? err.message
+                  : err instanceof Error
+                    ? err.message
+                    : "Failed to enroll.",
+              );
+            })
+            .finally(() => setLoading(false));
+        }}
+      >
+        {loading
+          ? "Enrolling…"
+          : price === 0
+            ? "Enroll for free"
+            : "Enroll in course"}
+      </button>
+      {error ? <p className="text-center text-xs text-red-600">{error}</p> : null}
+    </div>
   );
 }

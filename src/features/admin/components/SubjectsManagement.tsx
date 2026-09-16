@@ -158,11 +158,13 @@ export function SubjectsManagement() {
           </div>
         ) : null}
 
-        <Table className="min-w-[720px]">
+        <Table className="min-w-[820px]">
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               <TableHead className="px-4">Subject</TableHead>
               <TableHead className="px-4">Code</TableHead>
+              <TableHead className="px-4">Courses</TableHead>
+              <TableHead className="px-4">Lecturers</TableHead>
               <TableHead className="px-4">Status</TableHead>
               <TableHead className="px-4">Created</TableHead>
               <TableHead className="w-12 px-4" />
@@ -171,19 +173,19 @@ export function SubjectsManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-8">
+                <TableCell colSpan={7} className="px-4 py-8">
                   <PageLoader compact label="Loading subjects…" />
                 </TableCell>
               </TableRow>
             ) : loadError ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-destructive">
+                <TableCell colSpan={7} className="px-4 py-16 text-center text-destructive">
                   {loadError}
                 </TableCell>
               </TableRow>
             ) : filteredSubjects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="px-4 py-16 text-center text-muted-foreground">
                   {search ? (
                     "No subjects match your search."
                   ) : (
@@ -217,6 +219,12 @@ export function SubjectsManagement() {
                   </TableCell>
                   <TableCell className="px-4 py-4 text-muted-foreground">
                     {subject.code || "—"}
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground">
+                    {subject.coursesCount ?? 0}
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground">
+                    {subject.lecturersCount ?? 0}
                   </TableCell>
                   <TableCell className="px-4 py-4">
                     <Badge

@@ -206,6 +206,8 @@ export interface Subject {
   description: string | null;
   icon?: string | null;
   status: SubjectStatus;
+  coursesCount?: number;
+  lecturersCount?: number;
   createdAt: string;
   updatedAt?: string;
 }

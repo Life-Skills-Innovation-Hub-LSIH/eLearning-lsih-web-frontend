@@ -9,6 +9,8 @@ type ApiSubject = {
   description?: string | null;
   icon?: string | null;
   status: SubjectStatus;
+  courses_count?: number;
+  lecturers_count?: number;
   created_at: string;
   updated_at?: string;
 };
@@ -30,6 +32,8 @@ function mapSubject(subject: ApiSubject): Subject {
     description: subject.description ?? null,
     icon: subject.icon ?? null,
     status: subject.status,
+    coursesCount: subject.courses_count ?? 0,
+    lecturersCount: subject.lecturers_count ?? 0,
     createdAt: subject.created_at,
     updatedAt: subject.updated_at,
   };

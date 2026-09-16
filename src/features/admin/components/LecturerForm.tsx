@@ -26,6 +26,7 @@ import { AdminPageLayout } from "./AdminPageLayout";
 import { LecturerAvatarUploadField } from "./LecturerAvatarUploadField";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { LecturerStatus, Subject } from "@/shared/types";
+import { normalizeEmail, validateEmailInput } from "@/shared/lib/email";
 
 type Props = {
   mode: "create" | "edit";
@@ -105,11 +106,23 @@ export function LecturerForm({ mode, lecturerId }: Props) {
       return;
     }
 
+    const normalizedEmail = normalizeEmail(email);
+    if (normalizedEmail !== email) {
+      setEmail(normalizedEmail);
+    }
+    if (normalizedEmail) {
+      const emailError = validateEmailInput(normalizedEmail);
+      if (emailError) {
+        setError(emailError);
+        return;
+      }
+    }
+
     const input: LecturerFormInput = {
       name: name.trim(),
       title: title.trim() || null,
       slug: undefined,
-      email: email.trim() || null,
+      email: normalizedEmail || null,
       bio: bio.trim() || null,
       avatar: avatar.trim() || null,
       status,
@@ -202,12 +215,21 @@ export function LecturerForm({ mode, lecturerId }: Props) {
                 placeholder="e.g. Senior Instructor"
               />
             </AdminFormField>
-            <AdminFormField id="email" label="Email">
+            <AdminFormField
+              id="email"
+              label="Email"
+              hint="Optional. Spaces and capitals are cleaned up automatically."
+            >
               <AdminFormInput
                 id="email"
-                type="email"
+                type="text"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setEmail(normalizeEmail(email))}
                 placeholder="lecturer@example.com"
               />
             </AdminFormField>

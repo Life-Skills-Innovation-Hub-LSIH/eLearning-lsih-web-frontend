@@ -21,6 +21,7 @@ import {
 import { AdminPageLayout } from "./AdminPageLayout";
 import { RoleBadge } from "./RoleBadge";
 import { formatRoleLabel } from "../lib/user-store";
+import { normalizeEmail, validateEmailInput } from "@/shared/lib/email";
 
 export function AccountSettingsForm() {
   const router = useRouter();
@@ -78,6 +79,16 @@ export function AccountSettingsForm() {
       }
     }
 
+    const normalizedEmail = normalizeEmail(email);
+    if (normalizedEmail !== email) {
+      setEmail(normalizedEmail);
+    }
+    const emailError = validateEmailInput(normalizedEmail);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+
     if (!token) {
       setError("Please log in again to continue.");
       return;
@@ -90,7 +101,7 @@ export function AccountSettingsForm() {
         firstName,
         lastName,
         username,
-        email,
+        email: normalizedEmail,
         avatar: avatar.trim() || null,
         ...(password ? { password, confirmPassword } : {}),
       });
@@ -205,12 +216,22 @@ export function AccountSettingsForm() {
             />
           </AdminFormField>
 
-          <AdminFormField id="email" label="Email address" required>
+          <AdminFormField
+            id="email"
+            label="Email address"
+            hint="Spaces and capitals are cleaned up automatically."
+            required
+          >
             <AdminFormInput
               id="email"
-              type="email"
+              type="text"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmail(normalizeEmail(email))}
               required
             />
           </AdminFormField>
