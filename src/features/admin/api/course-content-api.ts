@@ -201,7 +201,7 @@ export async function createModuleApi(
       title: input.title,
       description: input.description?.trim() || null,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
     },
   });
   return mapModule(response.data);
@@ -219,7 +219,7 @@ export async function updateModuleApi(
       title: input.title,
       description: input.description?.trim() || null,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
     },
   });
   return mapModule(response.data);
@@ -244,7 +244,7 @@ export async function createLessonApi(
       media_url: input.mediaUrl?.trim() || null,
       duration_minutes: input.durationMinutes ?? null,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
     },
   });
   return mapLesson(response.data);
@@ -265,7 +265,7 @@ export async function updateLessonApi(
       media_url: input.mediaUrl?.trim() || null,
       duration_minutes: input.durationMinutes ?? null,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
     },
   });
   return mapLesson(response.data);
@@ -289,7 +289,7 @@ export async function createQuizApi(
       lesson_id: input.lessonId ? Number(input.lessonId) : null,
       pass_score: input.passScore ?? 70,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
       questions: questionsBody(input.questions),
     },
   });
@@ -310,7 +310,7 @@ export async function updateQuizApi(
       lesson_id: input.lessonId ? Number(input.lessonId) : null,
       pass_score: input.passScore ?? 70,
       position: input.position,
-      status: input.status ?? "draft",
+      status: input.status ?? "published",
       questions: questionsBody(input.questions),
     },
   });

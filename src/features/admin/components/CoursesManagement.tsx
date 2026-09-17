@@ -236,7 +236,7 @@ export function CoursesManagement() {
                       ) : (
                         (course.subjects ?? []).slice(0, 3).map((subject) => (
                           <Badge key={subject.id} variant="outline" className="font-normal">
-                            {subject.code || subject.name}
+                            {subject.name}
                           </Badge>
                         ))
                       )}

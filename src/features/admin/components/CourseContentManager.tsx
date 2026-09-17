@@ -100,13 +100,13 @@ export function CourseContentManager({ courseId }: Props) {
   } | null>(null);
   const [quizDialog, setQuizDialog] = useState<{
     module: ManagedModule;
-    lesson: ManagedLesson;
+    lesson?: ManagedLesson;
     quiz?: ManagedQuiz;
   } | null>(null);
 
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleDescription, setModuleDescription] = useState("");
-  const [moduleStatus, setModuleStatus] = useState<CoursePublishStatus>("draft");
+  const [moduleStatus, setModuleStatus] = useState<CoursePublishStatus>("published");
   const [savingModule, setSavingModule] = useState(false);
 
   async function load() {
@@ -139,7 +139,7 @@ export function CourseContentManager({ courseId }: Props) {
   function openAddModule() {
     setModuleTitle("");
     setModuleDescription("");
-    setModuleStatus("draft");
+    setModuleStatus("published");
     setAddModuleOpen(true);
   }
 
@@ -159,8 +159,10 @@ export function CourseContentManager({ courseId }: Props) {
       setLessonDialog({ module: updated, lesson });
     }
     if (quizDialog?.module.id === updated.id) {
-      const lesson =
-        (updated.lessons ?? []).find((item) => item.id === quizDialog.lesson.id) ?? quizDialog.lesson;
+      const lesson = quizDialog.lesson
+        ? (updated.lessons ?? []).find((item) => item.id === quizDialog.lesson!.id) ??
+          quizDialog.lesson
+        : undefined;
       const quiz = quizDialog.quiz
         ? (updated.quizzes ?? []).find((item) => item.id === quizDialog.quiz!.id) ?? quizDialog.quiz
         : undefined;
@@ -186,7 +188,7 @@ export function CourseContentManager({ courseId }: Props) {
       setAddModuleOpen(false);
       setModuleTitle("");
       setModuleDescription("");
-      setModuleStatus("draft");
+      setModuleStatus("published");
       setSuccess("Module created.");
     } catch (err) {
       if (err instanceof ApiError) {
@@ -393,6 +395,15 @@ export function CourseContentManager({ courseId }: Props) {
                               },
                             },
                             {
+                              label: "Add quiz",
+                              onClick: () => {
+                                setCollapsedModuleIds((prev) =>
+                                  prev.filter((id) => id !== module.id),
+                                );
+                                setQuizDialog({ module });
+                              },
+                            },
+                            {
                               label: "Delete module",
                               destructive: true,
                               onClick: () => void onDeleteModule(module),
@@ -412,7 +423,9 @@ export function CourseContentManager({ courseId }: Props) {
                           onSuccess={setSuccess}
                           onEditLesson={(lesson) => setLessonDialog({ module, lesson })}
                           onAddQuiz={(lesson) => setQuizDialog({ module, lesson })}
-                          onEditQuiz={(lesson, quiz) => setQuizDialog({ module, lesson, quiz })}
+                          onEditQuiz={(lesson, quiz) =>
+                            setQuizDialog({ module, lesson: lesson ?? undefined, quiz })
+                          }
                         />
                       </div>
                     ) : null}
@@ -761,7 +774,7 @@ function ModuleExpandedPanel({
   onSuccess: (message: string) => void;
   onEditLesson: (lesson: ManagedLesson) => void;
   onAddQuiz: (lesson: ManagedLesson) => void;
-  onEditQuiz: (lesson: ManagedLesson, quiz: ManagedQuiz) => void;
+  onEditQuiz: (lesson: ManagedLesson | null, quiz: ManagedQuiz) => void;
 }) {
   const quizzes = module.quizzes ?? [];
   const orphanQuizzes = quizzes.filter((quiz) => !quiz.lessonId);
@@ -1013,30 +1026,72 @@ function ModuleExpandedPanel({
       )}
 
       {orphanQuizzes.length > 0 ? (
-        <div className="rounded-xl border border-dashed border-border/60 px-3 py-3">
-          <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Unlinked quizzes
+        <div className="space-y-2">
+          <p className="px-1 text-xs font-semibold tracking-wide text-foreground/70 uppercase">
+            Module quizzes
           </p>
-          <ul className="space-y-1">
-            {orphanQuizzes.map((quiz) => (
-              <li
-                key={quiz.id}
-                className="flex items-center justify-between gap-2 py-1.5 text-sm"
-              >
-                <span className="truncate">{quiz.title}</span>
-                <div className="flex shrink-0 items-center gap-1">
-                  <ActionMenu
-                    items={[
-                      {
-                        label: "Delete quiz",
-                        destructive: true,
-                        onClick: () => void removeQuiz(quiz),
-                      },
-                    ]}
-                  />
-                </div>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {orphanQuizzes.map((quiz, quizIndex) => {
+              const questionCount =
+                (quiz.questions ?? []).length || quiz.questionsCount || 0;
+
+              return (
+                <li
+                  key={quiz.id}
+                  className="rounded-xl border border-border/70 bg-background/60 px-3 py-2.5"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="inline-flex shrink-0 items-center rounded-md bg-violet-600 px-2 py-1 text-xs font-bold text-white">
+                      Quiz {quizIndex + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-medium">{quiz.title}</p>
+                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
+                          End of module
+                        </span>
+                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
+                          Pass {quiz.passScore}%
+                        </span>
+                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
+                          {questionCount} question{questionCount === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      {(quiz.questions ?? []).length > 0 ? (
+                        <ul className="mt-2 space-y-1.5">
+                          {(quiz.questions ?? []).map((question, questionIndex) => (
+                            <li
+                              key={question.id ?? `${quiz.id}-q-${questionIndex}`}
+                              className="rounded-md bg-muted/30 px-2.5 py-1.5"
+                            >
+                              <p className="text-xs font-medium">
+                                <span className="mr-1 text-muted-foreground">
+                                  Q{questionIndex + 1}.
+                                </span>
+                                {question.questionText}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                    <ActionMenu
+                      items={[
+                        {
+                          label: "Edit quiz",
+                          onClick: () => onEditQuiz(null, quiz),
+                        },
+                        {
+                          label: "Delete quiz",
+                          destructive: true,
+                          onClick: () => void removeQuiz(quiz),
+                        },
+                      ]}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : null}
@@ -1076,7 +1131,7 @@ function LessonFormDialog({
   const [lessonMedia, setLessonMedia] = useState("");
   const [videoSource, setVideoSource] = useState<"upload" | "link">("upload");
   const [lessonDuration, setLessonDuration] = useState("");
-  const [lessonStatus, setLessonStatus] = useState<CoursePublishStatus>("draft");
+  const [lessonStatus, setLessonStatus] = useState<CoursePublishStatus>("published");
   const [savingLesson, setSavingLesson] = useState(false);
 
   useEffect(() => {
@@ -1099,7 +1154,7 @@ function LessonFormDialog({
     setLessonMedia("");
     setVideoSource("upload");
     setLessonDuration("");
-    setLessonStatus("draft");
+    setLessonStatus("published");
   }, [open, lesson]);
 
   async function saveLesson(event: FormEvent) {
@@ -1368,7 +1423,7 @@ function QuizFormDialog({
   onOpenChange: (open: boolean) => void;
   token: string;
   module: ManagedModule;
-  lesson: ManagedLesson;
+  lesson?: ManagedLesson;
   quiz?: ManagedQuiz;
   onChange: (module: ManagedModule) => void;
   onError: (message: string) => void;
@@ -1377,7 +1432,7 @@ function QuizFormDialog({
   const isEdit = Boolean(quiz);
   const [quizTitle, setQuizTitle] = useState("");
   const [quizPass, setQuizPass] = useState("70");
-  const [quizStatus, setQuizStatus] = useState<CoursePublishStatus>("draft");
+  const [quizStatus, setQuizStatus] = useState<CoursePublishStatus>("published");
   const [questions, setQuestions] = useState<ManagedQuizQuestion[]>([emptyQuestion()]);
   const [savingQuiz, setSavingQuiz] = useState(false);
 
@@ -1402,7 +1457,7 @@ function QuizFormDialog({
     }
     setQuizTitle("");
     setQuizPass("70");
-    setQuizStatus("draft");
+    setQuizStatus("published");
     setQuestions([emptyQuestion()]);
   }, [open, quiz]);
 
@@ -1431,7 +1486,7 @@ function QuizFormDialog({
 
     const payload = {
       title: quizTitle.trim(),
-      lessonId: lesson.id,
+      lessonId: lesson?.id ?? null,
       passScore: Number(quizPass) || 70,
       status: quizStatus,
       questions: cleaned,
@@ -1481,7 +1536,7 @@ function QuizFormDialog({
           <DialogDescription className="flex flex-wrap items-center gap-1.5 text-sm">
             <span className="text-muted-foreground">for</span>
             <span className="inline-flex max-w-full items-center rounded-full border border-border/80 px-2.5 py-0.5 text-xs font-medium text-foreground">
-              {lesson.title}
+              {lesson ? lesson.title : `${module.title} · end of module`}
             </span>
           </DialogDescription>
         </DialogHeader>

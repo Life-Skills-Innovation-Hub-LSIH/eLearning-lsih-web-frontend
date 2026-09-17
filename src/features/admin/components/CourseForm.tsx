@@ -49,7 +49,7 @@ export function CourseForm({ mode, courseId }: Props) {
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [level, setLevel] = useState<CourseLevel | "">("");
-  const [status, setStatus] = useState<CoursePublishStatus>("draft");
+  const [status, setStatus] = useState<CoursePublishStatus>("published");
   const [lecturerId, setLecturerId] = useState("");
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
