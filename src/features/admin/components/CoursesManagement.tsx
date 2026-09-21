@@ -84,6 +84,18 @@ export function CoursesManagement() {
     );
   }, [courses, search]);
 
+  const contentTotals = useMemo(() => {
+    return filteredCourses.reduce(
+      (acc, course) => {
+        acc.modules += course.modulesCount ?? 0;
+        acc.lessons += course.lessonsCount ?? 0;
+        acc.quizzes += course.quizzesCount ?? 0;
+        return acc;
+      },
+      { modules: 0, lessons: 0, quizzes: 0 },
+    );
+  }, [filteredCourses]);
+
   async function onDelete(course: ManagedCourse) {
     if (!token) {
       setActionError("Please log in again to delete a course.");
@@ -110,39 +122,32 @@ export function CoursesManagement() {
   }
 
   return (
-    <AdminPageLayout
-      title="Courses"
-      description="Create a course first, then add modules, lessons, and quizzes inside it."
-      actions={
+    <AdminPageLayout>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
+              {loading ? "…" : contentTotals.modules}
+            </span>
+            modules
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
+              {loading ? "…" : contentTotals.lessons}
+            </span>
+            lessons
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
+              {loading ? "…" : contentTotals.quizzes}
+            </span>
+            quizzes
+          </span>
+        </div>
         <Button render={<Link href="/admin/courses/create" />}>
           <Plus />
-          Add course
+          Create course
         </Button>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Total courses
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {loading ? "…" : courses.length}
-          </p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Published
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {loading ? "…" : courses.filter((item) => item.status === "published").length}
-          </p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Draft</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {loading ? "…" : courses.filter((item) => item.status === "draft").length}
-          </p>
-        </div>
       </div>
 
       <Card className="gap-0 overflow-hidden py-0 shadow-sm">
@@ -215,7 +220,13 @@ export function CoursesManagement() {
                       <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary/10 text-primary">
                         {course.coverImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={course.coverImage} alt="" className="size-full object-cover" />
+                          <img
+                            src={course.coverImage}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="size-full object-cover"
+                          />
                         ) : (
                           <BookOpen className="size-4" />
                         )}
@@ -225,6 +236,10 @@ export function CoursesManagement() {
                         <p className="truncate text-sm text-muted-foreground">
                           {course.code || course.slug}
                           {course.lecturer ? ` · ${course.lecturer.name}` : ""}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {course.modulesCount ?? 0} modules · {course.lessonsCount ?? 0} lessons ·{" "}
+                          {course.quizzesCount ?? 0} quizzes
                         </p>
                       </div>
                     </div>

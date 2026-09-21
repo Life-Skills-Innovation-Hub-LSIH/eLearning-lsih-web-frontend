@@ -104,31 +104,24 @@ export function LecturersManagement() {
   }
 
   return (
-    <AdminPageLayout
-      title="Lecturers"
-      description="Manage lecturer profiles for subjects and courses."
-      actions={
+    <AdminPageLayout>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : lecturers.length}</span>
+            lecturers
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
+              {loading ? "…" : lecturers.filter((item) => item.status === "active").length}
+            </span>
+            active
+          </span>
+        </div>
         <Button render={<Link href="/admin/lecturers/create" />}>
           <Plus />
-          Add lecturer
+          Create lecturer
         </Button>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Total lecturers
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{loading ? "…" : lecturers.length}</p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Active
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {loading ? "…" : lecturers.filter((item) => item.status === "active").length}
-          </p>
-        </div>
       </div>
 
       <Card className="gap-0 overflow-hidden py-0 shadow-sm">

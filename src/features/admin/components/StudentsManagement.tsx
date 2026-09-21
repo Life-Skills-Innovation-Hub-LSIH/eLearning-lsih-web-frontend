@@ -124,29 +124,26 @@ export function StudentsManagement() {
   );
 
   return (
-    <AdminPageLayout
-      title="Students"
-      description="Student accounts and course progress."
-      actions={
+    <AdminPageLayout>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.total}</span>
+            students
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.paid}</span>
+            paid
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.unpaid}</span>
+            unpaid
+          </span>
+        </div>
         <Button render={<Link href="/admin/users/create" />}>
           <Plus />
-          Add student
+          Create student
         </Button>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          { label: "Total students", value: loading ? "—" : stats.total },
-          { label: "Paid", value: loading ? "—" : stats.paid },
-          { label: "Unpaid", value: loading ? "—" : stats.unpaid },
-        ].map((stat) => (
-          <div key={stat.label} className="admin-stat-card">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              {stat.label}
-            </p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight">{stat.value}</p>
-          </div>
-        ))}
       </div>
 
       <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">

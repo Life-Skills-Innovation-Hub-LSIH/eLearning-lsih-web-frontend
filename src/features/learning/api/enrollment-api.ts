@@ -215,3 +215,61 @@ export async function fetchStudentProgressAdmin(token: string, userId: string) {
   }>(`/admin/students/${userId}/progress`, { token });
   return payload.data;
 }
+
+export async function fetchCertificateStatus(
+  token: string,
+  courseIdOrSlug: string | number,
+): Promise<{
+  eligible: boolean;
+  issued: boolean;
+  certificate_number?: string | null;
+  issued_at?: string | null;
+}> {
+  const payload = await apiRequest<{
+    data: {
+      eligible: boolean;
+      issued: boolean;
+      certificate_number?: string | null;
+      issued_at?: string | null;
+    };
+  }>(`/certificates/course/${encodeURIComponent(String(courseIdOrSlug))}`, { token });
+  return payload.data;
+}
+
+export async function downloadCourseCertificatePdf(
+  token: string,
+  courseIdOrSlug: string | number,
+  courseTitle?: string,
+): Promise<void> {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+  const response = await fetch(
+    `${API_URL}/certificates/course/${encodeURIComponent(String(courseIdOrSlug))}/pdf`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/pdf",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(body?.message ?? `Failed to download certificate (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const slug = (courseTitle || String(courseIdOrSlug))
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  anchor.href = url;
+  anchor.download = `certificate-${slug || "course"}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}

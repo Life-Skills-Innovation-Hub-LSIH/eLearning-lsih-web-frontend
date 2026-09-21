@@ -56,6 +56,9 @@ export interface ManagedCourse {
     code: string | null;
     slug: string;
   }>;
+  modulesCount?: number;
+  lessonsCount?: number;
+  quizzesCount?: number;
   createdAt: string;
   updatedAt?: string;
 }

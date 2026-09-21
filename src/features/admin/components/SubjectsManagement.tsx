@@ -104,33 +104,24 @@ export function SubjectsManagement() {
   }
 
   return (
-    <AdminPageLayout
-      title="Subjects"
-      description="Manage subject catalog for lecturers and courses."
-      actions={
+    <AdminPageLayout>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : subjects.length}</span>
+            subjects
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">
+              {loading ? "…" : subjects.filter((item) => item.status === "active").length}
+            </span>
+            active
+          </span>
+        </div>
         <Button render={<Link href="/admin/subjects/create" />}>
           <Plus />
-          Add subject
+          Create subject
         </Button>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Total subjects
-          </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
-            {loading ? "—" : subjects.length}
-          </p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Active
-          </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
-            {loading ? "—" : subjects.filter((item) => item.status === "active").length}
-          </p>
-        </div>
       </div>
 
       <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">

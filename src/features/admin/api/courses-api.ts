@@ -30,6 +30,9 @@ type ApiCourse = {
   lecturer?: ApiCourseLecturer | null;
   subject_ids?: Array<number | string>;
   subjects?: ApiCourseSubject[];
+  modules_count?: number;
+  lessons_count?: number;
+  quizzes_count?: number;
   created_at: string;
   updated_at?: string;
 };
@@ -77,6 +80,9 @@ function mapCourse(course: ApiCourse): ManagedCourse {
       : null,
     subjectIds: (course.subject_ids ?? subjects.map((s) => s.id)).map(String),
     subjects,
+    modulesCount: course.modules_count ?? 0,
+    lessonsCount: course.lessons_count ?? 0,
+    quizzesCount: course.quizzes_count ?? 0,
     createdAt: course.created_at,
     updatedAt: course.updated_at,
   };

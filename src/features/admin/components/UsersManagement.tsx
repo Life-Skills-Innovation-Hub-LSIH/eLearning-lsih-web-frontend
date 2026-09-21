@@ -181,30 +181,30 @@ export function UsersManagement() {
   }, [users]);
 
   return (
-    <AdminPageLayout
-      title="Users"
-      description="Manage student accounts, admin access and subscription status."
-      actions={
+    <AdminPageLayout>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.total}</span>
+            users
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.students}</span>
+            students
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.admins}</span>
+            admins
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
+            <span className="tabular-nums text-primary">{loading ? "…" : stats.paid}</span>
+            paid students
+          </span>
+        </div>
         <Button render={<Link href="/admin/users/create" />}>
           <Plus />
-          Add user
+          Create user
         </Button>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "Total users", value: loading ? "—" : stats.total },
-          { label: "Students", value: loading ? "—" : stats.students },
-          { label: "Admins", value: loading ? "—" : stats.admins },
-          { label: "Paid students", value: loading ? "—" : stats.paid },
-        ].map((stat) => (
-          <div key={stat.label} className="admin-stat-card">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              {stat.label}
-            </p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight">{stat.value}</p>
-          </div>
-        ))}
       </div>
 
       <Card className="gap-0 overflow-hidden border-border/80 py-0 shadow-sm">

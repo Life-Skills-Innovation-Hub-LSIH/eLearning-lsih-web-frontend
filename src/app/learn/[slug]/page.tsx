@@ -9,6 +9,7 @@ import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import { ApiError } from "@/shared/api/client";
 import {
+  downloadCourseCertificatePdf,
   fetchCatalogCourse,
   fetchLearnCourse,
   type CatalogLesson,
@@ -43,6 +44,8 @@ function LearnContent() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [lessonSaving, setLessonSaving] = useState(false);
+  const [certDownloading, setCertDownloading] = useState(false);
+  const [certError, setCertError] = useState("");
 
   async function load() {
     if (!token || !params.slug) {
@@ -127,6 +130,26 @@ function LearnContent() {
     ]);
   }, [modules, completedLessonIds, completedQuizIds]);
 
+  const canDownloadCertificate =
+    (progress?.percent ?? 0) >= 100 &&
+    (progress?.total_quizzes ?? 0) > 0 &&
+    progress?.passed_quizzes === progress?.total_quizzes &&
+    ((progress?.total_lessons ?? 0) === 0 ||
+      progress?.completed_lessons === progress?.total_lessons);
+
+  async function onDownloadCertificate() {
+    if (!token || !params.slug) return;
+    setCertDownloading(true);
+    setCertError("");
+    try {
+      await downloadCourseCertificatePdf(token, params.slug, courseTitle);
+    } catch (err) {
+      setCertError(err instanceof Error ? err.message : "Failed to download certificate.");
+    } finally {
+      setCertDownloading(false);
+    }
+  }
+
   if (loading) {
     return (
       <main className="container-page py-12">
@@ -190,6 +213,22 @@ function LearnContent() {
         <div className="mt-4">
           <ProgressBar value={progress?.percent ?? 0} label="Progress" />
         </div>
+
+        {canDownloadCertificate ? (
+          <button
+            type="button"
+            className="mt-4 w-full rounded-full bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+            disabled={certDownloading}
+            onClick={() => void onDownloadCertificate()}
+          >
+            {certDownloading ? "Preparing PDF…" : "Download certificate (PDF)"}
+          </button>
+        ) : (
+          <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+            Certificate unlocks when you finish all lessons and pass every quiz (usually 70%+).
+          </p>
+        )}
+        {certError ? <p className="mt-2 text-xs text-red-600">{certError}</p> : null}
 
         <div className="mt-5 space-y-2">
           {items.map((item) => (
