@@ -190,9 +190,9 @@ export function LecturersManagement() {
             ) : (
               filteredLecturers.map((lecturer) => (
                 <TableRow key={lecturer.id}>
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+                  <TableCell className="px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
                         {lecturer.avatar ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={lecturer.avatar} alt="" className="size-full object-cover" />
@@ -201,35 +201,44 @@ export function LecturersManagement() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium">{lecturer.name}</p>
-                        <p className="truncate text-sm text-muted-foreground">
+                        <p className="font-medium leading-tight">{lecturer.name}</p>
+                        <p className="truncate text-sm leading-tight text-muted-foreground">
                           {lecturer.title || lecturer.email || lecturer.slug}
                         </p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div className="flex max-w-[220px] flex-wrap gap-1.5">
-                      {(lecturer.subjects ?? []).length === 0 ? (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      ) : (
-                        (lecturer.subjects ?? []).slice(0, 3).map((subject) => (
-                          <Badge key={subject.id} variant="outline" className="font-normal">
-                            {subject.name}
-                          </Badge>
-                        ))
-                      )}
-                      {(lecturer.subjects ?? []).length > 3 ? (
-                        <Badge variant="outline" className="font-normal text-muted-foreground">
-                          +{(lecturer.subjects ?? []).length - 3}
+                  <TableCell className="px-4 py-2.5">
+                    {(lecturer.subjects ?? []).length === 0 ? (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className="max-w-[160px] truncate font-normal"
+                          title={(lecturer.subjects ?? [])[0]?.name}
+                        >
+                          {(lecturer.subjects ?? [])[0]?.name}
                         </Badge>
-                      ) : null}
-                    </div>
+                        {(lecturer.subjects ?? []).length > 1 ? (
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 font-normal text-muted-foreground"
+                            title={(lecturer.subjects ?? [])
+                              .slice(1)
+                              .map((s) => s.name)
+                              .join(", ")}
+                          >
+                            +{(lecturer.subjects ?? []).length - 1}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    )}
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-muted-foreground">
+                  <TableCell className="px-4 py-2.5 text-muted-foreground">
                     {lecturer.code || "—"}
                   </TableCell>
-                  <TableCell className="px-4 py-4">
+                  <TableCell className="px-4 py-2.5">
                     <Badge
                       variant="outline"
                       className={
@@ -241,10 +250,10 @@ export function LecturersManagement() {
                       {lecturer.status === "active" ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-muted-foreground">
+                  <TableCell className="px-4 py-2.5 text-muted-foreground">
                     {formatDate(lecturer.createdAt)}
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-right">
+                  <TableCell className="px-4 py-2.5 text-right">
                     <ActionMenu
                       items={[
                         {
