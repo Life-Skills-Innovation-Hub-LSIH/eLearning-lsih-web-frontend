@@ -19,19 +19,17 @@ import {
   TableRow,
 } from "@/features/admin/shadcn";
 import { fetchUsers } from "../api/users-api";
-import { fetchStudentProgressAdmin, type EnrollmentRecord } from "@/features/learning/api/enrollment-api";
 import { ActionMenu } from "./ActionMenu";
+import {
+  AdminTablePagination,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateItems,
+  type AdminPageSize,
+} from "./AdminTablePagination";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { StatusBadge } from "./RoleBadge";
 import { formatAdminDate } from "../lib/user-store";
 import type { ManagedUser } from "@/shared/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/features/admin/shadcn";
 
 function studentDisplayName(user: ManagedUser) {
   return `${user.firstName} ${user.lastName}`.trim() || user.username;
@@ -53,32 +51,8 @@ export function StudentsManagement() {
   const [search, setSearch] = useState("");
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [progressOpen, setProgressOpen] = useState(false);
-  const [progressLoading, setProgressLoading] = useState(false);
-  const [progressError, setProgressError] = useState("");
-  const [progressStudent, setProgressStudent] = useState<ManagedUser | null>(null);
-  const [progressEnrollments, setProgressEnrollments] = useState<EnrollmentRecord[]>([]);
-
-  async function openProgress(student: ManagedUser) {
-    if (!token) return;
-    setProgressStudent(student);
-    setProgressOpen(true);
-    setProgressLoading(true);
-    setProgressError("");
-    try {
-      const data = await fetchStudentProgressAdmin(token, student.id);
-      setProgressEnrollments(
-        Array.isArray(data.enrollments)
-          ? data.enrollments
-          : ((data.enrollments as { data?: EnrollmentRecord[] })?.data ?? []),
-      );
-    } catch (error) {
-      setProgressEnrollments([]);
-      setProgressError(error instanceof Error ? error.message : "Failed to load progress.");
-    } finally {
-      setProgressLoading(false);
-    }
-  }
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   useEffect(() => {
     if (!token) {
@@ -113,6 +87,8 @@ export function StudentsManagement() {
       return haystack.includes(query);
     });
   }, [students, search]);
+
+  const pagedStudents = paginateItems(filteredStudents, page, pageSize);
 
   const stats = useMemo(
     () => ({
@@ -160,7 +136,10 @@ export function StudentsManagement() {
               className="admin-form-input w-56 bg-background pl-9"
               placeholder="Search students"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -188,7 +167,7 @@ export function StudentsManagement() {
                   {loadError}
                 </TableCell>
               </TableRow>
-            ) : filteredStudents.length === 0 ? (
+            ) : pagedStudents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
                   {search ? (
@@ -204,10 +183,14 @@ export function StudentsManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredStudents.map((student) => {
+              pagedStudents.map((student) => {
                 const displayName = studentDisplayName(student);
                 return (
-                  <TableRow key={student.id}>
+                  <TableRow
+                    key={student.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/admin/students/${student.id}`)}
+                  >
                     <TableCell className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <UserAvatar
@@ -233,12 +216,15 @@ export function StudentsManagement() {
                     <TableCell className="px-4 py-4 text-muted-foreground">
                       {formatDate(student.createdAt)}
                     </TableCell>
-                    <TableCell className="px-4 py-4">
+                    <TableCell
+                      className="px-4 py-4"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <ActionMenu
                         items={[
                           {
-                            label: "View progress",
-                            onClick: () => void openProgress(student),
+                            label: "View details",
+                            onClick: () => router.push(`/admin/students/${student.id}`),
                           },
                           {
                             label: "Edit student",
@@ -253,59 +239,17 @@ export function StudentsManagement() {
             )}
           </TableBody>
         </Table>
-      </Card>
 
-      <Dialog open={progressOpen} onOpenChange={setProgressOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              Progress · {progressStudent ? studentDisplayName(progressStudent) : "Student"}
-            </DialogTitle>
-            <DialogDescription>
-              Enrolled courses and completion for this student.
-            </DialogDescription>
-          </DialogHeader>
-          {progressLoading ? (
-            <PageLoader compact label="Loading progress…" />
-          ) : progressError ? (
-            <p className="text-sm text-destructive">{progressError}</p>
-          ) : progressEnrollments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No course enrollments yet.</p>
-          ) : (
-            <ul className="space-y-3">
-              {progressEnrollments.map((item) => (
-                <li
-                  key={String(item.id)}
-                  className="rounded-xl border border-border/70 px-3 py-2.5"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
-                        {item.course?.title ?? `Course #${item.course_id}`}
-                      </p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {item.status}
-                        {item.progress
-                          ? ` · ${item.progress.completed_lessons}/${item.progress.total_lessons} lessons · ${item.progress.passed_quizzes}/${item.progress.total_quizzes} quizzes`
-                          : ""}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-sm font-semibold tabular-nums">
-                      {item.progress?.percent ?? 0}%
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${item.progress?.percent ?? 0}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DialogContent>
-      </Dialog>
+        {!loading && !loadError ? (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredStudents.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        ) : null}
+      </Card>
     </AdminPageLayout>
   );
 }

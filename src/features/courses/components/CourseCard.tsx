@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { Clock, Star } from "lucide-react";
 import type { Course } from "@/shared/types";
-import {
-  getCourseDurationLabel,
-  getLevelLabel,
-} from "../data/mock-courses";
+import { getLevelLabel } from "@/shared/lib/course-labels";
+import { getCourseDurationLabel } from "../data/mock-courses";
 
 type Props = {
   course: Course;

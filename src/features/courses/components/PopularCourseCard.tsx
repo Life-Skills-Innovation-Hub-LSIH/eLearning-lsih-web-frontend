@@ -1,10 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Course } from "@/shared/types";
-import { getLevelLabel } from "../data/mock-courses";
+import { getLevelLabel } from "@/shared/lib/course-labels";
+
+export type CatalogCourseCardModel = {
+  id: string | number;
+  slug: string;
+  title: string;
+  level?: string | null;
+  cover_image?: string | null;
+};
 
 type Props = {
-  course: Course;
+  course: CatalogCourseCardModel;
 };
 
 export function PopularCourseCard({ course }: Props) {
@@ -13,7 +20,20 @@ export function PopularCourseCard({ course }: Props) {
       href={`/courses/${course.slug}`}
       className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_4px_16px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out hover:z-10 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(15,23,42,0.14)]"
     >
-      <div className={`h-[132px] bg-gradient-to-br ${course.thumbnailGradient}`} />
+      {course.cover_image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={course.cover_image}
+          alt=""
+          className="h-[132px] w-full object-cover"
+        />
+      ) : (
+        <div className="flex h-[132px] items-end bg-gradient-to-br from-[#004DA0] to-[#0A6BCF] p-4">
+          <span className="text-xs font-medium text-white/90">
+            {getLevelLabel(course.level)}
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
         <div className="mb-2.5 flex items-center gap-2">

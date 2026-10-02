@@ -134,6 +134,12 @@ export interface User {
   email: string;
   avatar?: string | null;
   role: Exclude<Role, "guest">;
+  status?: UserPaymentStatus;
+  paymentDuration?: PaymentDuration | null;
+  subscriptionStartsAt?: string | null;
+  subscriptionExpiresAt?: string | null;
+  subscriptionActiveDays?: number | null;
+  subscriptionActive?: boolean;
 }
 
 export interface Lesson {

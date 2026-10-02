@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "@/features/auth";
+import {
+  hasActiveSubscription,
+  subscriptionBlockedMessage,
+  useAuth,
+} from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
 
 type Props = {
@@ -18,6 +22,7 @@ export function EnrollButton({ courseId, slug, price }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const enrolled = isEnrolled(courseId);
+  const canEnroll = hasActiveSubscription(user);
 
   if (!ready) {
     return <div className="btn btn-secondary w-full opacity-60">Loading…</div>;
@@ -44,6 +49,19 @@ export function EnrollButton({ courseId, slug, price }: Props) {
       <Link href={`/learn/${slug}`} className="btn btn-primary w-full">
         Continue learning
       </Link>
+    );
+  }
+
+  if (!canEnroll) {
+    return (
+      <div className="space-y-2">
+        <button type="button" className="btn btn-secondary w-full cursor-not-allowed opacity-70" disabled>
+          Subscription required
+        </button>
+        <p className="text-center text-xs text-[var(--muted)]">
+          {subscriptionBlockedMessage(user)}
+        </p>
+      </div>
     );
   }
 

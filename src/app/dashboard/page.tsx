@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { RequireAuth, useAuth } from "@/features/auth";
+import {
+  hasActiveSubscription,
+  RequireAuth,
+  subscriptionBlockedMessage,
+  useAuth,
+} from "@/features/auth";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 
 export default function StudentDashboardPage() {
@@ -14,6 +19,7 @@ export default function StudentDashboardPage() {
 
 function DashboardContent() {
   const { user, enrollmentRecords, ready } = useAuth();
+  const subscriptionOk = hasActiveSubscription(user);
 
   return (
     <main className="container-page py-12">
@@ -28,6 +34,20 @@ function DashboardContent() {
           Track your enrolled courses and continue where you left off.
         </p>
       </div>
+
+      {!subscriptionOk ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {subscriptionBlockedMessage(user)}
+        </div>
+      ) : user?.subscriptionExpiresAt ? (
+        <div className="mb-6 rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--muted)]">
+          Subscription active
+          {user.subscriptionActiveDays != null
+            ? ` · day ${user.subscriptionActiveDays}`
+            : null}
+          {" · "}expires {new Date(user.subscriptionExpiresAt).toLocaleDateString()}
+        </div>
+      ) : null}
 
       <div className="mb-6 flex gap-3">
         <Link href="/my-courses" className="btn btn-secondary">

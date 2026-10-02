@@ -20,6 +20,12 @@ import {
 } from "@/features/admin/shadcn";
 import { deleteSubjectApi, fetchSubjects } from "../api/subjects-api";
 import { ActionMenu } from "./ActionMenu";
+import {
+  AdminTablePagination,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateItems,
+  type AdminPageSize,
+} from "./AdminTablePagination";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { Subject } from "@/shared/types";
@@ -42,6 +48,8 @@ export function SubjectsManagement() {
   const [actionError, setActionError] = useState("");
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   async function loadSubjects() {
     if (!token) {
@@ -77,6 +85,8 @@ export function SubjectsManagement() {
         .includes(query),
     );
   }, [subjects, search]);
+
+  const pagedSubjects = paginateItems(filteredSubjects, page, pageSize);
 
   async function onDelete(subject: Subject) {
     if (!token) {
@@ -138,7 +148,10 @@ export function SubjectsManagement() {
               className="admin-form-input w-56 bg-background pl-9"
               placeholder="Search subjects"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -174,7 +187,7 @@ export function SubjectsManagement() {
                   {loadError}
                 </TableCell>
               </TableRow>
-            ) : filteredSubjects.length === 0 ? (
+            ) : pagedSubjects.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="px-4 py-16 text-center text-muted-foreground">
                   {search ? (
@@ -190,7 +203,7 @@ export function SubjectsManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredSubjects.map((subject) => (
+              pagedSubjects.map((subject) => (
                 <TableRow key={subject.id}>
                   <TableCell className="px-4 py-4">
                     <div className="flex items-start gap-3">
@@ -253,6 +266,16 @@ export function SubjectsManagement() {
             )}
           </TableBody>
         </Table>
+
+        {!loading && !loadError ? (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredSubjects.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        ) : null}
       </Card>
     </AdminPageLayout>
   );

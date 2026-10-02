@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { PopularCourseCard } from "@/features/courses";
-import type { Course } from "@/shared/types";
+import {
+  PopularCourseCard,
+  type CatalogCourseCardModel,
+} from "@/features/courses/components/PopularCourseCard";
 
 type Props = {
   title: string;
   subtitle?: string;
-  courses: Course[];
+  courses: CatalogCourseCardModel[];
 };
 
 const INITIAL_COUNT = 4;
@@ -17,7 +19,9 @@ const EXPAND_COUNT = 8;
 
 export function PopularCoursesSection({ title, subtitle, courses }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const visibleCourses = expanded ? courses.slice(0, INITIAL_COUNT + EXPAND_COUNT) : courses.slice(0, INITIAL_COUNT);
+  const visibleCourses = expanded
+    ? courses.slice(0, INITIAL_COUNT + EXPAND_COUNT)
+    : courses.slice(0, INITIAL_COUNT);
   const canExpand = courses.length > INITIAL_COUNT && !expanded;
 
   return (
@@ -40,11 +44,15 @@ export function PopularCoursesSection({ title, subtitle, courses }: Props) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 overflow-visible sm:grid-cols-2 lg:grid-cols-4">
-        {visibleCourses.map((course) => (
-          <PopularCourseCard key={course.id} course={course} />
-        ))}
-      </div>
+      {courses.length === 0 ? (
+        <p className="text-sm text-[var(--muted)]">No published courses yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 overflow-visible sm:grid-cols-2 lg:grid-cols-4">
+          {visibleCourses.map((course) => (
+            <PopularCourseCard key={String(course.id)} course={course} />
+          ))}
+        </div>
+      )}
 
       {canExpand ? (
         <button

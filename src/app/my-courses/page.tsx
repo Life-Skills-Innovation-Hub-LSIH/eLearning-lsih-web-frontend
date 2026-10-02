@@ -4,7 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { RequireAuth, useAuth } from "@/features/auth";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
-import { downloadCourseCertificatePdf } from "@/features/learning/api/enrollment-api";
+import {
+  downloadCourseCertificatePdf,
+  fetchCertificateStatus,
+} from "@/features/learning/api/enrollment-api";
 
 export default function MyCoursesPage() {
   return (
@@ -29,7 +32,14 @@ function Content() {
     setDownloadingId(key);
     setDownloadError("");
     try {
-      await downloadCourseCertificatePdf(token, courseSlug || courseId, courseTitle);
+      const target = courseSlug || courseId;
+      const status = await fetchCertificateStatus(token, target);
+      if (!status.eligible) {
+        throw new Error(
+          "Complete all lessons and pass every quiz to unlock your certificate.",
+        );
+      }
+      await downloadCourseCertificatePdf(token, target, courseTitle);
     } catch (err) {
       setDownloadError(err instanceof Error ? err.message : "Failed to download certificate.");
     } finally {
@@ -57,15 +67,7 @@ function Content() {
               const courseId = item.course?.id ?? item.course_id;
               const title = item.course?.title ?? `Course #${item.course_id}`;
               const percent = item.progress?.percent ?? 0;
-              const quizzesPassed =
-                (item.progress?.total_quizzes ?? 0) > 0 &&
-                item.progress?.passed_quizzes === item.progress?.total_quizzes;
-              const lessonsDone =
-                (item.progress?.total_lessons ?? 0) === 0 ||
-                item.progress?.completed_lessons === item.progress?.total_lessons;
-              const canDownload =
-                item.status === "completed" ||
-                (percent >= 100 && quizzesPassed && lessonsDone);
+              const canDownload = item.certificate_eligible === true || item.status === "completed";
 
               return (
                 <div key={String(item.id)} className="surface p-5">

@@ -11,6 +11,7 @@ export { EditUserForm } from "./components/EditUserForm";
 export { RequireAdmin } from "./components/RequireAdmin";
 export { UserForm } from "./components/UserForm";
 export { StudentsManagement } from "./components/StudentsManagement";
+export { StudentDetail } from "./components/StudentDetail";
 export { SubjectForm } from "./components/SubjectForm";
 export { SubjectsManagement } from "./components/SubjectsManagement";
 export { LecturerForm } from "./components/LecturerForm";

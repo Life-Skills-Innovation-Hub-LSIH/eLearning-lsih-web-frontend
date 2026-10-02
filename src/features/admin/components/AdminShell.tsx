@@ -66,6 +66,7 @@ function breadcrumbLabel(pathname: string) {
   if (pathname.includes("/edit")) return "Users";
   if (pathname.startsWith("/admin/account")) return "Your account";
   if (pathname.startsWith("/admin/users")) return "Users";
+  if (pathname.match(/^\/admin\/students\/[^/]+$/)) return "Student details";
   if (pathname.startsWith("/admin/students")) return "Students";
   if (pathname.startsWith("/admin/settings")) return "Settings";
   return "Dashboard";

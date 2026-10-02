@@ -5,6 +5,10 @@ export { RequireAuth } from "./components/RequireAuth";
 export { AuthProvider, useAuth } from "./context/auth-context";
 export { homePathForRole } from "./lib/static-users";
 export {
+  hasActiveSubscription,
+  subscriptionBlockedMessage,
+} from "./lib/subscription";
+export {
   changePasswordWithApi,
   fetchCurrentUser,
   loginWithApi,

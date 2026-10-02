@@ -20,6 +20,12 @@ import {
 } from "@/features/admin/shadcn";
 import { deleteCourseApi, fetchCourses } from "../api/courses-api";
 import { ActionMenu } from "./ActionMenu";
+import {
+  AdminTablePagination,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateItems,
+  type AdminPageSize,
+} from "./AdminTablePagination";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { ManagedCourse } from "@/shared/types";
@@ -42,6 +48,8 @@ export function CoursesManagement() {
   const [actionError, setActionError] = useState("");
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   async function loadCourses() {
     if (!token) {
@@ -83,6 +91,8 @@ export function CoursesManagement() {
         .includes(query),
     );
   }, [courses, search]);
+
+  const pagedCourses = paginateItems(filteredCourses, page, pageSize);
 
   const contentTotals = useMemo(() => {
     return filteredCourses.reduce(
@@ -164,7 +174,10 @@ export function CoursesManagement() {
               className="pl-9"
               placeholder="Search courses…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -197,7 +210,7 @@ export function CoursesManagement() {
                   <PageLoader compact label="Loading courses…" />
                 </TableCell>
               </TableRow>
-            ) : filteredCourses.length === 0 ? (
+            ) : pagedCourses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
                   {search.trim() ? (
@@ -213,7 +226,7 @@ export function CoursesManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCourses.map((course) => (
+              pagedCourses.map((course) => (
                 <TableRow key={course.id}>
                   <TableCell className="px-4 py-4">
                     <div className="flex items-start gap-3">
@@ -312,6 +325,16 @@ export function CoursesManagement() {
             )}
           </TableBody>
         </Table>
+
+        {!loading && !loadError ? (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredCourses.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        ) : null}
       </Card>
     </AdminPageLayout>
   );

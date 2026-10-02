@@ -20,6 +20,12 @@ import {
 } from "@/features/admin/shadcn";
 import { deleteLecturerApi, fetchLecturers } from "../api/lecturers-api";
 import { ActionMenu } from "./ActionMenu";
+import {
+  AdminTablePagination,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateItems,
+  type AdminPageSize,
+} from "./AdminTablePagination";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import type { Lecturer } from "@/shared/types";
@@ -42,6 +48,8 @@ export function LecturersManagement() {
   const [actionError, setActionError] = useState("");
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   async function loadLecturers() {
     if (!token) {
@@ -77,6 +85,8 @@ export function LecturersManagement() {
         .includes(query),
     );
   }, [lecturers, search]);
+
+  const pagedLecturers = paginateItems(filteredLecturers, page, pageSize);
 
   async function onDelete(lecturer: Lecturer) {
     if (!token) {
@@ -138,7 +148,10 @@ export function LecturersManagement() {
               className="pl-9"
               placeholder="Search lecturers…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -172,7 +185,7 @@ export function LecturersManagement() {
                   <PageLoader compact label="Loading lecturers…" />
                 </TableCell>
               </TableRow>
-            ) : filteredLecturers.length === 0 ? (
+            ) : pagedLecturers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
                   {search.trim() ? (
@@ -188,7 +201,7 @@ export function LecturersManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLecturers.map((lecturer) => (
+              pagedLecturers.map((lecturer) => (
                 <TableRow key={lecturer.id}>
                   <TableCell className="px-4 py-2.5">
                     <div className="flex items-center gap-3">
@@ -274,6 +287,16 @@ export function LecturersManagement() {
             )}
           </TableBody>
         </Table>
+
+        {!loading && !loadError ? (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredLecturers.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        ) : null}
       </Card>
     </AdminPageLayout>
   );

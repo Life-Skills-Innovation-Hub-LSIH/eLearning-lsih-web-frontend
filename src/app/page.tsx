@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { MainBanner, PartnerStrip, PopularCoursesSection } from "@/features/home";
-import { getPublishedCourses } from "@/features/courses";
+import { fetchCatalogCourses } from "@/features/learning/api/enrollment-api";
 
-export default function HomePage() {
-  const courses = getPublishedCourses();
-  const popular = [...courses].sort((a, b) => b.studentsCount - a.studentsCount).slice(0, 12);
+export default async function HomePage() {
+  let courses: Awaited<ReturnType<typeof fetchCatalogCourses>> = [];
+
+  try {
+    courses = await fetchCatalogCourses();
+  } catch {
+    courses = [];
+  }
+
+  const popular = courses.slice(0, 12);
   const latest = [...courses].reverse().slice(0, 12);
 
   return (

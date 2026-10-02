@@ -27,6 +27,12 @@ import {
 } from "@/features/admin/shadcn";
 import { deleteUserApi, fetchUsers } from "../api/users-api";
 import { ActionMenu } from "./ActionMenu";
+import {
+  AdminTablePagination,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateItems,
+  type AdminPageSize,
+} from "./AdminTablePagination";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { RoleBadge, StatusBadge } from "./RoleBadge";
 import { isStudentRole } from "../lib/user-store";
@@ -60,13 +66,12 @@ export function UsersManagement() {
   const [createdTo, setCreatedTo] = useState("");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   async function loadUsers() {
     if (!token) {
@@ -80,7 +85,6 @@ export function UsersManagement() {
     try {
       const nextUsers = await fetchUsers(token, { role, createdFrom, createdTo });
       setUsers(nextUsers);
-      setSelectedIds(new Set());
       setPage(1);
     } catch (error) {
       setUsers([]);
@@ -106,10 +110,7 @@ export function UsersManagement() {
     });
   }, [users, search]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const pagedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
-  const allOnPageSelected =
-    pagedUsers.length > 0 && pagedUsers.every((user) => selectedIds.has(user.id));
+  const pagedUsers = paginateItems(filteredUsers, page, pageSize);
 
   async function onDelete(user: ManagedUser) {
     if (!token) {
@@ -131,11 +132,6 @@ export function UsersManagement() {
     try {
       await deleteUserApi(token, user.id);
       setUsers((prev) => prev.filter((item) => item.id !== user.id));
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(user.id);
-        return next;
-      });
     } catch (error) {
       if (error instanceof ApiError) {
         setActionError(error.message);
@@ -145,27 +141,6 @@ export function UsersManagement() {
     } finally {
       setDeletingId(null);
     }
-  }
-
-  function toggleAllOnPage() {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allOnPageSelected) {
-        pagedUsers.forEach((user) => next.delete(user.id));
-      } else {
-        pagedUsers.forEach((user) => next.add(user.id));
-      }
-      return next;
-    });
-  }
-
-  function toggleOne(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   }
 
   const hasFilters = role !== "all" || createdFrom || createdTo;
@@ -305,15 +280,6 @@ export function UsersManagement() {
         <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
-              <TableHead className="w-12 px-4">
-                <input
-                  type="checkbox"
-                  checked={allOnPageSelected}
-                  onChange={toggleAllOnPage}
-                  className="size-4 rounded border-input"
-                  aria-label="Select all on page"
-                />
-              </TableHead>
               <TableHead className="px-4">User name</TableHead>
               <TableHead className="px-4">Access</TableHead>
               <TableHead className="px-4">Date added</TableHead>
@@ -323,19 +289,19 @@ export function UsersManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-8">
+                <TableCell colSpan={4} className="px-4 py-8">
                   <PageLoader compact label="Loading users…" />
                 </TableCell>
               </TableRow>
             ) : loadError ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-destructive">
+                <TableCell colSpan={4} className="px-4 py-16 text-center text-destructive">
                   {loadError}
                 </TableCell>
               </TableRow>
             ) : pagedUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="px-4 py-16 text-center text-muted-foreground">
                   {hasFilters || search ? (
                     "No users match your search or filters."
                   ) : (
@@ -355,15 +321,6 @@ export function UsersManagement() {
 
                 return (
                   <TableRow key={user.id}>
-                    <TableCell className="px-4 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(user.id)}
-                        onChange={() => toggleOne(user.id)}
-                        className="size-4 rounded border-input"
-                        aria-label={`Select ${displayName}`}
-                      />
-                    </TableCell>
                     <TableCell className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <UserAvatar
@@ -417,26 +374,14 @@ export function UsersManagement() {
           </TableBody>
         </Table>
 
-        {!loading && filteredUsers.length > 0 ? (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
-            </p>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                <Button
-                  key={pageNumber}
-                  type="button"
-                  variant={pageNumber === page ? "secondary" : "ghost"}
-                  size="sm"
-                  className="min-w-8"
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              ))}
-            </div>
-          </div>
+        {!loading && !loadError ? (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredUsers.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         ) : null}
       </Card>
     </AdminPageLayout>

@@ -10,7 +10,11 @@ export type ApiUser = {
   avatar?: string | null;
   role: User["role"];
   status: UserPaymentStatus;
-  payment_duration: PaymentDuration;
+  payment_duration?: PaymentDuration | null;
+  subscription_starts_at?: string | null;
+  subscription_expires_at?: string | null;
+  subscription_active_days?: number | null;
+  subscription_active?: boolean;
   created_at?: string;
 };
 
@@ -34,6 +38,12 @@ export function mapAuthUser(user: ApiUser): User {
     email: user.email || `${user.username}@lsih.local`,
     avatar: user.avatar ?? null,
     role: role as User["role"],
+    status: user.status,
+    paymentDuration: user.payment_duration ?? null,
+    subscriptionStartsAt: user.subscription_starts_at ?? null,
+    subscriptionExpiresAt: user.subscription_expires_at ?? null,
+    subscriptionActiveDays: user.subscription_active_days ?? null,
+    subscriptionActive: user.subscription_active,
   };
 }
 

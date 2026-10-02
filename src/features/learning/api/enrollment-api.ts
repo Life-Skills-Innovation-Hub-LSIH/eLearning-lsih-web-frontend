@@ -68,6 +68,12 @@ export type ProgressSummary = {
   completed_quiz_ids: Array<number | string>;
 };
 
+export type EnrollmentCertificate = {
+  id: number | string;
+  certificate_number: string;
+  issued_at?: string | null;
+};
+
 export type EnrollmentRecord = {
   id: number | string;
   user_id: number | string;
@@ -77,6 +83,50 @@ export type EnrollmentRecord = {
   completed_at?: string | null;
   course?: CatalogCourse;
   progress?: ProgressSummary;
+  certificate_eligible?: boolean;
+  certificate?: EnrollmentCertificate | null;
+};
+
+export type StudentCertificateRecord = {
+  id: number | string;
+  certificate_number: string;
+  issued_at?: string | null;
+  course_id: number | string;
+  course?: {
+    id: number | string;
+    title: string;
+    slug?: string;
+    code?: string | null;
+    cover_image?: string | null;
+  } | null;
+};
+
+export type AdminStudentDetail = {
+  student: {
+    id: number | string;
+    first_name: string;
+    last_name: string;
+    username: string;
+    email?: string | null;
+    avatar?: string | null;
+    role: string;
+    status: string;
+    payment_duration?: string | null;
+    subscription_starts_at?: string | null;
+    subscription_expires_at?: string | null;
+    subscription_active_days?: number | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+  };
+  enrollments: EnrollmentRecord[];
+  certificates: StudentCertificateRecord[];
+  summary: {
+    enrolled_courses: number;
+    active_courses: number;
+    completed_courses: number;
+    certificates: number;
+    average_progress: number;
+  };
 };
 
 function unwrapList<T>(payload: { data?: T[] } | T[]): T[] {
@@ -206,13 +256,14 @@ export async function fetchAdminEnrollments(
   return unwrapList(payload);
 }
 
-export async function fetchStudentProgressAdmin(token: string, userId: string) {
-  const payload = await apiRequest<{
-    data: {
-      student: { id: number; name: string; email: string; status: string };
-      enrollments: EnrollmentRecord[];
-    };
-  }>(`/admin/students/${userId}/progress`, { token });
+export async function fetchStudentProgressAdmin(
+  token: string,
+  userId: string,
+): Promise<AdminStudentDetail> {
+  const payload = await apiRequest<{ data: AdminStudentDetail }>(
+    `/admin/students/${userId}/progress`,
+    { token },
+  );
   return payload.data;
 }
 

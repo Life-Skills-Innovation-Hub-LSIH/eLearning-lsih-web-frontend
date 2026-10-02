@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { RequireAuth, useAuth } from "@/features/auth";
+import {
+  hasActiveSubscription,
+  RequireAuth,
+  subscriptionBlockedMessage,
+  useAuth,
+} from "@/features/auth";
 import { QuizPanel } from "@/features/learning";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
@@ -11,6 +16,7 @@ import { ApiError } from "@/shared/api/client";
 import {
   downloadCourseCertificatePdf,
   fetchCatalogCourse,
+  fetchCertificateStatus,
   fetchLearnCourse,
   type CatalogLesson,
   type CatalogModule,
@@ -32,8 +38,14 @@ export default function LearnPage() {
 
 function LearnContent() {
   const params = useParams<{ slug: string }>();
-  const { token, enroll, applyProgressSummary, markLessonComplete, markQuizComplete } =
-    useAuth();
+  const {
+    user,
+    token,
+    enroll,
+    applyProgressSummary,
+    markLessonComplete,
+    markQuizComplete,
+  } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [needsEnroll, setNeedsEnroll] = useState(false);
@@ -44,8 +56,22 @@ function LearnContent() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [lessonSaving, setLessonSaving] = useState(false);
+  const [certEligible, setCertEligible] = useState(false);
   const [certDownloading, setCertDownloading] = useState(false);
   const [certError, setCertError] = useState("");
+
+  async function refreshCertificate(slugOrId: string) {
+    if (!token) {
+      setCertEligible(false);
+      return;
+    }
+    try {
+      const status = await fetchCertificateStatus(token, slugOrId);
+      setCertEligible(status.eligible);
+    } catch {
+      setCertEligible(false);
+    }
+  }
 
   async function load() {
     if (!token || !params.slug) {
@@ -64,6 +90,8 @@ function LearnContent() {
       setModules(data.modules ?? []);
       setProgress(data.progress);
       applyProgressSummary(String(data.course.id), data.progress);
+      setCertEligible(Boolean(data.enrollment?.certificate_eligible));
+      void refreshCertificate(params.slug);
 
       const firstModule = data.modules?.[0];
       const firstLesson = firstModule?.lessons?.[0];
@@ -130,18 +158,19 @@ function LearnContent() {
     ]);
   }, [modules, completedLessonIds, completedQuizIds]);
 
-  const canDownloadCertificate =
-    (progress?.percent ?? 0) >= 100 &&
-    (progress?.total_quizzes ?? 0) > 0 &&
-    progress?.passed_quizzes === progress?.total_quizzes &&
-    ((progress?.total_lessons ?? 0) === 0 ||
-      progress?.completed_lessons === progress?.total_lessons);
-
   async function onDownloadCertificate() {
     if (!token || !params.slug) return;
     setCertDownloading(true);
     setCertError("");
     try {
+      const status = await fetchCertificateStatus(token, params.slug);
+      if (!status.eligible) {
+        setCertEligible(false);
+        throw new Error(
+          "Complete all lessons and pass every quiz to unlock your certificate.",
+        );
+      }
+      setCertEligible(true);
       await downloadCourseCertificatePdf(token, params.slug, courseTitle);
     } catch (err) {
       setCertError(err instanceof Error ? err.message : "Failed to download certificate.");
@@ -159,6 +188,7 @@ function LearnContent() {
   }
 
   if (needsEnroll) {
+    const canEnroll = hasActiveSubscription(user);
     return (
       <main className="container-page py-12">
         <div className="surface max-w-xl space-y-4 p-6">
@@ -166,23 +196,32 @@ function LearnContent() {
           <p className="text-[var(--muted)]">
             Enroll to access lessons and quizzes.
           </p>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={enrolling || !courseId}
-            onClick={() => {
-              setEnrolling(true);
-              setError("");
-              void enroll(courseId)
-                .then(() => load())
-                .catch((err) =>
-                  setError(err instanceof Error ? err.message : "Failed to enroll."),
-                )
-                .finally(() => setEnrolling(false));
-            }}
-          >
-            {enrolling ? "Enrolling…" : "Enroll now"}
-          </button>
+          {canEnroll ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={enrolling || !courseId}
+              onClick={() => {
+                setEnrolling(true);
+                setError("");
+                void enroll(courseId)
+                  .then(() => load())
+                  .catch((err) =>
+                    setError(err instanceof Error ? err.message : "Failed to enroll."),
+                  )
+                  .finally(() => setEnrolling(false));
+              }}
+            >
+              {enrolling ? "Enrolling…" : "Enroll now"}
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <button type="button" className="btn btn-secondary cursor-not-allowed opacity-70" disabled>
+                Subscription required
+              </button>
+              <p className="text-sm text-[var(--muted)]">{subscriptionBlockedMessage(user)}</p>
+            </div>
+          )}
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <Link href="/courses" className="text-[var(--brand)]">
             Back to courses
@@ -214,7 +253,7 @@ function LearnContent() {
           <ProgressBar value={progress?.percent ?? 0} label="Progress" />
         </div>
 
-        {canDownloadCertificate ? (
+        {certEligible ? (
           <button
             type="button"
             className="mt-4 w-full rounded-full bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
@@ -304,6 +343,7 @@ function LearnContent() {
                 void markLessonComplete(courseId, String(selection.lesson.id))
                   .then((next) => {
                     if (next) setProgress(next);
+                    if (params.slug) void refreshCertificate(params.slug);
                   })
                   .finally(() => setLessonSaving(false));
               }}
@@ -326,6 +366,7 @@ function LearnContent() {
                 answers,
               );
               setProgress(result.progress);
+              if (params.slug) void refreshCertificate(params.slug);
               return result;
             }}
           />
