@@ -3,77 +3,73 @@
 import { useEffect, useRef, useState } from "react";
 import { ImageIcon, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ApiError } from "@/shared/api/client";
-import { uploadCourseCoverApi } from "@/shared/api/upload";
 
 type Props = {
-  token: string;
+  /** Already-saved cover URL from the course record. */
   coverUrl?: string | null;
-  slug?: string;
-  onChange: (url: string | null) => void;
+  /** Local file waiting to upload on form save. */
+  pendingFile?: File | null;
+  onPendingFileChange: (file: File | null) => void;
+  /** Clear the saved remote cover (will be removed when the form is saved). */
+  onRemoveSaved: () => void;
+  disabled?: boolean;
 };
 
 const ACCEPT =
   "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.avif,.bmp";
+const MAX_BYTES = 5 * 1024 * 1024;
 
-export function CourseCoverUploadField({ token, coverUrl, slug, onChange }: Props) {
+export function CourseCoverUploadField({
+  coverUrl,
+  pendingFile,
+  onPendingFileChange,
+  onRemoveSaved,
+  disabled = false,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    return () => {
-      if (localPreview) URL.revokeObjectURL(localPreview);
-    };
-  }, [localPreview]);
+    if (!pendingFile) {
+      setLocalPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      return;
+    }
 
-  const previewUrl = localPreview || coverUrl || null;
-
-  async function onFileSelected(file: File | null) {
-    if (!file) return;
-
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(pendingFile);
     setLocalPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return objectUrl;
     });
 
-    setError("");
-    setUploading(true);
-    try {
-      const url = await uploadCourseCoverApi(token, file, {
-        slug: slug?.trim() || undefined,
-      });
-      onChange(url || null);
-      setLocalPreview((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-    } catch (err) {
-      setLocalPreview((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-      if (err instanceof ApiError) {
-        const firstError = Object.values(err.body?.errors ?? {})[0]?.[0];
-        setError(firstError ?? err.message);
-      } else {
-        setError(err instanceof Error ? err.message : "Upload failed.");
-      }
-    } finally {
-      setUploading(false);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [pendingFile]);
+
+  const previewUrl = localPreview || coverUrl || null;
+
+  function onFileSelected(file: File | null) {
+    if (!file) return;
+
+    if (file.size > MAX_BYTES) {
+      setError("Image must be 5 MB or smaller.");
       if (inputRef.current) inputRef.current.value = "";
+      return;
     }
+
+    setError("");
+    // Keep the file local only — upload happens when the course form saves successfully.
+    onPendingFileChange(file);
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   function onRemove() {
-    onChange(null);
-    setLocalPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
     setError("");
+    onPendingFileChange(null);
+    onRemoveSaved();
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   return (
@@ -94,7 +90,7 @@ export function CourseCoverUploadField({ token, coverUrl, slug, onChange }: Prop
             type="file"
             accept={ACCEPT}
             className="hidden"
-            onChange={(event) => void onFileSelected(event.target.files?.[0] ?? null)}
+            onChange={(event) => onFileSelected(event.target.files?.[0] ?? null)}
           />
 
           <div className="flex flex-wrap items-center gap-2">
@@ -103,11 +99,11 @@ export function CourseCoverUploadField({ token, coverUrl, slug, onChange }: Prop
               variant="outline"
               size="sm"
               className="cursor-pointer bg-background"
-              disabled={uploading}
+              disabled={disabled}
               onClick={() => inputRef.current?.click()}
             >
               <Upload />
-              {uploading ? "Uploading…" : previewUrl ? "Change cover" : "Upload cover"}
+              {previewUrl ? "Change cover" : "Choose cover"}
             </Button>
 
             {previewUrl ? (
@@ -116,7 +112,7 @@ export function CourseCoverUploadField({ token, coverUrl, slug, onChange }: Prop
                 variant="outline"
                 size="sm"
                 className="cursor-pointer border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:text-destructive"
-                disabled={uploading}
+                disabled={disabled}
                 onClick={onRemove}
               >
                 <X />
@@ -126,7 +122,9 @@ export function CourseCoverUploadField({ token, coverUrl, slug, onChange }: Prop
           </div>
 
           <p className="text-xs leading-relaxed text-muted-foreground">
-            JPG, PNG, GIF, WebP, AVIF, or BMP. Max 5 MB upload — auto-compressed under 200 KB.
+            JPG, PNG, GIF, WebP, AVIF, or BMP. Max 5 MB. The image is uploaded to cloud storage only
+            when you save the course successfully.
+            {pendingFile ? " New cover selected — waiting for save." : null}
           </p>
         </div>
       </div>

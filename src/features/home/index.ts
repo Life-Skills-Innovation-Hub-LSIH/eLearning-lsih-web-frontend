@@ -1,4 +1,9 @@
 export { CourseRail } from "./components/CourseRail";
+export { FeaturedProgramsBanner } from "./components/FeaturedProgramsBanner";
+export { HowItWorksSection } from "./components/HowItWorksSection";
+export { LearningPathsSection } from "./components/LearningPathsSection";
 export { MainBanner } from "./components/MainBanner";
 export { PartnerStrip } from "./components/PartnerStrip";
 export { PopularCoursesSection } from "./components/PopularCoursesSection";
+export { SubjectsSection } from "./components/SubjectsSection";
+export { WhyLsihSection } from "./components/WhyLsihSection";

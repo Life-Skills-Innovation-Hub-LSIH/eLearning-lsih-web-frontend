@@ -159,6 +159,9 @@ export function SiteHeader() {
           <Link href="/about" className={linkClass("/about")}>
             អំពីយើង
           </Link>
+          <Link href="/contact" className={linkClass("/contact")}>
+            ទំនាក់ទំនង
+          </Link>
 
           {ready && user ? (
             <>
@@ -170,9 +173,23 @@ export function SiteHeader() {
                 title={user.name}
                 className="hidden sm:inline-flex"
               />
-              <Link href={homePathForRole(user.role)} className={linkClass(homePathForRole(user.role))}>
-                {user.role === "student" ? "ការរៀនរបស់ខ្ញុំ" : "Admin"}
-              </Link>
+              {user.role === "student" ? (
+                <>
+                  <Link href="/dashboard" className={linkClass("/dashboard")}>
+                    ផ្ទាំងគ្រប់គ្រង
+                  </Link>
+                  <Link href="/my-courses" className={linkClass("/my-courses")}>
+                    ការរៀនរបស់ខ្ញុំ
+                  </Link>
+                  <Link href="/account" className={linkClass("/account")}>
+                    គណនី
+                  </Link>
+                </>
+              ) : (
+                <Link href={homePathForRole(user.role)} className={linkClass(homePathForRole(user.role))}>
+                  Admin
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={logout}
@@ -210,6 +227,7 @@ export function SiteHeader() {
               { href: "/", label: "ទំព័រដើម" },
               { href: "/courses", label: "វគ្គសិក្សា" },
               { href: "/about", label: "អំពីយើង" },
+              { href: "/contact", label: "ទំនាក់ទំនង" },
             ].map((item) => (
               <Link
                 key={item.href}
@@ -222,13 +240,39 @@ export function SiteHeader() {
             ))}
             {ready && user ? (
               <>
-                <Link
-                  href={homePathForRole(user.role)}
-                  className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  គណនី
-                </Link>
+                {user.role === "student" ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      ផ្ទាំងគ្រប់គ្រង
+                    </Link>
+                    <Link
+                      href="/my-courses"
+                      className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      ការរៀនរបស់ខ្ញុំ
+                    </Link>
+                    <Link
+                      href="/account"
+                      className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      គណនី
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href={homePathForRole(user.role)}
+                    className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={logout}

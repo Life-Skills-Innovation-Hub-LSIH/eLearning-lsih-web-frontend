@@ -1,15 +1,30 @@
 import Link from "next/link";
-import { MainBanner, PartnerStrip, PopularCoursesSection } from "@/features/home";
-import { fetchCatalogCourses } from "@/features/learning/api/enrollment-api";
+import {
+  FeaturedProgramsBanner,
+  HowItWorksSection,
+  MainBanner,
+  PartnerStrip,
+  PopularCoursesSection,
+  SubjectsSection,
+  WhyLsihSection,
+} from "@/features/home";
+import {
+  fetchCatalogCourses,
+  fetchCatalogSubjects,
+  type CatalogSubject,
+} from "@/features/learning/api/enrollment-api";
 
 export default async function HomePage() {
   let courses: Awaited<ReturnType<typeof fetchCatalogCourses>> = [];
+  let subjects: CatalogSubject[] = [];
 
-  try {
-    courses = await fetchCatalogCourses();
-  } catch {
-    courses = [];
-  }
+  const [coursesResult, subjectsResult] = await Promise.allSettled([
+    fetchCatalogCourses(),
+    fetchCatalogSubjects(),
+  ]);
+
+  if (coursesResult.status === "fulfilled") courses = coursesResult.value;
+  if (subjectsResult.status === "fulfilled") subjects = subjectsResult.value;
 
   const popular = courses.slice(0, 12);
   const latest = [...courses].reverse().slice(0, 12);
@@ -18,6 +33,8 @@ export default async function HomePage() {
     <main>
       <MainBanner />
       <PartnerStrip />
+      <FeaturedProgramsBanner courses={courses} />
+      <SubjectsSection subjects={subjects} />
 
       <div className="container-page flex flex-col gap-14 py-14 sm:gap-16 sm:py-16">
         <PopularCoursesSection
@@ -31,6 +48,9 @@ export default async function HomePage() {
           courses={latest}
         />
       </div>
+
+      <HowItWorksSection />
+      <WhyLsihSection />
 
       <section className="relative overflow-hidden bg-[var(--brand)]">
         <div
@@ -47,20 +67,28 @@ export default async function HomePage() {
               Structured learning that sticks
             </h2>
             <p className="max-w-xl text-base leading-relaxed text-white/80">
-              Every course follows a clear path — modules, lessons, quizzes, and a final
-              assessment — so progress is measurable and career-ready.
+              Every course follows a clear path — modules, lessons, quizzes, and a certificate —
+              so progress is measurable and career-ready.
             </p>
-            <Link href="/courses" className="btn btn-accent">
-              Explore courses
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/courses" className="btn btn-accent">
+                Explore courses
+              </Link>
+              <Link
+                href="/register"
+                className="btn border border-white/25 bg-white/10 !text-white hover:bg-white/18"
+              >
+                Create account
+              </Link>
+            </div>
           </div>
 
           <ol className="space-y-4 text-white/90">
             {[
               "Browse and open a course",
-              "Enroll as a student",
+              "Get a paid subscription from admin",
               "Complete lessons and module quizzes",
-              "Finish with the end-of-course quiz",
+              "Download your certificate",
             ].map((step, index) => (
               <li key={step} className="flex items-start gap-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white">

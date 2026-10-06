@@ -29,18 +29,18 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/courses" className="transition hover:text-[var(--brand)]">
-                Skills
+              <Link href="/dashboard" className="transition hover:text-[var(--brand)]">
+                Student dashboard
               </Link>
             </li>
             <li>
-              <Link href="/courses" className="transition hover:text-[var(--brand)]">
-                Leadership
+              <Link href="/my-courses" className="transition hover:text-[var(--brand)]">
+                My courses
               </Link>
             </li>
             <li>
-              <Link href="/courses" className="transition hover:text-[var(--brand)]">
-                Career Ready
+              <Link href="/register" className="transition hover:text-[var(--brand)]">
+                Create account
               </Link>
             </li>
           </ul>
@@ -81,7 +81,10 @@ export function SiteFooter() {
           <div className="space-y-2.5 text-sm leading-relaxed text-[var(--ink)]/80">
             <p>Phnom Penh, Cambodia</p>
             <p>
-              <a href="mailto:lifeskillsinnovationhub@lsih.com" className="transition hover:text-[var(--brand)]">
+              <a
+                href="mailto:lifeskillsinnovationhub@lsih.com"
+                className="transition hover:text-[var(--brand)]"
+              >
                 lifeskillsinnovationhub@lsih.com
               </a>
             </p>

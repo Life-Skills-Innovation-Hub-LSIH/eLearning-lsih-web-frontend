@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getLevelLabel } from "@/shared/lib/course-labels";
+import { resolveMediaUrl } from "@/shared/lib/media";
 
 export type CatalogCourseCardModel = {
   id: string | number;
@@ -8,50 +9,71 @@ export type CatalogCourseCardModel = {
   title: string;
   level?: string | null;
   cover_image?: string | null;
+  lecturer?: { id?: number | string; name: string } | null;
+  subjects?: Array<{ id: number | string; name: string; slug?: string }>;
+  modules_count?: number;
 };
 
 type Props = {
   course: CatalogCourseCardModel;
+  compact?: boolean;
 };
 
-export function PopularCourseCard({ course }: Props) {
+export function PopularCourseCard({ course, compact = false }: Props) {
+  const cover = resolveMediaUrl(course.cover_image);
+  const provider = course.lecturer?.name?.trim() || "Life Skills Innovation Hub";
+  const metaParts = [
+    getLevelLabel(course.level),
+    course.modules_count != null
+      ? `${course.modules_count} module${course.modules_count === 1 ? "" : "s"}`
+      : null,
+  ].filter(Boolean);
+
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_4px_16px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out hover:z-10 hover:scale-[1.03] hover:shadow-[0_12px_28px_rgba(15,23,42,0.14)]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--line)]/80 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out will-change-transform hover:z-20 hover:-translate-y-2 hover:scale-[1.045] hover:border-transparent hover:shadow-[0_18px_42px_rgba(5,77,161,0.28)]"
     >
-      {course.cover_image ? (
+      {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={course.cover_image}
+          src={cover}
           alt=""
-          className="h-[132px] w-full object-cover"
+          className={`w-full object-cover ${compact ? "h-[120px]" : "h-[132px]"}`}
         />
       ) : (
-        <div className="flex h-[132px] items-end bg-gradient-to-br from-[#004DA0] to-[#0A6BCF] p-4">
+        <div
+          className={`flex items-end bg-gradient-to-br from-[#054da1] to-[#0a6bc7] p-4 ${
+            compact ? "h-[120px]" : "h-[132px]"
+          }`}
+        >
           <span className="text-xs font-medium text-white/90">
             {getLevelLabel(course.level)}
           </span>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
-        <div className="mb-2.5 flex items-center gap-2">
+      <div className={`flex flex-1 flex-col ${compact ? "px-3.5 pb-3.5 pt-3" : "px-4 pb-4 pt-3"}`}>
+        <div className="mb-2 flex items-center gap-2">
           <Image
             src="/logo.png"
             alt="Life Skills Innovation Hub"
-            width={22}
-            height={22}
-            className="h-[22px] w-[22px] rounded-sm object-cover"
+            width={20}
+            height={20}
+            className="h-5 w-5 rounded-sm object-cover"
           />
-          <p className="truncate text-xs text-[var(--muted)]">Life Skills Innovation Hub</p>
+          <p className="truncate text-xs text-[var(--muted)]">{provider}</p>
         </div>
 
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[var(--ink)] group-hover:text-[var(--brand)]">
+        <h3
+          className={`line-clamp-2 font-semibold leading-snug text-[var(--ink)] group-hover:text-[var(--brand)] ${
+            compact ? "text-[14px]" : "text-[15px]"
+          }`}
+        >
           {course.title}
         </h3>
 
-        <p className="mt-auto pt-3 text-xs text-[var(--muted)]">{getLevelLabel(course.level)}</p>
+        <p className="mt-auto pt-3 text-xs text-[var(--muted)]">{metaParts.join(" · ")}</p>
       </div>
     </Link>
   );

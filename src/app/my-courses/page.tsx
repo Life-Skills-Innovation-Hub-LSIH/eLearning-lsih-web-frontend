@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { RequireAuth, useAuth } from "@/features/auth";
+import { StudentNav } from "@/features/learning";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 import {
   downloadCourseCertificatePdf,
@@ -48,8 +49,10 @@ function Content() {
   }
 
   return (
-    <main className="container-page py-12">
-      <h1 className="font-display text-4xl text-[var(--ink)]">My Courses</h1>
+    <main className="container-page py-10 sm:py-12">
+      <StudentNav />
+
+      <h1 className="font-display text-3xl text-[var(--ink)] sm:text-4xl">My Courses</h1>
       <p className="mt-2 text-[var(--muted)]">Courses you have enrolled in.</p>
 
       {downloadError ? (
@@ -67,10 +70,23 @@ function Content() {
               const courseId = item.course?.id ?? item.course_id;
               const title = item.course?.title ?? `Course #${item.course_id}`;
               const percent = item.progress?.percent ?? 0;
-              const canDownload = item.certificate_eligible === true || item.status === "completed";
+              const canDownload =
+                item.certificate_eligible === true || item.status === "completed";
 
               return (
-                <div key={String(item.id)} className="surface p-5">
+                <div key={String(item.id)} className="surface flex flex-col p-5">
+                  {item.course?.cover_image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.course.cover_image}
+                      alt=""
+                      className="mb-4 h-36 w-full rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="mb-4 flex h-36 items-end rounded-xl bg-[var(--brand)] p-4 text-sm font-medium text-white/90">
+                      Course
+                    </div>
+                  )}
                   <Link
                     href={`/learn/${item.course?.slug ?? item.course_id}`}
                     className="block"
@@ -82,36 +98,37 @@ function Content() {
                     </div>
                   </Link>
 
-                  {canDownload ? (
-                    <button
-                      type="button"
-                      className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-                      disabled={downloadingId === String(courseId)}
-                      onClick={() =>
-                        void onDownloadCertificate(
-                          courseId,
-                          item.course?.slug,
-                          item.course?.title,
-                        )
-                      }
-                    >
-                      {downloadingId === String(courseId)
-                        ? "Preparing PDF…"
-                        : "Download certificate (PDF)"}
-                    </button>
-                  ) : (
-                    <p className="mt-4 text-xs text-[var(--muted)]">
-                      Certificate unlocks after you finish all lessons and pass every quiz
-                      (usually 70%+).
-                    </p>
-                  )}
+                  <div className="mt-auto pt-4">
+                    {canDownload ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                        disabled={downloadingId === String(courseId)}
+                        onClick={() =>
+                          void onDownloadCertificate(
+                            courseId,
+                            item.course?.slug,
+                            item.course?.title,
+                          )
+                        }
+                      >
+                        {downloadingId === String(courseId)
+                          ? "Preparing PDF…"
+                          : "Download certificate (PDF)"}
+                      </button>
+                    ) : (
+                      <p className="text-xs text-[var(--muted)]">
+                        Certificate unlocks after you finish all lessons and pass every quiz.
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })}
             {enrollmentRecords.length === 0 ? (
-              <div className="surface p-6 text-[var(--muted)] md:col-span-2">
-                No courses yet.{" "}
-                <Link href="/courses" className="text-[var(--brand)]">
+              <div className="surface space-y-3 p-8 text-center md:col-span-2">
+                <p className="font-display text-xl text-[var(--ink)]">No courses yet</p>
+                <Link href="/courses" className="btn btn-primary">
                   Browse catalog
                 </Link>
               </div>

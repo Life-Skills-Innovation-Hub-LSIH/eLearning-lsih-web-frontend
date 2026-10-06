@@ -5,8 +5,8 @@
   --admin-border: #e2e8f0;
   --admin-border-strong: #cbd5e1;
   --admin-text: #0f172a;
-  --admin-muted: #64748b;
-  --admin-subtle: #94a3b8;
+  --admin-muted: #475569;
+  --admin-subtle: #64748b;
   --admin-hover: #f1f5f9;
   --admin-brand: #054da1;
   --admin-brand-hover: #043d80;
@@ -58,10 +58,24 @@
 
 .admin-theme [data-slot="button"].bg-primary {
   color: #ffffff;
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .admin-theme [data-slot="button"].bg-primary:hover {
   color: #ffffff;
+  background: var(--admin-brand-hover);
+}
+
+.admin-theme [data-slot="button"][data-variant="outline"] {
+  border-color: var(--admin-border-strong);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  box-shadow: none;
+}
+
+.admin-theme [data-slot="button"][data-variant="outline"]:hover {
+  background: var(--admin-hover);
+  border-color: var(--admin-border-strong);
 }
 
 .admin-theme [data-slot="sidebar-menu-button"][data-active="true"] {

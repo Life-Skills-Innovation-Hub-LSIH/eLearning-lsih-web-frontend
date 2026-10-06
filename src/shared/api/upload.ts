@@ -199,6 +199,23 @@ export async function uploadCourseCoverApi(
   return data?.data?.cover_image ?? data?.data?.url ?? "";
 }
 
+export async function deleteCourseCoverApi(token: string, urlOrPath: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}/admin/upload/course-cover`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ url: urlOrPath }),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+    throw new ApiError(response.status, body?.message ?? "Failed to delete cover.", body);
+  }
+}
+
 export async function uploadLessonMediaApi(
   token: string,
   file: File,

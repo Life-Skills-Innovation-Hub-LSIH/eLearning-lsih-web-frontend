@@ -265,54 +265,49 @@ export function CourseContentManager({ courseId }: Props) {
             </Button>
           ) : null}
           <Button type="button" onClick={openAddModule}>
-            <Plus />
+            <Plus data-icon="inline-start" />
             Add module
           </Button>
         </div>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {error ? (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {success ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
             {success}
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
-            <span className="tabular-nums text-primary">{modules.length}</span>
-            modules
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
-            <span className="tabular-nums text-primary">
-              {modules.reduce((sum, item) => sum + (item.lessons ?? []).length, 0)}
-            </span>
-            lessons
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/80 px-2.5 py-1.5 text-sm font-semibold text-foreground">
-            <span className="tabular-nums text-primary">
-              {modules.reduce((sum, item) => sum + (item.quizzes ?? []).length, 0)}
-            </span>
-            quizzes
-          </span>
-        </div>
+        <p className="text-sm text-foreground/80">
+          <span className="tabular-nums font-semibold text-foreground">{modules.length}</span> modules
+          <span className="mx-2 text-foreground/35">·</span>
+          <span className="tabular-nums font-semibold text-foreground">
+            {modules.reduce((sum, item) => sum + (item.lessons ?? []).length, 0)}
+          </span>{" "}
+          lessons
+          <span className="mx-2 text-foreground/35">·</span>
+          <span className="tabular-nums font-semibold text-foreground">
+            {modules.reduce((sum, item) => sum + (item.quizzes ?? []).length, 0)}
+          </span>{" "}
+          quizzes
+        </p>
 
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+        <div className="overflow-hidden rounded-lg border border-border/80 bg-card">
           {modules.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-sm text-muted-foreground">No modules yet.</p>
-              <Button type="button" className="mt-4 rounded-full" onClick={openAddModule}>
-                <Plus className="size-4" />
+              <Button type="button" className="mt-4" onClick={openAddModule}>
+                <Plus data-icon="inline-start" />
                 Add first module
               </Button>
             </div>
           ) : (
-            <ul className="divide-y divide-border/60">
+            <ul className="divide-y divide-border/70">
               {modules.map((module, moduleIndex) => {
                 const open = !collapsedModuleIds.includes(module.id);
                 const lessonCount = (module.lessons ?? []).length;
@@ -326,10 +321,10 @@ export function CourseContentManager({ courseId }: Props) {
 
                 return (
                   <li key={module.id}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+                    <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40 sm:px-5">
                       <button
                         type="button"
-                        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition hover:bg-muted hover:text-foreground"
                         aria-expanded={open}
                         aria-label={open ? "Collapse module" : "Expand module"}
                         onClick={toggleModule}
@@ -346,35 +341,28 @@ export function CourseContentManager({ courseId }: Props) {
                         className="flex min-w-0 flex-1 items-center gap-3 text-left"
                         onClick={toggleModule}
                       >
-                        <span className="inline-flex shrink-0 items-center rounded-md bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
+                        <span className="w-16 shrink-0 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
                           Module {moduleIndex + 1}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate text-sm font-semibold tracking-tight">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <p className="truncate text-sm font-semibold tracking-tight text-foreground">
                               {module.title}
                             </p>
-                            <span
-                              className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${
-                                module.status === "published"
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-                              }`}
-                            >
-                              {module.status === "published" ? "Published" : "Draft"}
-                            </span>
-                            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
-                              {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-                            </span>
-                            <span className="inline-flex items-center rounded-md border border-border bg-background px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
-                              {quizCount} quiz{quizCount === 1 ? "" : "zes"}
-                            </span>
+                            {module.status !== "published" ? (
+                              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                                Draft
+                              </span>
+                            ) : null}
                           </div>
-                          {module.description?.trim() ? (
-                            <p className="mt-0.5 truncate text-xs text-foreground/70">
-                              {module.description.trim()}
-                            </p>
-                          ) : null}
+                          <p className="mt-0.5 truncate text-xs text-foreground/70">
+                            {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+                            <span className="mx-1.5 text-foreground/35">·</span>
+                            {quizCount} quiz{quizCount === 1 ? "" : "zes"}
+                            {module.description?.trim()
+                              ? ` · ${module.description.trim()}`
+                              : null}
+                          </p>
                         </div>
                       </button>
 
@@ -414,7 +402,7 @@ export function CourseContentManager({ courseId }: Props) {
                     </div>
 
                     {open ? (
-                      <div className="border-t border-border/50 bg-muted/20 px-4 py-3 sm:px-5 sm:pl-16">
+                      <div className="border-t border-border/60 bg-background px-4 py-2 sm:px-5 sm:pl-14">
                         <ModuleExpandedPanel
                           token={token!}
                           module={module}
@@ -832,16 +820,22 @@ function ModuleExpandedPanel({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-0">
       {(module.lessons ?? []).length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border/70 px-3 py-4 text-center text-sm text-muted-foreground">
+        <p className="px-1 py-4 text-center text-sm text-muted-foreground">
           No lessons yet. Use the module ⋮ menu → Add lesson.
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="divide-y divide-border/60">
           {(module.lessons ?? []).map((lesson, lessonIndex) => {
             const lessonQuizzes = quizzes.filter((quiz) => quiz.lessonId === lesson.id);
             const lessonOpen = expandedLessonIds.includes(lesson.id);
+            const typeLabel =
+              lesson.contentType === "file"
+                ? "PDF"
+                : lesson.contentType === "video"
+                  ? "Video"
+                  : "Text";
 
             function toggleLesson() {
               setExpandedLessonIds((prev) =>
@@ -850,14 +844,11 @@ function ModuleExpandedPanel({
             }
 
             return (
-              <li
-                key={lesson.id}
-                className="overflow-hidden rounded-xl border border-border/70 bg-background/60"
-              >
-                <div className="flex items-center gap-2 px-3 py-2.5">
+              <li key={lesson.id}>
+                <div className="flex items-center gap-2 py-2.5 transition-colors hover:bg-muted/30">
                   <button
                     type="button"
-                    className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition hover:bg-muted hover:text-foreground"
                     aria-expanded={lessonOpen}
                     aria-label={lessonOpen ? "Collapse lesson" : "Expand lesson"}
                     onClick={toggleLesson}
@@ -871,31 +862,21 @@ function ModuleExpandedPanel({
 
                   <button
                     type="button"
-                    className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     onClick={toggleLesson}
                   >
-                    <span className="inline-flex shrink-0 items-center rounded-md bg-sky-600 px-2 py-1 text-xs font-bold text-white">
+                    <span className="w-14 shrink-0 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
                       Lesson {lessonIndex + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-semibold">{lesson.title}</p>
-                        <span className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
-                          {lesson.contentType === "file"
-                            ? "PDF"
-                            : lesson.contentType === "video"
-                              ? "Video"
-                              : "Text"}
-                        </span>
-                        {lesson.durationMinutes ? (
-                          <span className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
-                            {lesson.durationMinutes} min
-                          </span>
-                        ) : null}
-                        <span className="inline-flex items-center rounded-md border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold text-sky-800 dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-200">
-                          {lessonQuizzes.length} quiz{lessonQuizzes.length === 1 ? "" : "zes"}
-                        </span>
-                      </div>
+                      <p className="truncate text-sm font-semibold text-foreground">{lesson.title}</p>
+                      <p className="mt-0.5 truncate text-xs text-foreground/70">
+                        {typeLabel}
+                        {lesson.durationMinutes ? ` · ${lesson.durationMinutes} min` : null}
+                        {lessonQuizzes.length > 0
+                          ? ` · ${lessonQuizzes.length} quiz${lessonQuizzes.length === 1 ? "" : "zes"}`
+                          : null}
+                      </p>
                     </div>
                   </button>
 
@@ -923,7 +904,7 @@ function ModuleExpandedPanel({
                 </div>
 
                 {lessonOpen ? (
-                  <div className="space-y-3 border-t border-border/50 bg-muted/20 px-3 py-3">
+                  <div className="space-y-3 border-t border-border/50 pb-3 pl-10 pt-3">
                     <LessonMediaPreview
                       contentType={lesson.contentType}
                       mediaUrl={lesson.mediaUrl}
@@ -932,43 +913,38 @@ function ModuleExpandedPanel({
                     />
 
                     {lessonQuizzes.length === 0 ? (
-                      <p className="rounded-lg border border-dashed border-border/60 px-3 py-3 text-center text-xs text-muted-foreground">
+                      <p className="py-2 text-center text-xs text-muted-foreground">
                         No quiz yet. Use the lesson ⋮ menu → Add Quiz.
                       </p>
                     ) : (
-                      <ul className="space-y-2">
+                      <ul className="divide-y divide-border/50 rounded-md border border-border/70">
                         {lessonQuizzes.map((quiz, quizIndex) => {
                           const questionCount =
                             (quiz.questions ?? []).length || quiz.questionsCount || 0;
 
                           return (
-                            <li
-                              key={quiz.id}
-                              className="rounded-lg border border-border/60 bg-card px-3 py-2.5"
-                            >
-                              <div className="flex items-start gap-2">
-                                <span className="inline-flex shrink-0 items-center rounded-md bg-violet-600 px-2 py-1 text-xs font-bold text-white">
+                            <li key={quiz.id} className="px-3 py-2.5">
+                              <div className="flex items-start gap-3">
+                                <span className="w-12 shrink-0 pt-0.5 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
                                   Quiz {quizIndex + 1}
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <p className="truncate text-sm font-medium">{quiz.title}</p>
-                                    <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
-                                      Pass {quiz.passScore}%
-                                    </span>
-                                    <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
-                                      {questionCount} question{questionCount === 1 ? "" : "s"}
-                                    </span>
-                                  </div>
+                                  <p className="truncate text-sm font-semibold text-foreground">{quiz.title}</p>
+                                  <p className="mt-0.5 text-xs text-foreground/70">
+                                    Pass {quiz.passScore}%
+                                    <span className="mx-1.5 text-foreground/35">·</span>
+                                    {questionCount} question
+                                    {questionCount === 1 ? "" : "s"}
+                                  </p>
                                   {(quiz.questions ?? []).length > 0 ? (
                                     <ul className="mt-2 space-y-1.5">
                                       {(quiz.questions ?? []).map((question, questionIndex) => (
                                         <li
                                           key={question.id ?? `${quiz.id}-q-${questionIndex}`}
-                                          className="rounded-md bg-muted/30 px-2.5 py-1.5"
+                                          className="px-0.5 py-1"
                                         >
-                                          <p className="text-xs font-medium">
-                                            <span className="mr-1 text-muted-foreground">
+                                          <p className="text-xs font-medium text-foreground">
+                                            <span className="mr-1 text-foreground/65">
                                               Q{questionIndex + 1}.
                                             </span>
                                             {question.questionText}
@@ -979,8 +955,8 @@ function ModuleExpandedPanel({
                                                 key={option.id ?? `${questionIndex}-${optionIndex}`}
                                                 className={`flex items-center gap-1.5 text-[11px] ${
                                                   option.isCorrect
-                                                    ? "font-medium text-emerald-500"
-                                                    : "text-muted-foreground"
+                                                    ? "font-medium text-emerald-700"
+                                                    : "text-foreground/70"
                                                 }`}
                                               >
                                                 <span className="w-3 shrink-0 font-semibold">
@@ -1026,46 +1002,36 @@ function ModuleExpandedPanel({
       )}
 
       {orphanQuizzes.length > 0 ? (
-        <div className="space-y-2">
-          <p className="px-1 text-xs font-semibold tracking-wide text-foreground/70 uppercase">
+        <div className="mt-2 border-t border-border/60 pt-2">
+          <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
             Module quizzes
           </p>
-          <ul className="space-y-2">
+          <ul className="divide-y divide-border/60">
             {orphanQuizzes.map((quiz, quizIndex) => {
               const questionCount =
                 (quiz.questions ?? []).length || quiz.questionsCount || 0;
 
               return (
-                <li
-                  key={quiz.id}
-                  className="rounded-xl border border-border/70 bg-background/60 px-3 py-2.5"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="inline-flex shrink-0 items-center rounded-md bg-violet-600 px-2 py-1 text-xs font-bold text-white">
+                <li key={quiz.id} className="py-2.5">
+                  <div className="flex items-start gap-3">
+                    <span className="w-12 shrink-0 pt-0.5 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
                       Quiz {quizIndex + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-medium">{quiz.title}</p>
-                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
-                          End of module
-                        </span>
-                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
-                          Pass {quiz.passScore}%
-                        </span>
-                        <span className="inline-flex items-center rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[11px] font-semibold text-violet-800 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-200">
-                          {questionCount} question{questionCount === 1 ? "" : "s"}
-                        </span>
-                      </div>
+                      <p className="truncate text-sm font-semibold text-foreground">{quiz.title}</p>
+                      <p className="mt-0.5 text-xs text-foreground/70">
+                        End of module
+                        <span className="mx-1.5 text-foreground/35">·</span>
+                        Pass {quiz.passScore}%
+                        <span className="mx-1.5 text-foreground/35">·</span>
+                        {questionCount} question{questionCount === 1 ? "" : "s"}
+                      </p>
                       {(quiz.questions ?? []).length > 0 ? (
-                        <ul className="mt-2 space-y-1.5">
+                        <ul className="mt-2 space-y-1">
                           {(quiz.questions ?? []).map((question, questionIndex) => (
-                            <li
-                              key={question.id ?? `${quiz.id}-q-${questionIndex}`}
-                              className="rounded-md bg-muted/30 px-2.5 py-1.5"
-                            >
-                              <p className="text-xs font-medium">
-                                <span className="mr-1 text-muted-foreground">
+                            <li key={question.id ?? `${quiz.id}-q-${questionIndex}`}>
+                              <p className="text-xs font-medium text-foreground">
+                                <span className="mr-1 text-foreground/65">
                                   Q{questionIndex + 1}.
                                 </span>
                                 {question.questionText}

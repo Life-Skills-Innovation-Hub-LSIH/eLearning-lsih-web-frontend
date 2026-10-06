@@ -152,10 +152,36 @@ export function mapProgressSummary(
   };
 }
 
-export async function fetchCatalogCourses(search?: string): Promise<CatalogCourse[]> {
-  const query = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+export type CatalogSubject = {
+  id: number | string;
+  name: string;
+  slug: string;
+  code?: string | null;
+  description?: string | null;
+  icon?: string | null;
+  status?: string;
+  courses_count?: number;
+};
+
+export async function fetchCatalogCourses(
+  search?: string,
+  options?: { subjectId?: string | number },
+): Promise<CatalogCourse[]> {
+  const params = new URLSearchParams();
+  if (search?.trim()) params.set("search", search.trim());
+  if (options?.subjectId != null && String(options.subjectId).trim() !== "") {
+    params.set("subject_id", String(options.subjectId));
+  }
+  const query = params.toString() ? `?${params.toString()}` : "";
   const payload = await apiRequest<{ data?: CatalogCourse[] } | CatalogCourse[]>(
     `/catalog/courses${query}`,
+  );
+  return unwrapList(payload);
+}
+
+export async function fetchCatalogSubjects(): Promise<CatalogSubject[]> {
+  const payload = await apiRequest<{ data?: CatalogSubject[] } | CatalogSubject[]>(
+    "/catalog/subjects",
   );
   return unwrapList(payload);
 }

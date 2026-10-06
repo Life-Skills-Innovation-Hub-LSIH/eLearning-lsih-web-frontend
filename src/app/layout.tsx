@@ -23,7 +23,7 @@ const displayFont = Sora({
 
 const khmerFont = Kantumruy_Pro({
   variable: "--font-khmer",
-  subsets: ["khmer"],
+  subsets: ["khmer", "latin"],
   weight: ["400", "500", "600", "700"],
 });
 

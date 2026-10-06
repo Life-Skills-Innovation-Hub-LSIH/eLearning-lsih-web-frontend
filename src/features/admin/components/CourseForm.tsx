@@ -26,6 +26,7 @@ import { AdminFormField, AdminFormInput, AdminFormSection } from "./AdminFormFie
 import { AdminPageLayout } from "./AdminPageLayout";
 import { CourseCoverUploadField } from "./CourseCoverUploadField";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
+import { deleteCourseCoverApi, uploadCourseCoverApi } from "@/shared/api/upload";
 import type {
   CourseLevel,
   CoursePublishStatus,
@@ -48,6 +49,7 @@ export function CourseForm({ mode, courseId }: Props) {
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [level, setLevel] = useState<CourseLevel | "">("");
   const [status, setStatus] = useState<CoursePublishStatus>("published");
   const [lecturerId, setLecturerId] = useState("");
@@ -108,6 +110,7 @@ export function CourseForm({ mode, courseId }: Props) {
           setShortDescription(course.shortDescription ?? "");
           setDescription(course.description ?? "");
           setCoverImage(course.coverImage ?? "");
+          setCoverFile(null);
           setLevel(course.level ?? "");
           setStatus(course.status);
           setLecturerId(course.lecturerId ?? "");
@@ -137,30 +140,51 @@ export function CourseForm({ mode, courseId }: Props) {
       return;
     }
 
-    const input: CourseFormInput = {
-      title: title.trim(),
-      slug: undefined,
-      shortDescription: shortDescription.trim() || null,
-      description: description.trim() || null,
-      coverImage: coverImage.trim() || null,
-      level: level || null,
-      status,
-      lecturerId: lecturerId || null,
-      subjectIds,
-    };
-
     setSubmitting(true);
+    let uploadedCoverUrl: string | null = null;
+
     try {
+      let nextCoverImage = coverImage.trim() || null;
+
+      // Upload to cloud only when saving — avoids orphan files if the first attempt failed.
+      if (coverFile) {
+        uploadedCoverUrl = await uploadCourseCoverApi(token, coverFile, {
+          slug: slug.trim() || undefined,
+        });
+        nextCoverImage = uploadedCoverUrl || null;
+      }
+
+      const input: CourseFormInput = {
+        title: title.trim(),
+        slug: undefined,
+        shortDescription: shortDescription.trim() || null,
+        description: description.trim() || null,
+        coverImage: nextCoverImage,
+        level: level || null,
+        status,
+        lecturerId: lecturerId || null,
+        subjectIds,
+      };
+
       if (isEdit && courseId) {
         await updateCourseApi(token, courseId, input);
+        setCoverImage(nextCoverImage ?? "");
+        setCoverFile(null);
         setSuccess("Course updated successfully.");
         setTimeout(() => router.push("/admin/courses"), 700);
       } else {
         const created = await createCourseApi(token, input);
+        setCoverImage(nextCoverImage ?? "");
+        setCoverFile(null);
         setSuccess("Course created. Add modules next…");
         setTimeout(() => router.push(`/admin/courses/${created.id}/content`), 700);
       }
     } catch (err) {
+      // If cloud upload succeeded but course save failed, remove the orphan file.
+      if (uploadedCoverUrl && token) {
+        void deleteCourseCoverApi(token, uploadedCoverUrl).catch(() => undefined);
+      }
+
       if (err instanceof ApiError) {
         const firstError = Object.values(err.body?.errors ?? {})[0]?.[0];
         setError(firstError ?? err.message);
@@ -228,10 +252,14 @@ export function CourseForm({ mode, courseId }: Props) {
           {token ? (
             <AdminFormField id="cover" label="Cover image">
               <CourseCoverUploadField
-                token={token}
-                coverUrl={coverImage.trim() || null}
-                slug={slug}
-                onChange={(url) => setCoverImage(url ?? "")}
+                coverUrl={coverFile ? null : coverImage.trim() || null}
+                pendingFile={coverFile}
+                disabled={submitting}
+                onPendingFileChange={setCoverFile}
+                onRemoveSaved={() => {
+                  setCoverImage("");
+                  setCoverFile(null);
+                }}
               />
             </AdminFormField>
           ) : null}
@@ -303,7 +331,7 @@ export function CourseForm({ mode, courseId }: Props) {
           <AdminFormField id="lecturer" label="Lecturer">
             <Select
               value={lecturerId || "__none__"}
-              onValueChange={(value) => setLecturerId(value === "__none__" ? "" : value)}
+              onValueChange={(value) => setLecturerId(!value || value === "__none__" ? "" : value)}
               items={lecturerItems}
             >
               <SelectTrigger className="admin-form-input w-full max-w-md">
