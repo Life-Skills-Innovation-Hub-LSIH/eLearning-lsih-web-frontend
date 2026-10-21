@@ -121,6 +121,20 @@ a {
   text-decoration: none;
 }
 
+/* Header explore + my-courses — identical color on <button> and <a> */
+.site-header-nav-item {
+  color: var(--ink) !important;
+}
+
+.site-header-nav-item:hover {
+  color: var(--brand) !important;
+}
+
+.site-header-nav-item.is-active {
+  color: var(--brand) !important;
+  font-weight: 600;
+}
+
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]),
 a[href],

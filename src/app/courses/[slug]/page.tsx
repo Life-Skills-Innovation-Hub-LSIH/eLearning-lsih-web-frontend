@@ -7,9 +7,11 @@ import {
   Award,
   BookOpen,
   CheckCircle2,
+  ChevronRight,
   Clock,
   FileText,
   HelpCircle,
+  Home,
   PlayCircle,
   UserRound,
 } from "lucide-react";
@@ -71,33 +73,46 @@ export default function CourseDetailsPage() {
   const cover = resolveMediaUrl(course.cover_image);
 
   return (
-    <main className="bg-[#f5f8fc]">
+    <main className="bg-white">
       <section className="border-b border-[var(--line)] bg-white">
-        <div className="container-page py-4 text-sm text-[var(--muted)]">
-          <Link href="/courses" className="hover:text-[var(--brand)]">
-            Courses
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-[var(--ink)]">{course.title}</span>
-        </div>
-      </section>
-
-      <section className="border-b border-[var(--line)] bg-[linear-gradient(180deg,#e8f1fb_0%,#ffffff_100%)]">
-        <div className="container-page grid gap-10 py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start lg:py-14">
-          <div className="space-y-5">
-            {subjects.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {subjects.map((subject) => (
-                  <span
-                    key={String(subject.id)}
-                    className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--brand)] shadow-sm"
-                  >
-                    {subject.name}
-                  </span>
-                ))}
-              </div>
+        <div className="container-page pt-5 pb-10 lg:pb-14 lg:pt-6">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-8 flex flex-wrap items-center gap-1.5 text-[0.8125rem] leading-none text-[#5b6b7c]"
+          >
+            <Link
+              href="/"
+              className="inline-flex items-center text-[#5b6b7c] transition hover:text-[var(--brand)]"
+              aria-label="Home"
+            >
+              <Home className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#9aa8b6]" strokeWidth={2} />
+            <Link
+              href="/courses"
+              className="transition hover:text-[var(--brand)] hover:underline"
+            >
+              Courses
+            </Link>
+            {subjects[0] ? (
+              <>
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#9aa8b6]" strokeWidth={2} />
+                <Link
+                  href={`/courses?subject_id=${encodeURIComponent(String(subjects[0].id))}`}
+                  className="transition hover:text-[var(--brand)] hover:underline"
+                >
+                  {subjects[0].name}
+                </Link>
+              </>
             ) : null}
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#9aa8b6]" strokeWidth={2} />
+            <span className="max-w-[min(100%,28rem)] truncate text-[#5b6b7c]">
+              {course.title}
+            </span>
+          </nav>
 
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <div className="space-y-5">
             <h1 className="font-display text-3xl font-semibold tracking-tight text-[var(--ink)] md:text-4xl">
               {course.title}
             </h1>
@@ -179,6 +194,7 @@ export default function CourseDetailsPage() {
               Need access? Contact admin after you register.
             </p>
           </aside>
+          </div>
         </div>
       </section>
 
