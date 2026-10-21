@@ -39,12 +39,12 @@ export function PopularCourseCard({ course, compact = false }: Props) {
         <img
           src={cover}
           alt=""
-          className={`w-full object-cover ${compact ? "h-[120px]" : "h-[132px]"}`}
+          className={`w-full object-cover ${compact ? "h-[148px]" : "h-[190px]"}`}
         />
       ) : (
         <div
           className={`flex items-end bg-gradient-to-br from-[#054da1] to-[#0a6bc7] p-4 ${
-            compact ? "h-[120px]" : "h-[132px]"
+            compact ? "h-[148px]" : "h-[190px]"
           }`}
         >
           <span className="text-xs font-medium text-white/90">
@@ -53,8 +53,12 @@ export function PopularCourseCard({ course, compact = false }: Props) {
         </div>
       )}
 
-      <div className={`flex flex-1 flex-col ${compact ? "px-3.5 pb-3.5 pt-3" : "px-4 pb-4 pt-3"}`}>
-        <div className="mb-2 flex items-center gap-2">
+      <div
+        className={`flex min-h-[7.5rem] flex-1 flex-col ${
+          compact ? "px-3.5 pb-4 pt-3.5" : "px-4 pb-5 pt-4"
+        }`}
+      >
+        <div className="mb-2.5 flex items-center gap-2">
           <Image
             src="/logo.png"
             alt="Life Skills Innovation Hub"
@@ -67,13 +71,13 @@ export function PopularCourseCard({ course, compact = false }: Props) {
 
         <h3
           className={`line-clamp-2 font-semibold leading-snug text-[var(--ink)] group-hover:text-[var(--brand)] ${
-            compact ? "text-[14px]" : "text-[15px]"
+            compact ? "text-[14px]" : "text-[16px]"
           }`}
         >
           {course.title}
         </h3>
 
-        <p className="mt-auto pt-3 text-xs text-[var(--muted)]">{metaParts.join(" · ")}</p>
+        <p className="mt-auto pt-4 text-xs text-[var(--muted)]">{metaParts.join(" · ")}</p>
       </div>
     </Link>
   );

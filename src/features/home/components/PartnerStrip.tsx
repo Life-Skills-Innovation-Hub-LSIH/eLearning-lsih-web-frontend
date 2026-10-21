@@ -11,7 +11,7 @@ const partners = [
 export function PartnerStrip() {
   return (
     <section className="border-b border-[var(--line)] bg-white">
-      <div className="container-page py-16 sm:py-20">
+      <div className="container-page section-y">
         <p className="text-center text-sm font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-base">
           Trusted by institutions & partners
         </p>

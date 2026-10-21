@@ -1,11 +1,12 @@
-import Link from "next/link";
 import {
+  CourseColumnsSection,
   FeaturedProgramsBanner,
-  HowItWorksSection,
   MainBanner,
   PartnerStrip,
   PopularCoursesSection,
+  PromoBannersSection,
   SubjectsSection,
+  TestimonialsSection,
   WhyLsihSection,
 } from "@/features/home";
 import {
@@ -13,6 +14,13 @@ import {
   fetchCatalogSubjects,
   type CatalogSubject,
 } from "@/features/learning/api/enrollment-api";
+
+const learningPoints = [
+  "Browse and open a published course",
+  "Get a paid subscription from admin",
+  "Complete lessons and pass module quizzes",
+  "Download your e-certificate when finished",
+];
 
 export default async function HomePage() {
   let courses: Awaited<ReturnType<typeof fetchCatalogCourses>> = [];
@@ -32,74 +40,68 @@ export default async function HomePage() {
   return (
     <main>
       <MainBanner />
+
+      <CourseColumnsSection
+        title="Trending courses"
+        courses={popular.slice(0, 9)}
+      />
+
       <PartnerStrip />
       <FeaturedProgramsBanner courses={courses} />
-      <SubjectsSection subjects={subjects} />
 
-      <div className="container-page flex flex-col gap-14 py-14 sm:gap-16 sm:py-16">
+      <SubjectsSection subjects={subjects} />
+      <PromoBannersSection />
+
+      <CourseColumnsSection
+        title="New courses"
+        courses={latest.slice(0, 9)}
+      />
+
+      <div className="container-page section-y">
         <PopularCoursesSection
           title="Popular courses"
           subtitle="Most learners are studying these right now"
           courses={popular}
         />
-        <PopularCoursesSection
-          title="Latest courses"
-          subtitle="New and recently updated learning tracks"
-          courses={latest}
-        />
       </div>
 
-      <HowItWorksSection />
       <WhyLsihSection />
 
-      <section className="relative overflow-hidden bg-[var(--brand)]">
+      <section className="container-page section-y">
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-30"
+          className="group relative origin-center overflow-hidden rounded-[1.75rem] px-6 py-10 transition-transform duration-500 ease-out will-change-transform hover:scale-[1.02] sm:px-10 sm:py-12 md:px-12"
           style={{
             backgroundImage:
-              "radial-gradient(ellipse 60% 80% at 100% 50%, rgba(255,255,255,0.18), transparent 55%)",
+              "radial-gradient(ellipse 70% 90% at 100% 50%, rgba(240, 90, 37, 0.55), transparent 55%), linear-gradient(115deg, #04356f 0%, #054da1 42%, #0a6bc7 72%, #f05a25 140%)",
           }}
-        />
-        <div className="container-page relative grid items-center gap-10 py-16 md:grid-cols-[1.2fr_0.8fr] md:py-20">
-          <div className="space-y-5">
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Structured learning that sticks
-            </h2>
-            <p className="max-w-xl text-base leading-relaxed text-white/80">
-              Every course follows a clear path — modules, lessons, quizzes, and a certificate —
-              so progress is measurable and career-ready.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/courses" className="btn btn-accent">
-                Explore courses
-              </Link>
-              <Link
-                href="/register"
-                className="btn border border-white/25 bg-white/10 !text-white hover:bg-white/18"
-              >
-                Create account
-              </Link>
+        >
+          <div className="relative grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr] md:gap-12">
+            <div className="space-y-4">
+              <h2 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Structured learning that sticks
+              </h2>
+              <p className="max-w-xl text-base leading-relaxed text-white/80">
+                Every course follows a clear path — modules, lessons, quizzes, and a certificate —
+                so progress is measurable and career-ready.
+              </p>
             </div>
-          </div>
 
-          <ol className="space-y-4 text-white/90">
-            {[
-              "Browse and open a course",
-              "Get a paid subscription from admin",
-              "Complete lessons and module quizzes",
-              "Download your certificate",
-            ].map((step, index) => (
-              <li key={step} className="flex items-start gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white">
-                  {index + 1}
-                </span>
-                <span className="pt-1 text-sm leading-relaxed sm:text-base">{step}</span>
-              </li>
-            ))}
-          </ol>
+            <ul className="space-y-3.5">
+              {learningPoints.map((point) => (
+                <li key={point} className="flex items-start gap-3 text-white/95">
+                  <span
+                    className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--accent-brand,#f05a25)] shadow-[0_0_0_4px_rgba(240,90,37,0.2)]"
+                    aria-hidden
+                  />
+                  <span className="text-sm leading-relaxed sm:text-base">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
+
+      <TestimonialsSection />
     </main>
   );
 }

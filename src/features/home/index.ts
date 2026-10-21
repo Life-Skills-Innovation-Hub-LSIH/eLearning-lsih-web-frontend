@@ -1,3 +1,4 @@
+export { CourseColumnsSection } from "./components/CourseColumnsSection";
 export { CourseRail } from "./components/CourseRail";
 export { FeaturedProgramsBanner } from "./components/FeaturedProgramsBanner";
 export { HowItWorksSection } from "./components/HowItWorksSection";
@@ -6,4 +7,6 @@ export { MainBanner } from "./components/MainBanner";
 export { PartnerStrip } from "./components/PartnerStrip";
 export { PopularCoursesSection } from "./components/PopularCoursesSection";
 export { SubjectsSection } from "./components/SubjectsSection";
+export { PromoBannersSection } from "./components/PromoBannersSection";
+export { TestimonialsSection } from "./components/TestimonialsSection";
 export { WhyLsihSection } from "./components/WhyLsihSection";

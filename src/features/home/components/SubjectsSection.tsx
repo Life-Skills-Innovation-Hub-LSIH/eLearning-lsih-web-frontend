@@ -1,5 +1,16 @@
 import Link from "next/link";
-import { BookMarked } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  BookMarked,
+  Brain,
+  Cloud,
+  Code2,
+  Database,
+  Laptop,
+  Network,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 import type { CatalogSubject } from "@/features/learning/api/enrollment-api";
 import { resolveMediaUrl } from "@/shared/lib/media";
 
@@ -7,59 +18,50 @@ type Props = {
   subjects: CatalogSubject[];
 };
 
+function subjectIcon(name: string): LucideIcon {
+  const key = name.toLowerCase();
+  if (key.includes("artificial") || key.includes("ai")) return Sparkles;
+  if (key.includes("cloud")) return Cloud;
+  if (key.includes("cyber") || key.includes("security")) return Shield;
+  if (key.includes("database") || key.includes("data")) return Database;
+  if (key.includes("network")) return Network;
+  if (key.includes("computer") || key.includes("software")) return Code2;
+  if (key.includes("information") || key.includes("it ")) return Laptop;
+  if (key.includes("brain")) return Brain;
+  return BookMarked;
+}
+
 export function SubjectsSection({ subjects }: Props) {
   if (subjects.length === 0) return null;
 
   return (
-    <section className="container-page py-14 sm:py-16">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
-            Subjects
-          </h2>
-          <p className="mt-2 max-w-xl text-sm text-[var(--muted)]">
-            Browse by subject — then open courses that match what you want to learn.
-          </p>
-        </div>
-        <Link href="/courses" className="text-sm font-semibold text-[var(--brand)] hover:underline">
-          View all courses →
-        </Link>
-      </div>
+    <section className="container-page pt-12 sm:pt-14">
+      <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
+        Explore categories
+      </h2>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-5 flex flex-wrap gap-3">
         {subjects.map((subject) => {
           const iconUrl = resolveMediaUrl(subject.icon);
-          const count = subject.courses_count ?? 0;
+          const Icon = subjectIcon(subject.name);
 
           return (
             <Link
               key={String(subject.id)}
               href={`/courses?subject_id=${encodeURIComponent(String(subject.id))}`}
-              className="group rounded-2xl border border-[var(--line)] bg-white p-5 shadow-[var(--shadow)] transition hover:-translate-y-1 hover:border-[var(--brand)]/25 hover:shadow-[var(--shadow-hover)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#eef3f9] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[#e2eaf4] hover:text-[var(--brand)]"
             >
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[var(--brand)] text-white transition group-hover:bg-[var(--accent-brand)]">
-                {iconUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={iconUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <BookMarked className="h-5 w-5" />
-                )}
-              </div>
-              <h3 className="mt-4 font-display text-lg font-semibold text-[var(--ink)]">
-                {subject.name}
-              </h3>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand)]">
-                {count} course{count === 1 ? "" : "s"}
-              </p>
-              {subject.description?.trim() ? (
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--muted)]">
-                  {subject.description.trim()}
-                </p>
+              {iconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={iconUrl}
+                  alt=""
+                  className="h-4 w-4 shrink-0 rounded-sm object-cover"
+                />
               ) : (
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-                  Explore published courses in this subject.
-                </p>
+                <Icon className="h-4 w-4 shrink-0 text-[var(--ink)]" strokeWidth={1.75} />
               )}
+              <span>{subject.name}</span>
             </Link>
           );
         })}

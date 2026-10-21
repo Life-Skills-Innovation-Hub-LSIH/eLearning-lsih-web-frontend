@@ -43,7 +43,7 @@ export function FeaturedProgramsBanner({ courses }: Props) {
   if (courses.length === 0) return null;
 
   return (
-    <section className="container-page py-10 sm:py-12">
+    <section className="container-page section-y">
       <div
         className="font-khmer overflow-x-clip rounded-[1.75rem] p-5 sm:p-7 lg:overflow-visible lg:p-8"
         style={{

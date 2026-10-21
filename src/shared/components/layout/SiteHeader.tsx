@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown, Menu, Search, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { homePathForRole } from "@/features/auth";
+import { HeaderSearchDiscover } from "@/shared/components/layout/HeaderSearchDiscover";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 
 const categories = [
@@ -57,7 +58,6 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
-  const [search, setSearch] = useState("");
 
   const linkClass = (href: string) =>
     `text-sm transition-colors ${
@@ -67,7 +67,7 @@ export function SiteHeader() {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 rounded-b-[28px] border-b border-[var(--line)]/80 bg-white/95 shadow-[0_8px_24px_rgba(5,77,161,0.08)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 rounded-b-[28px] border-b border-[var(--line)]/80 bg-white shadow-[0_8px_24px_rgba(5,77,161,0.08)]">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <div className="flex items-center gap-5 lg:gap-8">
           <Link href="/" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
@@ -132,21 +132,7 @@ export function SiteHeader() {
             ) : null}
           </div>
 
-          <form
-            className="relative hidden lg:block"
-            onSubmit={(event) => {
-              event.preventDefault();
-              window.location.href = `/courses?q=${encodeURIComponent(search)}`;
-            }}
-          >
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="ស្វែងរកវគ្គសិក្សា"
-              className="h-9 w-[220px] rounded-full border border-[var(--line)] bg-[var(--background)] pl-9 pr-3 text-sm outline-none transition focus:border-[var(--brand)] focus:bg-white xl:w-[260px]"
-            />
-          </form>
+          <HeaderSearchDiscover className="hidden lg:block" />
         </div>
 
         <nav className="hidden items-center gap-6 lg:flex">

@@ -20,8 +20,8 @@ const reasons = [
 
 export function WhyLsihSection() {
   return (
-    <section className="bg-[var(--brand-soft)]/60">
-      <div className="container-page py-14 sm:py-16">
+    <section className="bg-white">
+      <div className="container-page section-y">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
             Why Life Skills Innovation Hub

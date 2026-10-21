@@ -251,6 +251,7 @@ export function CourseContentManager({ courseId }: Props) {
   return (
     <AdminPageLayout
       title={course ? `Content · ${course.title}` : "Course content"}
+      description={`${modules.length} modules · ${modules.reduce((sum, item) => sum + (item.lessons ?? []).length, 0)} lessons · ${modules.reduce((sum, item) => sum + (item.quizzes ?? []).length, 0)} quizzes`}
       backHref="/admin/courses"
       backLabel="Back to courses"
       actions={
@@ -273,31 +274,17 @@ export function CourseContentManager({ courseId }: Props) {
     >
       <div className="space-y-4">
         {error ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="rounded-[var(--admin-radius)] border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {success ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <div className="rounded-[var(--admin-radius)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
             {success}
           </div>
         ) : null}
 
-        <p className="text-sm text-foreground/80">
-          <span className="tabular-nums font-semibold text-foreground">{modules.length}</span> modules
-          <span className="mx-2 text-foreground/35">·</span>
-          <span className="tabular-nums font-semibold text-foreground">
-            {modules.reduce((sum, item) => sum + (item.lessons ?? []).length, 0)}
-          </span>{" "}
-          lessons
-          <span className="mx-2 text-foreground/35">·</span>
-          <span className="tabular-nums font-semibold text-foreground">
-            {modules.reduce((sum, item) => sum + (item.quizzes ?? []).length, 0)}
-          </span>{" "}
-          quizzes
-        </p>
-
-        <div className="overflow-hidden rounded-lg border border-border/80 bg-card">
+        <div className="admin-panel">
           {modules.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-sm text-muted-foreground">No modules yet.</p>
@@ -307,7 +294,7 @@ export function CourseContentManager({ courseId }: Props) {
               </Button>
             </div>
           ) : (
-            <ul className="divide-y divide-border/70">
+            <ul className="divide-y divide-[var(--admin-border)]">
               {modules.map((module, moduleIndex) => {
                 const open = !collapsedModuleIds.includes(module.id);
                 const lessonCount = (module.lessons ?? []).length;
@@ -321,10 +308,10 @@ export function CourseContentManager({ courseId }: Props) {
 
                 return (
                   <li key={module.id}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40 sm:px-5">
+                    <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-[var(--admin-hover)] sm:px-5">
                       <button
                         type="button"
-                        className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition hover:bg-muted hover:text-foreground"
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-[var(--admin-subtle)] transition hover:bg-[var(--admin-brand-soft)] hover:text-[var(--admin-brand)]"
                         aria-expanded={open}
                         aria-label={open ? "Collapse module" : "Expand module"}
                         onClick={toggleModule}
@@ -341,12 +328,12 @@ export function CourseContentManager({ courseId }: Props) {
                         className="flex min-w-0 flex-1 items-center gap-3 text-left"
                         onClick={toggleModule}
                       >
-                        <span className="w-16 shrink-0 text-[11px] font-semibold tracking-wide text-foreground/70 uppercase">
+                        <span className="w-16 shrink-0 text-[11px] font-semibold tracking-wide text-[var(--admin-subtle)] uppercase">
                           Module {moduleIndex + 1}
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                            <p className="truncate text-sm font-semibold tracking-tight text-foreground">
+                            <p className="truncate text-sm font-semibold tracking-tight text-[var(--admin-text)]">
                               {module.title}
                             </p>
                             {module.status !== "published" ? (
@@ -355,9 +342,9 @@ export function CourseContentManager({ courseId }: Props) {
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-0.5 truncate text-xs text-foreground/70">
+                          <p className="mt-0.5 truncate text-xs text-[var(--admin-muted)]">
                             {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-                            <span className="mx-1.5 text-foreground/35">·</span>
+                            <span className="mx-1.5 text-[var(--admin-subtle)]">·</span>
                             {quizCount} quiz{quizCount === 1 ? "" : "zes"}
                             {module.description?.trim()
                               ? ` · ${module.description.trim()}`
@@ -402,7 +389,7 @@ export function CourseContentManager({ courseId }: Props) {
                     </div>
 
                     {open ? (
-                      <div className="border-t border-border/60 bg-background px-4 py-2 sm:px-5 sm:pl-14">
+                      <div className="admin-panel-muted border-t border-[var(--admin-border)] px-4 py-2 sm:px-5 sm:pl-14">
                         <ModuleExpandedPanel
                           token={token!}
                           module={module}

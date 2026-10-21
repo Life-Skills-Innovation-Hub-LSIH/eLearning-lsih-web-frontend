@@ -27,7 +27,7 @@ const steps = [
 export function HowItWorksSection() {
   return (
     <section className="border-y border-[var(--line)] bg-white">
-      <div className="container-page py-14 sm:py-16">
+      <div className="container-page section-y">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
             How learning works
@@ -43,7 +43,7 @@ export function HowItWorksSection() {
             return (
               <div
                 key={step.title}
-                className="relative rounded-2xl border border-[var(--line)] bg-[#f8fbff] p-5"
+                className="relative rounded-2xl border border-[var(--line)] bg-white p-5"
               >
                 <span className="absolute top-4 right-4 text-xs font-bold text-[var(--brand)]/30">
                   {String(index + 1).padStart(2, "0")}

@@ -99,6 +99,8 @@
 
 body {
   font-family: var(--font-body), var(--font-khmer), system-ui, sans-serif;
+  background: #ffffff;
+  color: var(--ink);
 }
 
 h1,
@@ -133,6 +135,17 @@ button:disabled,
 [aria-disabled="true"],
 input:disabled {
   cursor: not-allowed;
+}
+
+/* Consistent vertical rhythm between home / marketing sections */
+.section-y {
+  padding-block: 3rem;
+}
+
+@media (min-width: 640px) {
+  .section-y {
+    padding-block: 3.5rem;
+  }
 }
 
 .container-page {

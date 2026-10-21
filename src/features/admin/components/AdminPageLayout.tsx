@@ -32,75 +32,46 @@ export function AdminPageLayout({
   width = "default",
   children,
 }: Props) {
-  const showToolbar = Boolean(backHref || actions);
-  const stickyToolbar = Boolean(actions);
+  const hasHeader = Boolean(backHref || title || description || actions);
 
   return (
     <div className={widthClass[width]}>
-      {showToolbar ? (
-        <div
-          className={
-            stickyToolbar
-              ? "sticky top-14 z-20 -mx-6 mb-6 border-b border-border/80 bg-background/95 px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:-mx-8 lg:px-8"
-              : "mb-6 space-y-4 border-b border-border/80 pb-6"
-          }
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              {backHref ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="-ml-2 h-8 text-muted-foreground hover:text-foreground"
-                  render={<Link href={backHref} />}
-                >
-                  <ArrowLeft />
-                  {backLabel}
-                </Button>
-              ) : null}
-            </div>
-            {actions ? (
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                {actions}
+      {hasHeader ? (
+        <div className="mb-6 space-y-4 border-b border-[var(--admin-border)] pb-6">
+          {backHref ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="-ml-2 h-8 text-[var(--admin-muted)] hover:text-[var(--admin-brand)]"
+              render={<Link href={backHref} />}
+            >
+              <ArrowLeft />
+              {backLabel}
+            </Button>
+          ) : null}
+
+          {title || description || actions ? (
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                {title ? (
+                  <h1 className="text-2xl font-semibold tracking-tight text-[var(--admin-text)]">
+                    {title}
+                  </h1>
+                ) : null}
+                {description ? (
+                  <p
+                    className={`text-sm leading-relaxed text-[var(--admin-muted)] ${title ? "mt-1.5" : ""}`}
+                  >
+                    {description}
+                  </p>
+                ) : null}
               </div>
-            ) : null}
-          </div>
-
-          {!stickyToolbar && (title || description) ? (
-            <div className="mt-4">
-              {title ? (
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-              ) : null}
-              {description ? (
-                <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
-                  {description}
-                </p>
+              {actions ? (
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                  {actions}
+                </div>
               ) : null}
             </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {stickyToolbar && (title || description) ? (
-        <div className="mb-6">
-          {title ? (
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-          ) : null}
-          {description ? (
-            <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
-              {description}
-            </p>
-          ) : null}
-        </div>
-      ) : !showToolbar && (title || description) ? (
-        <div className="mb-6 space-y-4 border-b border-border/80 pb-6">
-          {title ? (
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-          ) : null}
-          {description ? (
-            <p className={`text-sm leading-relaxed text-muted-foreground ${title ? "mt-1.5" : ""}`}>
-              {description}
-            </p>
           ) : null}
         </div>
       ) : null}
@@ -114,11 +85,7 @@ export function AdminPageLayout({
       >
         <div className="min-w-0 space-y-6">{children}</div>
         {aside ? (
-          <aside
-            className={`space-y-4 lg:sticky lg:self-start ${stickyToolbar ? "lg:top-28" : "lg:top-24"}`}
-          >
-            {aside}
-          </aside>
+          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">{aside}</aside>
         ) : null}
       </div>
 
