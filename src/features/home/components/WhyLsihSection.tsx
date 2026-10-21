@@ -3,18 +3,18 @@ import { Layers3, ShieldCheck, Target } from "lucide-react";
 const reasons = [
   {
     icon: Layers3,
-    title: "Structured courses",
-    text: "Every course follows modules → lessons → quizzes, so progress is clear and measurable.",
+    title: "វគ្គសិក្សាមានរចនាសម្ព័ន្ធ",
+    text: "វគ្គនីមួយៗមានម៉ូឌុល → មេរៀន → សំណួរសាកល្បង ដើម្បីឲ្យវឌ្ឍនភាពច្បាស់ និងអាចវាស់បាន។",
   },
   {
     icon: Target,
-    title: "Practical skills",
-    text: "Built for exams, life skills, leadership, and career readiness — not theory only.",
+    title: "ជំនាញជាក់ស្តែង",
+    text: "បង្កើតសម្រាប់ប្រឡង ជំនាញជីវិត ភាពជាអ្នកដឹកនាំ និងត្រៀមអាជីព — មិនមែនតែទ្រឹស្តីទេ។",
   },
   {
     icon: ShieldCheck,
-    title: "Verified completion",
-    text: "Pass every quiz and unlock a downloadable certificate when you finish.",
+    title: "បញ្ចប់ដោយមានការផ្ទៀងផ្ទាត់",
+    text: "ប្រឡងឲ្យជាប់គ្រប់សំណួរ រួចទាញវិញ្ញាបនបត្រពេលបញ្ចប់។",
   },
 ];
 
@@ -24,10 +24,10 @@ export function WhyLsihSection() {
       <div className="container-page section-y">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
-            Why Life Skills Innovation Hub
+            ហេតុអ្វីជ្រើស Life Skills Innovation Hub
           </h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            A focused e-learning experience for learners across Cambodia.
+            បទពិសោធន៍សិក្សាអនឡាញផ្តោតសម្រាប់អ្នកសិក្សាទូទាំងកម្ពុជា។
           </p>
         </div>
 

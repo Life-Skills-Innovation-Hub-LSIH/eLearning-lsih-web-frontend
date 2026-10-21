@@ -19,11 +19,11 @@ const banners: PromoBanner[] = [
   {
     id: "ai",
     theme: "dark",
-    kicker: "Skills for the future",
-    title: "Learn AI for the work you do",
+    kicker: "ជំនាញសម្រាប់អនាគត",
+    title: "រៀន AI សម្រាប់ការងាររបស់អ្នក",
     description:
-      "Practical AI courses with modules, quizzes, and certificates — built for every role.",
-    cta: "Explore AI courses",
+      "វគ្គ AI ជាក់ស្តែងមានម៉ូឌុល សំណួរសាកល្បង និងវិញ្ញាបនបត្រ — សម្រាប់គ្រប់តួនាទី។",
+    cta: "មើលវគ្គ AI",
     href: "/courses",
     image:
       "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80",
@@ -31,11 +31,11 @@ const banners: PromoBanner[] = [
   {
     id: "security",
     theme: "brand",
-    kicker: "Cybersecurity",
-    title: "Protect systems. Build confidence.",
+    kicker: "សុវត្ថិភាពតាមអ៊ីនធឺណិត",
+    title: "ការពារប្រព័ន្ធ។ បង្កើតទំនុកចិត្ត។",
     description:
-      "Start from security foundations and earn a certificate when you finish.",
-    cta: "Browse security",
+      "ចាប់ផ្តើមពីមូលដ្ឋានសុវត្ថិភាព រួចទទួលវិញ្ញាបនបត្រពេលបញ្ចប់។",
+    cta: "មើលវគ្គសុវត្ថិភាព",
     href: "/courses",
     image:
       "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=900&q=80",
@@ -43,11 +43,11 @@ const banners: PromoBanner[] = [
   {
     id: "cloud",
     theme: "light",
-    kicker: "Cloud & IT",
-    title: "Get job-ready with cloud fundamentals",
+    kicker: "Cloud និង IT",
+    title: "ត្រៀមការងារជាមួយមូលដ្ឋាន cloud",
     description:
-      "Learn cloud models, networking basics, and IT support paths step by step.",
-    cta: "Get started",
+      "រៀនម៉ូដែល cloud បណ្តាញមូលដ្ឋាន និងផ្លូវជំនួយ IT ជាជំហានៗ។",
+    cta: "ចាប់ផ្តើម",
     href: "/courses",
     image:
       "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=80",
@@ -55,11 +55,11 @@ const banners: PromoBanner[] = [
   {
     id: "subscribe",
     theme: "accent",
-    kicker: "Subscription",
-    title: "Unlock full access with a plan",
+    kicker: "ការជាវ",
+    title: "បើកការចូលប្រើពេញលេញជាមួយផែនការ",
     description:
-      "Enroll in courses, track progress, and download certificates with an active subscription.",
-    cta: "View plans",
+      "ចុះឈ្មោះវគ្គ តាមដានវឌ្ឍនភាព និងទាញវិញ្ញាបនបត្រជាមួយការជាវសកម្ម។",
+    cta: "មើលផែនការ",
     href: "/register",
     image:
       "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80",

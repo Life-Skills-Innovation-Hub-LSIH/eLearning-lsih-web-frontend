@@ -14,33 +14,33 @@ export function SiteFooter() {
             className="h-11 w-auto object-contain"
           />
           <p className="max-w-xs text-sm leading-relaxed text-[var(--muted)]">
-            Practical life skills, leadership, and career training for learners across Cambodia.
+            បណ្តុះបណ្តាលជំនាញជីវិត ភាពជាអ្នកដឹកនាំ និងអាជីពជាក់ស្តែងសម្រាប់អ្នកសិក្សាទូទាំងកម្ពុជា។
           </p>
         </div>
 
         <div>
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
-            Learning
+            ការសិក្សា
           </h3>
           <ul className="space-y-2.5 text-sm text-[var(--ink)]/80">
             <li>
               <Link href="/courses" className="transition hover:text-[var(--brand)]">
-                All courses
+                វគ្គសិក្សាទាំងអស់
               </Link>
             </li>
             <li>
               <Link href="/dashboard" className="transition hover:text-[var(--brand)]">
-                Student dashboard
+                ផ្ទាំងគ្រប់គ្រងសិស្ស
               </Link>
             </li>
             <li>
               <Link href="/my-courses" className="transition hover:text-[var(--brand)]">
-                My courses
+                វគ្គសិក្សារខ្ញុំ
               </Link>
             </li>
             <li>
               <Link href="/register" className="transition hover:text-[var(--brand)]">
-                Create account
+                បង្កើតគណនី
               </Link>
             </li>
           </ul>
@@ -48,27 +48,32 @@ export function SiteFooter() {
 
         <div>
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
-            Company
+            អំពីយើង
           </h3>
           <ul className="space-y-2.5 text-sm text-[var(--ink)]/80">
             <li>
               <Link href="/about" className="transition hover:text-[var(--brand)]">
-                About us
+                អំពីយើង
               </Link>
             </li>
             <li>
               <Link href="/contact" className="transition hover:text-[var(--brand)]">
-                Contact & support
+                ទំនាក់ទំនង និងជំនួយ
+              </Link>
+            </li>
+            <li>
+              <Link href="/help" className="transition hover:text-[var(--brand)]">
+                មជ្ឈមណ្ឌលជំនួយ
               </Link>
             </li>
             <li>
               <Link href="/privacy" className="transition hover:text-[var(--brand)]">
-                Privacy
+                ឯកជនភាព
               </Link>
             </li>
             <li>
               <Link href="/terms" className="transition hover:text-[var(--brand)]">
-                Terms
+                លក្ខខណ្ឌ
               </Link>
             </li>
           </ul>
@@ -76,10 +81,10 @@ export function SiteFooter() {
 
         <div>
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
-            Contact
+            ទំនាក់ទំនង
           </h3>
           <div className="space-y-2.5 text-sm leading-relaxed text-[var(--ink)]/80">
-            <p>Phnom Penh, Cambodia</p>
+            <p>ភ្នំពេញ កម្ពុជា</p>
             <p>
               <a
                 href="mailto:lifeskillsinnovationhub@lsih.com"
@@ -88,7 +93,7 @@ export function SiteFooter() {
                 lifeskillsinnovationhub@lsih.com
               </a>
             </p>
-            <p>012 345 678</p>
+            <p>០១២ ៣៤៥ ៦៧៨</p>
           </div>
         </div>
       </div>
@@ -96,7 +101,7 @@ export function SiteFooter() {
       <div className="border-t border-[var(--line)]">
         <div className="container-page flex flex-col gap-2 py-5 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Life Skills Innovation Hub (LSIH)</p>
-          <p className="text-xs sm:text-sm">Built for practical, career-ready learning</p>
+          <p className="text-xs sm:text-sm">បង្កើតសម្រាប់ការរៀនជាក់ស្តែង ត្រៀមអាជីព</p>
         </div>
       </div>
     </footer>

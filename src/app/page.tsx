@@ -16,10 +16,10 @@ import {
 } from "@/features/learning/api/enrollment-api";
 
 const learningPoints = [
-  "Browse and open a published course",
-  "Get a paid subscription from admin",
-  "Complete lessons and pass module quizzes",
-  "Download your e-certificate when finished",
+  "រកមើល និងបើកវគ្គសិក្សាដែលបានផ្សាយ",
+  "ទទួលការជាវពីអ្នកគ្រប់គ្រង",
+  "បំពេញមេរៀន និងប្រឡងឲ្យជាប់តាមម៉ូឌុល",
+  "ទាញយកវិញ្ញាបនបត្រអេឡិចត្រូនិកពេលបញ្ចប់",
 ];
 
 export default async function HomePage() {
@@ -42,7 +42,7 @@ export default async function HomePage() {
       <MainBanner />
 
       <CourseColumnsSection
-        title="Trending courses"
+        title="វគ្គសិក្សាពេញនិយម"
         courses={popular.slice(0, 9)}
       />
 
@@ -53,14 +53,14 @@ export default async function HomePage() {
       <PromoBannersSection />
 
       <CourseColumnsSection
-        title="New courses"
+        title="វគ្គសិក្សាថ្មី"
         courses={latest.slice(0, 9)}
       />
 
       <div className="container-page section-y">
         <PopularCoursesSection
-          title="Popular courses"
-          subtitle="Most learners are studying these right now"
+          title="វគ្គសិក្សាដែលពេញនិយម"
+          subtitle="អ្នកសិក្សាភាគច្រើនកំពុងរៀនវគ្គទាំងនេះ"
           courses={popular}
         />
       </div>
@@ -78,11 +78,11 @@ export default async function HomePage() {
           <div className="relative grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr] md:gap-12">
             <div className="space-y-4">
               <h2 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Structured learning that sticks
+                ការរៀនមានរចនាសម្ព័ន្ធដែលនៅជាប់
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-white/80">
-                Every course follows a clear path — modules, lessons, quizzes, and a certificate —
-                so progress is measurable and career-ready.
+                វគ្គនីមួយៗមានផ្លូវច្បាស់លាស់ — ម៉ូឌុល មេរៀន សំណួរសាកល្បង និងវិញ្ញាបនបត្រ —
+                ដើម្បីវាស់វឌ្ឍនភាព និងត្រៀមសម្រាប់អាជីព។
               </p>
             </div>
 

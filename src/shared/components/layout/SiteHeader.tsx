@@ -71,13 +71,6 @@ export function SiteHeader() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const linkClass = (href: string) =>
-    `text-sm transition-colors ${
-      pathname === href
-        ? "font-semibold text-[var(--brand)]"
-        : "font-medium text-[var(--ink)]/75 hover:text-[var(--brand)]"
-    }`;
-
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
       if (!profileRef.current?.contains(event.target as Node)) {
@@ -189,10 +182,10 @@ export function SiteHeader() {
           {isAuthed && user ? (
             <>
               <Link
-                href="/contact"
+                href="/help"
                 className="inline-flex size-11 items-center justify-center rounded-full text-[var(--ink)]/70 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
                 aria-label="Help"
-                title="Help"
+                title="ជំនួយ"
               >
                 <CircleHelp className="h-6 w-6" strokeWidth={1.75} />
               </Link>
@@ -306,7 +299,7 @@ export function SiteHeader() {
         {isAuthed && user ? (
           <div className="flex items-center gap-1 lg:hidden">
             <Link
-              href="/contact"
+              href="/help"
               className="inline-flex size-11 items-center justify-center rounded-full text-[var(--ink)]/70 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
               aria-label="Help"
             >

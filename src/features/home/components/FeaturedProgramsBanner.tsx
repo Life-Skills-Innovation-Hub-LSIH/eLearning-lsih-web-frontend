@@ -54,17 +54,17 @@ export function FeaturedProgramsBanner({ courses }: Props) {
         <div className="grid gap-8 lg:grid-cols-[minmax(220px,280px)_minmax(0,1fr)] lg:items-start lg:gap-10">
           <div className="flex flex-col justify-center pt-1 lg:min-h-[280px] lg:pt-2">
             <h2 className="text-2xl font-semibold leading-tight tracking-tight text-white sm:text-[1.75rem]">
-              Skills for the work you do — and the career you want
+              ជំនាញសម្រាប់ការងាររបស់អ្នក — និងអាជីពដែលអ្នកចង់បាន
             </h2>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/85">
-              Browse structured courses with modules, lessons, and quizzes. Filter by subject and
-              start learning with LSIH.
+              មើលវគ្គសិក្សាមានរចនាសម្ព័ន្ធ ជាមួយម៉ូឌុល មេរៀន និងសំណួរសាកល្បង។ ច្រោះតាមមុខវិជ្ជា
+              រួចចាប់ផ្តើមរៀនជាមួយ LSIH។
             </p>
             <Link
               href="/courses"
               className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[var(--brand)] shadow-sm transition hover:bg-white/95 hover:gap-2.5"
             >
-              Explore courses
+              ស្វែងរកវគ្គសិក្សា
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -80,7 +80,7 @@ export function FeaturedProgramsBanner({ courses }: Props) {
                     : "border border-white/70 bg-white text-[var(--ink)] hover:border-white"
                 }`}
               >
-                All
+                ទាំងអស់
               </button>
               {subjectTabs.map((tab) => {
                 const active = activeSubjectId === tab.id;
@@ -103,7 +103,7 @@ export function FeaturedProgramsBanner({ courses }: Props) {
 
             {filtered.length === 0 ? (
               <p className="rounded-2xl bg-white/15 px-4 py-8 text-center text-sm text-white/90">
-                No courses in this subject yet.
+                មិនទាន់មានវគ្គក្នុងមុខវិជ្ជានេះទេ។
               </p>
             ) : (
               <div className="-mx-1 flex gap-4 overflow-x-auto px-1 py-3 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">

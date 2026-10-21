@@ -37,7 +37,7 @@ export function SubjectsSection({ subjects }: Props) {
   return (
     <section className="container-page pt-12 sm:pt-14">
       <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-[1.75rem]">
-        Explore categories
+        ស្វែងរកប្រភេទ
       </h2>
 
       <div className="mt-5 flex flex-wrap gap-3">

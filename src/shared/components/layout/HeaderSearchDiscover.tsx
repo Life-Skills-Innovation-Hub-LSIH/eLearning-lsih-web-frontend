@@ -95,7 +95,7 @@ export function HeaderSearchDiscover({ className }: Props) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
-          placeholder="What do you want to learn?"
+          placeholder="តើអ្នកចង់រៀនអ្វី?"
           className="h-10 w-[240px] rounded-full border border-[var(--line)] bg-white pl-4 pr-12 text-sm outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/15 xl:w-[300px]"
           aria-expanded={open}
           aria-controls="header-search-discover"
@@ -103,7 +103,7 @@ export function HeaderSearchDiscover({ className }: Props) {
         <button
           type="submit"
           className="absolute right-1 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--brand)] text-white transition hover:bg-[var(--brand-strong)]"
-          aria-label="Search"
+          aria-label="ស្វែងរក"
         >
           <Search className="h-4 w-4" />
         </button>
@@ -122,15 +122,15 @@ export function HeaderSearchDiscover({ className }: Props) {
             ref={panelRef}
             className="absolute left-0 top-[calc(100%+12px)] z-50 w-[min(92vw,720px)] overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
             role="dialog"
-            aria-label="Search suggestions"
+            aria-label="សំណើស្វែងរក"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-3 sm:hidden">
-              <p className="text-sm font-semibold text-[var(--ink)]">Search</p>
+              <p className="text-sm font-semibold text-[var(--ink)]">ស្វែងរក</p>
               <button
                 type="button"
                 className="rounded-md p-1 text-[var(--muted)] hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
                 onClick={() => setOpen(false)}
-                aria-label="Close search"
+                aria-label="បិទការស្វែងរក"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -139,12 +139,12 @@ export function HeaderSearchDiscover({ className }: Props) {
             <div className="max-h-[min(70vh,560px)] space-y-6 overflow-y-auto px-5 py-5">
               <div>
                 <h3 className="text-sm font-semibold text-[var(--ink)]">
-                  Trending categories
+                  ប្រភេទពេញនិយម
                 </h3>
                 {loading && subjects.length === 0 ? (
-                  <p className="mt-3 text-sm text-[var(--muted)]">Loading subjects…</p>
+                  <p className="mt-3 text-sm text-[var(--muted)]">កំពុងផ្ទុកមុខវិជ្ជា…</p>
                 ) : subjects.length === 0 ? (
-                  <p className="mt-3 text-sm text-[var(--muted)]">No subjects yet.</p>
+                  <p className="mt-3 text-sm text-[var(--muted)]">មិនទាន់មានមុខវិជ្ជាទេ។</p>
                 ) : (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {subjects.map((subject) => (
@@ -163,12 +163,12 @@ export function HeaderSearchDiscover({ className }: Props) {
 
               <div>
                 <h3 className="text-sm font-semibold text-[var(--ink)]">
-                  Start with these trending courses
+                  ចាប់ផ្តើមជាមួយវគ្គសិក្សាពេញនិយមទាំងនេះ
                 </h3>
                 {loading && courses.length === 0 ? (
-                  <p className="mt-3 text-sm text-[var(--muted)]">Loading courses…</p>
+                  <p className="mt-3 text-sm text-[var(--muted)]">កំពុងផ្ទុកវគ្គសិក្សា…</p>
                 ) : courses.length === 0 ? (
-                  <p className="mt-3 text-sm text-[var(--muted)]">No published courses yet.</p>
+                  <p className="mt-3 text-sm text-[var(--muted)]">មិនទាន់មានវគ្គសិក្សាទេ។</p>
                 ) : (
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     {courses.map((course) => {
@@ -216,7 +216,7 @@ export function HeaderSearchDiscover({ className }: Props) {
                             <p className="text-xs text-[var(--muted)]">
                               {getLevelLabel(course.level)}
                               {course.modules_count != null
-                                ? ` · ${course.modules_count} modules`
+                                ? ` · ${course.modules_count} ម៉ូឌុល`
                                 : ""}
                             </p>
                           </div>

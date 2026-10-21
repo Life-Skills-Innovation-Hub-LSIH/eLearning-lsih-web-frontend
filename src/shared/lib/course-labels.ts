@@ -1,6 +1,6 @@
 export function getLevelLabel(level?: string | null) {
-  if (level === "beginner") return "Beginner";
-  if (level === "intermediate") return "Intermediate";
-  if (level === "advanced") return "Advanced";
-  return "All levels";
+  if (level === "beginner") return "ថ្នាក់ដំបូង";
+  if (level === "intermediate") return "ថ្នាក់មធ្យម";
+  if (level === "advanced") return "ថ្នាក់ខ្ពស់";
+  return "គ្រប់កម្រិត";
 }

@@ -31,20 +31,20 @@ export function MainBanner() {
             Innovation Hub
           </h1>
           <p className="animate-fade-up animate-delay-1 mt-4 max-w-lg font-display text-xl font-medium text-white/90 sm:text-2xl">
-            Learn without limits
+            រៀនដោយគ្មានដែនកំណត់
           </p>
           <p className="animate-fade-up animate-delay-2 mt-4 max-w-md text-base leading-relaxed text-white/75 sm:text-lg">
-            Practical courses with modules, video and PDF lessons, and quizzes — built for real skills.
+            វគ្គសិក្សាជាក់ស្តែងមានម៉ូឌុល មេរៀនវីដេអូ និង PDF និងសំណួរសាកល្បង — បង្កើតឡើងសម្រាប់ជំនាញពិតប្រាកដ។
           </p>
           <div className="animate-fade-up animate-delay-3 mt-8 flex flex-wrap items-center gap-3">
             <Link href="/register" className="btn btn-accent">
-              Register now
+              ចុះឈ្មោះឥឡូវ
             </Link>
             <Link
               href="/courses"
               className="btn border border-white/25 bg-white/10 !text-white backdrop-blur-sm hover:bg-white/18 hover:!text-white"
             >
-              Browse courses
+              មើលវគ្គសិក្សា
             </Link>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function MainBanner() {
           />
           <Image
             src="/assets/iconMainBanner.png"
-            alt="LSIH learning illustration"
+            alt="រូបភាពសិក្សា LSIH"
             width={556}
             height={513}
             priority

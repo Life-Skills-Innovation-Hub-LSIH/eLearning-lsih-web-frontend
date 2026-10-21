@@ -39,13 +39,13 @@ export function PopularCoursesSection({ title, subtitle, courses }: Props) {
           href="/courses"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--brand)] transition hover:gap-2.5"
         >
-          View all
+          មើលទាំងអស់
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
       {courses.length === 0 ? (
-        <p className="text-sm text-[var(--muted)]">No published courses yet.</p>
+        <p className="text-sm text-[var(--muted)]">មិនទាន់មានវគ្គសិក្សាទេ។</p>
       ) : (
         <div className="grid grid-cols-1 gap-5 overflow-visible sm:grid-cols-2 lg:grid-cols-4">
           {visibleCourses.map((course) => (
@@ -60,7 +60,7 @@ export function PopularCoursesSection({ title, subtitle, courses }: Props) {
           onClick={() => setExpanded(true)}
           className="rounded-full border-2 border-[var(--brand)] px-6 py-2.5 text-sm font-semibold text-[var(--brand)] transition hover:bg-[var(--brand-soft)]"
         >
-          Show 8 more
+          បង្ហាញបន្ថែម ៨
         </button>
       ) : null}
     </section>
