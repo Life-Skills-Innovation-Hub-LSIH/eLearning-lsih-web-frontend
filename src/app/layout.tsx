@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Kantumruy_Pro, Plus_Jakarta_Sans, Sora, Geist } from "next/font/google";
 import { AuthProvider } from "@/features/auth";
+import { ActivityTracker } from "@/features/analytics/components/ActivityTracker";
 import { ConditionalHeader } from "@/shared/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/shared/components/layout/ConditionalFooter";
 import { NavigationProgressHost } from "@/shared/components/ui/NavigationProgressHost";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
           <NavigationProgressHost />
+          <ActivityTracker />
           <ConditionalHeader />
           <div className="flex-1">{children}</div>
           <ConditionalFooter />

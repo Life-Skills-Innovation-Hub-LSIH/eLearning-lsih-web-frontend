@@ -74,10 +74,10 @@ const themeClass: Record<PromoBanner["theme"], string> = {
 };
 
 const ctaClass: Record<PromoBanner["theme"], string> = {
-  dark: "bg-white text-[var(--brand)] hover:bg-white/95",
-  brand: "bg-white text-[var(--brand)] hover:bg-white/95",
-  light: "bg-[var(--brand)] text-white hover:bg-[var(--brand-strong,#0044a9)]",
-  accent: "bg-[var(--accent-brand,#f05a25)] text-white hover:opacity-95",
+  dark: "bg-white !text-[#054da1] hover:bg-white/95",
+  brand: "bg-white !text-[#054da1] hover:bg-white/95",
+  light: "bg-[#054da1] !text-white hover:bg-[#043d80]",
+  accent: "bg-[#f05a25] !text-white hover:bg-[#d64c1a]",
 };
 
 export function PromoBannersSection() {
@@ -152,10 +152,10 @@ export function PromoBannersSection() {
                 </p>
                 <Link
                   href={banner.href || "/courses"}
-                  className={`mt-2 inline-flex w-fit items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition ${ctaClass[banner.theme]}`}
+                  className={`mt-2 inline-flex w-fit items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold no-underline transition ${ctaClass[banner.theme]}`}
                 >
-                  {banner.cta}
-                  <ArrowRight className="h-4 w-4" />
+                  <span>{banner.cta}</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </Link>
               </div>
 

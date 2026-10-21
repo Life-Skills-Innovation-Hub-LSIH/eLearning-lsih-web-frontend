@@ -135,22 +135,21 @@ export function SiteHeader() {
           <HeaderSearchDiscover className="hidden lg:block" />
         </div>
 
-        <nav className="hidden items-center gap-6 lg:flex">
-          <Link href="/" className={linkClass("/")}>
-            ទំព័រដើម
-          </Link>
-          <Link href="/courses" className={linkClass("/courses")}>
-            វគ្គសិក្សា
-          </Link>
-          <Link href="/about" className={linkClass("/about")}>
-            អំពីយើង
-          </Link>
-          <Link href="/contact" className={linkClass("/contact")}>
-            ទំនាក់ទំនង
-          </Link>
-
+        <nav className="hidden items-center gap-5 lg:flex">
           {ready && user ? (
             <>
+              <Link href="/" className={linkClass("/")}>
+                ទំព័រដើម
+              </Link>
+              <Link href="/courses" className={linkClass("/courses")}>
+                វគ្គសិក្សា
+              </Link>
+              <Link href="/about" className={linkClass("/about")}>
+                អំពីយើង
+              </Link>
+              <Link href="/contact" className={linkClass("/contact")}>
+                ទំនាក់ទំនង
+              </Link>
               <UserAvatar
                 name={user.name}
                 firstName={user.firstName}
@@ -189,8 +188,11 @@ export function SiteHeader() {
               <Link href="/login" className={linkClass("/login")}>
                 ចូលគណនី
               </Link>
-              <Link href="/register" className="btn btn-primary !rounded-full !px-4 !py-2 text-sm">
-                ចុះឈ្មោះ
+              <Link
+                href="/register"
+                className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--brand)] bg-white px-4 text-sm font-semibold text-[var(--brand)] transition hover:bg-[var(--brand-soft)]"
+              >
+                រៀនឥតគិតថ្លៃ
               </Link>
             </>
           )}
@@ -209,23 +211,23 @@ export function SiteHeader() {
       {menuOpen ? (
         <div className="absolute left-0 right-0 top-full border-b border-[var(--line)] bg-white px-4 py-5 shadow-lg lg:hidden">
           <div className="space-y-1">
-            {[
-              { href: "/", label: "ទំព័រដើម" },
-              { href: "/courses", label: "វគ្គសិក្សា" },
-              { href: "/about", label: "អំពីយើង" },
-              { href: "/contact", label: "ទំនាក់ទំនង" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
-                onClick={() => setMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
             {ready && user ? (
               <>
+                {[
+                  { href: "/", label: "ទំព័រដើម" },
+                  { href: "/courses", label: "វគ្គសិក្សា" },
+                  { href: "/about", label: "អំពីយើង" },
+                  { href: "/contact", label: "ទំនាក់ទំនង" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
                 {user.role === "student" ? (
                   <>
                     <Link
@@ -278,10 +280,10 @@ export function SiteHeader() {
                 </Link>
                 <Link
                   href="/register"
-                  className="btn btn-primary flex-1 !py-2.5 text-sm"
+                  className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--brand)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--brand)]"
                   onClick={() => setMenuOpen(false)}
                 >
-                  ចុះឈ្មោះ
+                  រៀនឥតគិតថ្លៃ
                 </Link>
               </div>
             )}

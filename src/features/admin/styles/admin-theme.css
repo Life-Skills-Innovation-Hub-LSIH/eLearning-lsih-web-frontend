@@ -62,9 +62,9 @@
   --radius: var(--admin-radius);
 }
 
-/* Classic light shell — no floating gutter around frames */
+/* Classic light shell — Approx-style workspace */
 .admin-theme {
-  background: #f4f7fb;
+  background: #f5f7fa;
   color: var(--admin-text);
 }
 
@@ -73,8 +73,55 @@
   background: transparent !important;
 }
 
+/* Full-height sidebar rail — same top/bottom in short & long (Approx style) */
+.admin-theme [data-slot="sidebar"] {
+  --sidebar-width: 16rem;
+  --sidebar-width-icon: 4.5rem;
+}
+
+.admin-theme [data-slot="sidebar-gap"] {
+  transition: width 300ms ease;
+}
+
 .admin-theme [data-slot="sidebar-container"] {
   padding: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100svh !important;
+  transition: width 300ms ease !important;
+}
+
+/*
+  Hover expand overlays (content stays put).
+  Only a pinned expand pushes the main content.
+*/
+.admin-theme [data-sidebar-pinned="false"] [data-slot="sidebar-gap"] {
+  width: var(--sidebar-width-icon) !important;
+}
+
+.admin-theme [data-sidebar-pinned="false"][data-sidebar-hover="true"] [data-slot="sidebar-container"],
+.admin-theme [data-sidebar-pinned="false"] [data-slot="sidebar-container"]:hover {
+  width: var(--sidebar-width) !important;
+  z-index: 60;
+  box-shadow: 12px 0 32px rgba(15, 23, 42, 0.12);
+}
+
+.admin-theme [data-sidebar-pinned="false"][data-sidebar-hover="true"] [data-slot="sidebar-container"] [data-slot="sidebar-menu-button"] > span,
+.admin-theme [data-sidebar-pinned="false"] [data-slot="sidebar-container"]:hover [data-slot="sidebar-menu-button"] > span {
+  display: inline !important;
+}
+
+.admin-theme [data-sidebar-pinned="false"][data-sidebar-hover="true"] [data-slot="sidebar-container"] .grid,
+.admin-theme [data-sidebar-pinned="false"] [data-slot="sidebar-container"]:hover .grid {
+  display: grid !important;
+}
+
+.admin-theme [data-sidebar-pinned="false"][data-sidebar-hover="true"] [data-slot="sidebar-container"] [data-slot="sidebar-menu-button"],
+.admin-theme [data-sidebar-pinned="false"] [data-slot="sidebar-container"]:hover [data-slot="sidebar-menu-button"] {
+  width: 100% !important;
+  justify-content: flex-start;
+  gap: 0.625rem !important;
+  padding-inline: 0.5rem !important;
 }
 
 .admin-theme [data-slot="sidebar-inner"] {
@@ -87,18 +134,36 @@
   box-shadow: none !important;
   margin: 0 !important;
   overflow: hidden;
+  height: 100% !important;
 }
 
-/* Collapsed icon rail — centered icons + roomier hit targets */
+/* Keep header/footer height identical so icons don't jump vertically */
+.admin-theme [data-slot="sidebar-header"] {
+  height: 3.5rem !important;
+  min-height: 3.5rem !important;
+  padding: 0 0.75rem !important;
+  display: flex;
+  align-items: center;
+}
+
+.admin-theme [data-slot="sidebar-footer"] {
+  padding: 0.75rem !important;
+}
+
+.admin-theme [data-slot="sidebar-content"] {
+  padding: 0.5rem 0.75rem !important;
+}
+
+/* Collapsed: icons stay on the same left edge (not recentered) */
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-header"],
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-content"],
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-footer"] {
-  padding-inline: 0 !important;
-  align-items: center;
+  padding-inline: 0.75rem !important;
+  align-items: stretch;
 }
 
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu"] {
-  align-items: center;
+  align-items: stretch;
   width: 100%;
 }
 
@@ -108,20 +173,37 @@
   justify-content: center;
 }
 
+.admin-theme [data-slot="sidebar"] [data-slot="sidebar-menu-button"] {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+}
+
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu-button"] {
   width: 2.5rem !important;
   height: 2.5rem !important;
-  min-height: 2.5rem;
+  min-height: 2.5rem !important;
   padding: 0 !important;
-  margin-inline: auto;
+  margin-inline: 0;
+  gap: 0 !important;
   justify-content: center;
   align-items: center;
+}
+
+/* Hide labels in icon mode so icons stay centered in the active/hover hitbox */
+.admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu-button"] > span {
+  display: none !important;
 }
 
 .admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu-button"] svg {
   width: 1.25rem;
   height: 1.25rem;
   margin: 0;
+  flex-shrink: 0;
+}
+
+.admin-theme [data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu-button"][data-size="lg"] {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
 }
 
 /* Kill shadcn inset/floating outer gutter */
@@ -156,12 +238,16 @@
   color: var(--admin-brand);
 }
 
-/* Active nav = soft blue pill (emitly-style) */
+/* Active / idle nav — same rounded square language as the rest of admin */
+.admin-theme [data-slot="sidebar-menu-button"] {
+  border-radius: 0.75rem !important;
+}
+
 .admin-theme [data-slot="sidebar-menu-button"][data-active="true"] {
   background: var(--admin-brand-soft) !important;
   color: var(--admin-brand) !important;
   font-weight: 650;
-  border-radius: 999px;
+  box-shadow: none;
 }
 
 .admin-theme [data-slot="sidebar-menu-button"][data-active="true"] svg {
@@ -178,7 +264,6 @@
 
 .admin-theme [data-slot="sidebar-menu-button"]:not([data-active="true"]) {
   color: var(--admin-text);
-  border-radius: 999px;
 }
 
 .admin-theme [data-slot="sidebar-menu-button"]:not([data-active="true"]) svg {
@@ -248,24 +333,30 @@
   backdrop-filter: blur(14px);
 }
 
-/* Main content pane — flush to edges (no floating outer margin) */
+/* Main content pane — sits beside full-height sidebar (Approx layout) */
 .admin-theme .admin-inset {
   margin: 0 !important;
   border-radius: 0 !important;
   border: none;
-  background: #ffffff;
+  background: #f5f7fa;
   box-shadow: none !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 100svh;
 }
 
 .admin-theme .admin-inset-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   height: 3.5rem;
+  min-height: 3.5rem;
   padding-inline: var(--admin-content-pad-x);
-  background: rgba(255, 255, 255, 0.72);
+  background: #ffffff;
   border-bottom: 1px solid var(--admin-border);
-  backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
 }
 
 .admin-theme .admin-inset-body {

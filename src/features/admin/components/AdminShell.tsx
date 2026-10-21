@@ -2,30 +2,42 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronRight, BookMarked, BookOpen, GraduationCap, LogOut, Settings, UserRound, Users } from "lucide-react";
+import {
+  ChevronRight,
+  BookMarked,
+  BookOpen,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  PanelLeft,
+  Settings,
+  UserRound,
+  Users,
+} from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
 import {
+  Button,
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
 } from "@/features/admin/shadcn";
 import { AdminProfileMenu } from "./AdminProfileMenu";
 import { formatRoleLabel } from "../lib/user-store";
 import "../styles/admin-theme.css";
+
+const PIN_KEY = "lsih-admin-sidebar-pinned";
 
 type NavItem = {
   href: string;
@@ -35,6 +47,7 @@ type NavItem = {
 };
 
 const mainNavItems: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, adminOnly: true },
   { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
   { href: "/admin/students", label: "Students", icon: GraduationCap, adminOnly: true },
   { href: "/admin/subjects", label: "Subjects", icon: BookMarked, adminOnly: true },
@@ -52,6 +65,7 @@ function isActive(pathname: string, href: string) {
 }
 
 function breadcrumbLabel(pathname: string) {
+  if (pathname === "/admin") return "Dashboard";
   if (pathname.startsWith("/admin/users/create")) return "Add user";
   if (pathname.includes("/content") && pathname.startsWith("/admin/courses")) return "Course content";
   if (pathname.includes("/edit") && pathname.startsWith("/admin/courses")) return "Edit course";
@@ -76,6 +90,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const [pinned, setPinned] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(PIN_KEY) === "1";
+    setPinned(saved);
+    setOpen(saved);
+    setReady(true);
+  }, []);
 
   const visibleMainNav = mainNavItems.filter(
     (item) => !item.adminOnly || user?.role === "admin",
@@ -85,145 +109,190 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 
   const profileName = user?.name ?? "User";
-  const homeHref = user?.role === "admin" ? "/admin/users" : "/admin";
+  const homeHref = "/admin";
 
   function handleLogout() {
     logout();
     router.push("/login");
   }
 
+  function togglePinned() {
+    setPinned((prev) => {
+      const next = !prev;
+      window.localStorage.setItem(PIN_KEY, next ? "1" : "0");
+      setOpen(next);
+      return next;
+    });
+  }
+
   return (
-      <SidebarProvider>
-        <Sidebar collapsible="icon" className="border-r-0">
-          <SidebarHeader className="border-b border-[var(--admin-border)] px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
-            <SidebarMenu className="group-data-[collapsible=icon]:items-center">
-              <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center">
-                <SidebarMenuButton
-                  size="lg"
-                  className="hover:bg-[var(--admin-hover)] group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-0"
-                  render={<Link href={homeHref} />}
-                  tooltip="LSIH E-Learning Admin"
-                >
-                  <Image
-                    src="/assets/logo-full.png"
-                    alt="LSIH"
-                    width={32}
-                    height={32}
-                    className="size-8 object-contain group-data-[collapsible=icon]:size-7"
-                  />
-                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold text-[var(--admin-text)]">LSIH Admin</span>
-                    <span className="truncate text-xs text-[var(--admin-subtle)]">
-                      E-Learning Platform
-                    </span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarHeader>
-
-          <SidebarContent className="px-2 py-3 group-data-[collapsible=icon]:px-0">
-            <SidebarGroup>
-              <SidebarGroupLabel>Management</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {visibleMainNav.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          render={<Link href={item.href} />}
-                          isActive={active}
-                          tooltip={item.label}
-                        >
-                          <Icon className="stroke-[1.75]" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-
-          <SidebarFooter className="border-t border-[var(--admin-border)] px-2 py-3 group-data-[collapsible=icon]:px-0">
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {visibleFooterNav.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          render={<Link href={item.href} />}
-                          isActive={active}
-                          tooltip={item.label}
-                        >
-                          <Icon className="stroke-[1.75]" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout} tooltip="Log out">
-                      <LogOut className="stroke-[1.75]" />
-                      <span>Log out</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className="my-2 bg-[var(--admin-border)] group-data-[collapsible=icon]:mx-2" />
-
-            <div className="flex items-center gap-3 rounded-2xl bg-[var(--admin-brand-soft)] px-2 py-2.5 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:p-0">
-              <UserAvatar
-                name={profileName}
-                firstName={user?.firstName}
-                avatarUrl={user?.avatar}
-                title={profileName}
-              />
-              <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-medium text-[var(--admin-text)]">{profileName}</p>
-                <p className="truncate text-xs text-[var(--admin-subtle)]">
-                  {user ? formatRoleLabel(user.role) : ""}
-                </p>
-              </div>
-            </div>
-          </SidebarFooter>
-
-          <SidebarRail />
-        </Sidebar>
-
-        <SidebarInset className="m-0 rounded-none bg-white shadow-none">
-          <div className="admin-inset flex min-h-svh flex-1 flex-col">
-            <header className="admin-inset-header sticky top-0 z-30 flex shrink-0 items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="-ml-1" />
-                <nav className="flex items-center gap-1.5 text-sm text-[var(--admin-muted)]">
-                  <Link
-                    href={homeHref}
-                    className="font-medium transition hover:text-[var(--admin-brand)]"
-                  >
-                    Admin
-                  </Link>
-                  <ChevronRight className="size-3.5 opacity-50" />
-                  <span className="font-semibold text-[var(--admin-text)]">
-                    {breadcrumbLabel(pathname)}
+    <div
+      className="flex min-h-svh w-full"
+      data-sidebar-pinned={pinned ? "true" : "false"}
+      data-sidebar-hover={open && !pinned ? "true" : "false"}
+    >
+    <SidebarProvider
+      className="min-h-svh"
+      open={ready ? open : false}
+      onOpenChange={(next) => {
+        setOpen(next);
+        setPinned(next);
+        window.localStorage.setItem(PIN_KEY, next ? "1" : "0");
+      }}
+    >
+      <Sidebar
+        collapsible="icon"
+        className="border-r-0"
+        onMouseEnter={() => {
+          if (!pinned) setOpen(true);
+        }}
+        onMouseLeave={() => {
+          if (!pinned) setOpen(false);
+        }}
+      >
+        <SidebarHeader className="border-b border-[var(--admin-border)]">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                className="h-10 gap-2.5 px-2 hover:bg-[var(--admin-hover)] group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-0"
+                render={<Link href={homeHref} />}
+                tooltip="LSIH E-Learning Admin"
+              >
+                <Image
+                  src="/assets/logo-full.png"
+                  alt="LSIH"
+                  width={28}
+                  height={28}
+                  className="size-7 shrink-0 object-contain"
+                />
+                <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-semibold text-[var(--admin-text)]">LSIH Admin</span>
+                  <span className="truncate text-xs text-[var(--admin-subtle)]">
+                    E-Learning Platform
                   </span>
-                </nav>
-              </div>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
 
-              <AdminProfileMenu />
-            </header>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleMainNav.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(pathname, item.href);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        render={<Link href={item.href} />}
+                        isActive={active}
+                        tooltip={item.label}
+                        className="h-10 gap-2.5"
+                      >
+                        <Icon className="size-4 shrink-0 stroke-[1.75]" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-            <div className="admin-inset-body">{children}</div>
+        <SidebarFooter className="border-t border-[var(--admin-border)]">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleFooterNav.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(pathname, item.href);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        render={<Link href={item.href} />}
+                        isActive={active}
+                        tooltip={item.label}
+                        className="h-10 gap-2.5"
+                      >
+                        <Icon className="size-4 shrink-0 stroke-[1.75]" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={handleLogout}
+                    tooltip="Log out"
+                    className="h-10 gap-2.5"
+                  >
+                    <LogOut className="size-4 shrink-0 stroke-[1.75]" />
+                    <span>Log out</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-2 bg-[var(--admin-border)]" />
+
+          <div className="flex h-10 items-center gap-2.5 overflow-hidden rounded-xl bg-[var(--admin-brand-soft)] px-2 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <UserAvatar
+              name={profileName}
+              firstName={user?.firstName}
+              avatarUrl={user?.avatar}
+              title={profileName}
+            />
+            <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+              <p className="truncate text-sm font-medium text-[var(--admin-text)]">{profileName}</p>
+              <p className="truncate text-xs text-[var(--admin-subtle)]">
+                {user ? formatRoleLabel(user.role) : ""}
+              </p>
+            </div>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset className="m-0 min-h-svh rounded-none bg-[#f5f7fa] shadow-none">
+        <div className="admin-inset flex min-h-svh flex-1 flex-col !rounded-none !border-0 !bg-[#f5f7fa] !shadow-none">
+          <header className="admin-inset-header flex h-14 shrink-0 items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="-ml-1 size-8 text-[var(--admin-muted)] hover:text-[var(--admin-brand)]"
+                onClick={togglePinned}
+                aria-label={pinned ? "Collapse sidebar" : "Expand sidebar"}
+                title={pinned ? "Collapse sidebar" : "Keep sidebar expanded"}
+              >
+                <PanelLeft className="size-4" />
+              </Button>
+              <nav className="flex items-center gap-1.5 text-sm text-[var(--admin-muted)]">
+                <Link
+                  href={homeHref}
+                  className="font-medium transition hover:text-[var(--admin-brand)]"
+                >
+                  Admin
+                </Link>
+                <ChevronRight className="size-3.5 opacity-50" />
+                <span className="font-semibold text-[var(--admin-text)]">
+                  {breadcrumbLabel(pathname)}
+                </span>
+              </nav>
+            </div>
+
+            <AdminProfileMenu />
+          </header>
+
+          <div className="admin-inset-body">{children}</div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+    </div>
   );
 }
