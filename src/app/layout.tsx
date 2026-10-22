@@ -5,6 +5,7 @@ import { ActivityTracker } from "@/features/analytics/components/ActivityTracker
 import { ConditionalHeader } from "@/shared/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/shared/components/layout/ConditionalFooter";
 import { NavigationProgressHost } from "@/shared/components/ui/NavigationProgressHost";
+import { LocaleProvider } from "@/shared/i18n/locale-context";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -57,11 +58,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
-          <NavigationProgressHost />
-          <ActivityTracker />
-          <ConditionalHeader />
-          <div className="flex-1">{children}</div>
-          <ConditionalFooter />
+          <LocaleProvider>
+            <NavigationProgressHost />
+            <ActivityTracker />
+            <ConditionalHeader />
+            <div className="flex-1">{children}</div>
+            <ConditionalFooter />
+          </LocaleProvider>
         </AuthProvider>
       </body>
     </html>

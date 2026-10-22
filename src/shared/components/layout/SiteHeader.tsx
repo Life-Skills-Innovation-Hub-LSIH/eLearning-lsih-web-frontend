@@ -8,6 +8,7 @@ import {
   BookOpen,
   ChevronDown,
   CircleHelp,
+  Languages,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -18,52 +19,12 @@ import { useAuth } from "@/features/auth";
 import { homePathForRole } from "@/features/auth";
 import { HeaderSearchDiscover } from "@/shared/components/layout/HeaderSearchDiscover";
 import { UserAvatar } from "@/shared/components/ui/UserAvatar";
-
-const categories = [
-  {
-    title: "ប្រឡងបាក់ឌុប",
-    items: [
-      "មុខវិជ្ជា គណិតវិទ្យា",
-      "មុខវិជ្ជា ភាសាខ្មែរ",
-      "មុខវិជ្ជា គីមីវិទ្យា",
-      "មុខវិជ្ជា រូបវិទ្យា",
-      "មុខវិជ្ជា ជីវវិទ្យា",
-      "មុខវិជ្ជា ប្រវត្តិវិទ្យា",
-      "មុខវិជ្ជា អង់គ្លេស",
-    ],
-  },
-  {
-    title: "ជំនាញ",
-    items: [
-      "ការគិត និងដោះស្រាយបញ្ហា",
-      "ចំណេះដឹងហិរញ្ញវត្ថុ",
-      "ការគ្រប់គ្រងពេលវេលា",
-      "ដំណោះស្រាយជម្លោះ និងបញ្ញាស្មារតីអារម្មណ៍",
-      "ទំនុកចិត្តខ្លួនឯង និងរៀបចំគោលដៅជីវិត",
-    ],
-  },
-  {
-    title: "ភាពជាអ្នកដឹកនាំ",
-    items: [
-      "ការនិយាយសាធារណៈ",
-      "ការងារក្រុម និងគ្រប់គ្រងគម្រោង",
-      "ភាពជាអ្នកដឹកនាំផ្ទាល់ខ្លួន",
-      "ដឹកនាំដោយការយល់ចិត្ត និងតម្លៃ",
-    ],
-  },
-  {
-    title: "ត្រៀមសម្រាប់ការងារ",
-    items: [
-      "ការសរសេរប្រវត្តិរូបសង្ខេប",
-      "ត្រៀមក្នុងកិច្ចសម្ភាសន៍",
-      "កន្លែងប្រាស្រ័យទាក់ទង",
-      "អក្ខរកម្មឌីជីថល (email, MS Office, etc.)",
-    ],
-  },
-];
+import { useLocale } from "@/shared/i18n/locale-context";
+import { EXPLORE_CATEGORIES, trackHref } from "@/shared/lib/learning-tracks";
 
 export function SiteHeader() {
   const { user, logout, ready } = useAuth();
+  const { locale, toggleLocale, t } = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -118,7 +79,7 @@ export function SiteHeader() {
                 onFocus={() => setExploreOpen(true)}
                 aria-expanded={exploreOpen}
               >
-                ស្វែងរក
+                {t("nav.explore")}
                 <ChevronDown className={`h-4 w-4 transition ${exploreOpen ? "rotate-180" : ""}`} />
               </button>
               {exploreOpen ? (
@@ -127,20 +88,24 @@ export function SiteHeader() {
                   onMouseLeave={() => setExploreOpen(false)}
                 >
                   <div className="grid min-h-[300px] gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {categories.map((group) => (
-                      <div key={group.title}>
-                        <p className="mb-4 text-base font-semibold text-[var(--brand)]">
-                          {group.title}
-                        </p>
+                    {EXPLORE_CATEGORIES.map((group) => (
+                      <div key={group.track}>
+                        <Link
+                          href={trackHref(group.track)}
+                          className="mb-4 block text-base font-semibold text-[var(--brand)] hover:underline"
+                          onClick={() => setExploreOpen(false)}
+                        >
+                          {locale === "km" ? group.titleKm : group.titleEn}
+                        </Link>
                         <ul className="space-y-3 text-[0.9375rem] leading-relaxed text-[var(--ink)]">
                           {group.items.map((item) => (
-                            <li key={item}>
+                            <li key={item.q}>
                               <Link
-                                href="/courses"
+                                href={trackHref(group.track, item.q)}
                                 className="transition hover:text-[var(--brand)]"
                                 onClick={() => setExploreOpen(false)}
                               >
-                                {item}
+                                {locale === "km" ? item.labelKm : item.labelEn}
                               </Link>
                             </li>
                           ))}
@@ -154,7 +119,7 @@ export function SiteHeader() {
                       className="text-sm font-semibold text-[var(--brand)] hover:underline"
                       onClick={() => setExploreOpen(false)}
                     >
-                      មើលវគ្គសិក្សាទាំងអស់ →
+                      {t("nav.viewAllCourses")}
                     </Link>
                   </div>
                 </div>
@@ -170,7 +135,7 @@ export function SiteHeader() {
                     : ""
                 }`}
               >
-                វគ្គសិក្សារខ្ញុំ
+                {t("nav.myCourses")}
               </Link>
             ) : null}
           </div>
@@ -178,14 +143,14 @@ export function SiteHeader() {
           <HeaderSearchDiscover className="hidden lg:block" />
         </div>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-3 lg:flex">
           {isAuthed && user ? (
             <>
               <Link
                 href="/help"
                 className="inline-flex size-11 items-center justify-center rounded-full text-[var(--ink)]/70 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
-                aria-label="Help"
-                title="ជំនួយ"
+                aria-label={t("nav.help")}
+                title={t("nav.help")}
               >
                 <CircleHelp className="h-6 w-6" strokeWidth={1.75} />
               </Link>
@@ -271,7 +236,7 @@ export function SiteHeader() {
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--ink)] hover:bg-[var(--brand-soft)]"
                       >
                         <LogOut className="h-4 w-4 text-[var(--brand)]" />
-                        ចាកចេញ
+                        {t("nav.logout")}
                       </button>
                     </div>
                   </div>
@@ -279,21 +244,32 @@ export function SiteHeader() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 href="/login"
                 className="site-header-nav-item inline-flex h-9 items-center rounded-[var(--radius)] px-3 text-sm font-medium transition hover:bg-[var(--brand-soft)]"
               >
-                ចូលគណនី
+                {t("nav.login")}
               </Link>
               <Link
                 href="/register"
                 className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--brand)] bg-white px-4 text-sm font-semibold text-[var(--brand)] transition hover:bg-[var(--brand-soft)]"
               >
-                រៀនឥតគិតថ្លៃ
+                {t("nav.joinFree")}
               </Link>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={toggleLocale}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[var(--line)] px-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--brand)]/30 hover:bg-[var(--brand-soft)] hover:text-[var(--brand)]"
+            aria-label="Toggle language"
+            title={locale === "km" ? "English" : "ខ្មែរ"}
+          >
+            <Languages className="h-4 w-4" />
+            {locale === "km" ? "EN" : "ខ្មែរ"}
+          </button>
         </nav>
 
         {isAuthed && user ? (
@@ -384,25 +360,37 @@ export function SiteHeader() {
                   onClick={handleLogout}
                   className="block w-full rounded-[var(--radius)] px-3 py-2.5 text-left text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
                 >
-                  ចាកចេញ
+                  {t("nav.logout")}
                 </button>
               </>
             ) : (
-              <div className="mt-3 flex gap-2 px-1">
-                <Link
-                  href="/login"
-                  className="btn btn-secondary flex-1 !py-2.5 text-sm"
-                  onClick={() => setMenuOpen(false)}
+              <div className="mt-3 flex flex-col gap-2 px-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleLocale();
+                    setMenuOpen(false);
+                  }}
+                  className="btn btn-secondary w-full !py-2.5 text-sm"
                 >
-                  ចូលគណនី
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--brand)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--brand)]"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  រៀនឥតគិតថ្លៃ
-                </Link>
+                  {locale === "km" ? "English" : "ភាសាខ្មែរ"}
+                </button>
+                <div className="flex gap-2">
+                  <Link
+                    href="/login"
+                    className="btn btn-secondary flex-1 !py-2.5 text-sm"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {t("nav.login")}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--brand)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--brand)]"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {t("nav.joinFree")}
+                  </Link>
+                </div>
               </div>
             )}
           </div>

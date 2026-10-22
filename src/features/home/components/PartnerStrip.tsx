@@ -10,9 +10,9 @@ const partners = [
 
 export function PartnerStrip() {
   return (
-    <section className="border-b border-[var(--line)] bg-white">
+    <section className="bg-white">
       <div className="container-page section-y">
-        <p className="text-center text-sm font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-base">
+        <p className="text-center text-base font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-lg">
           ទុកចិត្តដោយស្ថាប័ន និងដៃគូ
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-8 sm:gap-x-16 lg:gap-x-20">

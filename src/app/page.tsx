@@ -1,6 +1,7 @@
 import {
   CourseColumnsSection,
   FeaturedProgramsBanner,
+  LearningPathsSection,
   MainBanner,
   PartnerStrip,
   PopularCoursesSection,
@@ -40,16 +41,18 @@ export default async function HomePage() {
   return (
     <main>
       <MainBanner />
-
-      <CourseColumnsSection
-        title="វគ្គសិក្សាពេញនិយម"
-        courses={popular.slice(0, 9)}
-      />
-
-      <PartnerStrip />
+      <LearningPathsSection />
+      <SubjectsSection subjects={subjects} />
       <FeaturedProgramsBanner courses={courses} />
 
-      <SubjectsSection subjects={subjects} />
+      <div className="container-page section-y">
+        <PopularCoursesSection
+          title="វគ្គសិក្សាពេញនិយម"
+          subtitle="អ្នកសិក្សាភាគច្រើនកំពុងរៀនវគ្គទាំងនេះ"
+          courses={popular}
+        />
+      </div>
+
       <PromoBannersSection />
 
       <CourseColumnsSection
@@ -57,14 +60,7 @@ export default async function HomePage() {
         courses={latest.slice(0, 9)}
       />
 
-      <div className="container-page section-y">
-        <PopularCoursesSection
-          title="វគ្គសិក្សាដែលពេញនិយម"
-          subtitle="អ្នកសិក្សាភាគច្រើនកំពុងរៀនវគ្គទាំងនេះ"
-          courses={popular}
-        />
-      </div>
-
+      <PartnerStrip />
       <WhyLsihSection />
 
       <section className="container-page section-y">

@@ -7,6 +7,13 @@ import { BookOpen, Search, SlidersHorizontal, X } from "lucide-react";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import { getLevelLabel } from "@/shared/lib/course-labels";
 import { resolveMediaUrl } from "@/shared/lib/media";
+import { useLocale } from "@/shared/i18n/locale-context";
+import {
+  courseMatchesTrack,
+  EXPLORE_CATEGORIES,
+  getTrackLabel,
+  type LearningTrackId,
+} from "@/shared/lib/learning-tracks";
 import {
   fetchCatalogCourses,
   fetchCatalogSubjects,
@@ -21,10 +28,17 @@ const LEVEL_FILTERS = [
   { value: "advanced", label: "Advanced" },
 ] as const;
 
+const TRACK_IDS = new Set<string>(EXPLORE_CATEGORIES.map((c) => c.track));
+
 export default function CoursesPage() {
   const searchParams = useSearchParams();
+  const { locale, t } = useLocale();
   const initialQuery = searchParams.get("q") ?? "";
   const subjectId = searchParams.get("subject_id") ?? "";
+  const trackParam = searchParams.get("track") ?? "";
+  const activeTrack = (
+    TRACK_IDS.has(trackParam) ? trackParam : ""
+  ) as LearningTrackId | "";
   const [query, setQuery] = useState(initialQuery);
   const [level, setLevel] = useState<string>("all");
   const [courses, setCourses] = useState<CatalogCourse[]>([]);
@@ -64,9 +78,10 @@ export default function CoursesPage() {
   const filtered = useMemo(() => {
     return courses.filter((course) => {
       if (level !== "all" && (course.level ?? "") !== level) return false;
+      if (activeTrack && !courseMatchesTrack(course, activeTrack)) return false;
       return true;
     });
-  }, [courses, level]);
+  }, [courses, level, activeTrack]);
 
   return (
     <main>
@@ -82,16 +97,48 @@ export default function CoursesPage() {
         <div className="container-page relative space-y-6 py-14 sm:py-16">
           <div className="max-w-2xl space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/70">
-              Catalog
+              {t("catalog.track")}
             </p>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              {activeSubject ? activeSubject.name : "Explore courses"}
+              {activeSubject
+                ? activeSubject.name
+                : activeTrack
+                  ? getTrackLabel(activeTrack, locale)
+                  : t("catalog.title")}
             </h1>
             <p className="text-base leading-relaxed text-white/80">
               {activeSubject?.description?.trim()
                 ? activeSubject.description.trim()
-                : "Browse published courses with modules, lessons, and quizzes. Enroll when your subscription is active."}
+                : locale === "km"
+                  ? "រុករកវគ្គសិក្សាតាមផ្លូវ Grade 12 · Life Skills · Leadership · Job Ready។"
+                  : "Browse courses by Grade 12, Life Skills, Leadership, and Job Ready tracks."}
             </p>
+          </div>
+
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Link
+              href="/courses"
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+                !activeTrack
+                  ? "bg-white text-[var(--brand)]"
+                  : "border border-white/70 bg-white/10 text-white hover:bg-white/20"
+              }`}
+            >
+              {locale === "km" ? "ទាំងអស់" : "All"}
+            </Link>
+            {EXPLORE_CATEGORIES.map((cat) => (
+              <Link
+                key={cat.track}
+                href={`/courses?track=${cat.track}`}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+                  activeTrack === cat.track
+                    ? "bg-white text-[var(--brand)]"
+                    : "border border-white/70 bg-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                {locale === "km" ? cat.titleKm : cat.titleEn}
+              </Link>
+            ))}
           </div>
 
           <form
@@ -126,6 +173,15 @@ export default function CoursesPage() {
                 ? "Loading…"
                 : `${filtered.length} course${filtered.length === 1 ? "" : "s"}`}
             </p>
+            {activeTrack ? (
+              <Link
+                href="/courses"
+                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--line)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--ink)] shadow-sm hover:bg-[var(--brand-soft)]/40"
+              >
+                {getTrackLabel(activeTrack, locale)}
+                <X className="h-3.5 w-3.5 text-[var(--muted)]" />
+              </Link>
+            ) : null}
             {activeSubject ? (
               <Link
                 href="/courses"

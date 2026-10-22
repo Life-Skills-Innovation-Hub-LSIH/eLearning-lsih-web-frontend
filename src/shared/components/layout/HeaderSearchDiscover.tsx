@@ -12,12 +12,14 @@ import {
 } from "@/features/learning/api/enrollment-api";
 import { getLevelLabel } from "@/shared/lib/course-labels";
 import { resolveMediaUrl } from "@/shared/lib/media";
+import { useLocale } from "@/shared/i18n/locale-context";
 
 type Props = {
   className?: string;
 };
 
 export function HeaderSearchDiscover({ className }: Props) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subjects, setSubjects] = useState<CatalogSubject[]>([]);
@@ -95,7 +97,7 @@ export function HeaderSearchDiscover({ className }: Props) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
-          placeholder="តើអ្នកចង់រៀនអ្វី?"
+          placeholder={t("search.placeholder")}
           className="h-10 w-[240px] rounded-full border border-[var(--line)] bg-white pl-4 pr-12 text-sm outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/15 xl:w-[300px]"
           aria-expanded={open}
           aria-controls="header-search-discover"

@@ -1,7 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale } from "@/shared/i18n/locale-context";
+import { trackHref } from "@/shared/lib/learning-tracks";
 
 export function MainBanner() {
+  const { t } = useLocale();
+
   return (
     <section className="relative -mt-16 flex min-h-svh overflow-hidden bg-[linear-gradient(135deg,#04356f_0%,#054da1_42%,#0a6bc7_100%)] pt-16">
       <div
@@ -31,20 +37,20 @@ export function MainBanner() {
             Innovation Hub
           </h1>
           <p className="animate-fade-up animate-delay-1 mt-4 max-w-lg font-display text-xl font-medium text-white/90 sm:text-2xl">
-            រៀនដោយគ្មានដែនកំណត់
+            {t("hero.tagline")}
           </p>
           <p className="animate-fade-up animate-delay-2 mt-4 max-w-md text-base leading-relaxed text-white/75 sm:text-lg">
-            វគ្គសិក្សាជាក់ស្តែងមានម៉ូឌុល មេរៀនវីដេអូ និង PDF និងសំណួរសាកល្បង — បង្កើតឡើងសម្រាប់ជំនាញពិតប្រាកដ។
+            {t("hero.subtitle")}
           </p>
           <div className="animate-fade-up animate-delay-3 mt-8 flex flex-wrap items-center gap-3">
             <Link href="/register" className="btn btn-accent">
-              ចុះឈ្មោះឥឡូវ
+              {t("hero.ctaStart")}
             </Link>
             <Link
-              href="/courses"
+              href={trackHref("grade12")}
               className="btn border border-white/25 bg-white/10 !text-white backdrop-blur-sm hover:bg-white/18 hover:!text-white"
             >
-              មើលវគ្គសិក្សា
+              {t("hero.ctaGrade12")}
             </Link>
           </div>
         </div>
@@ -56,7 +62,7 @@ export function MainBanner() {
           />
           <Image
             src="/assets/iconMainBanner.png"
-            alt="រូបភាពសិក្សា LSIH"
+            alt="LSIH"
             width={556}
             height={513}
             priority
