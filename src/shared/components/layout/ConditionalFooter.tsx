@@ -11,7 +11,8 @@ export function ConditionalFooter() {
     pathname.startsWith("/learn") ||
     pathname.startsWith("/my-courses") ||
     pathname === "/login" ||
-    pathname === "/register";
+    pathname === "/register" ||
+    pathname === "/onboarding";
 
   if (hideFooter) return null;
   return <SiteFooter />;

@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/shared/api/client";
 import { PasswordInput } from "@/shared/components/ui/PasswordInput";
+import { hasCompletedOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import { registerWithApi } from "../api/auth-api";
 import { AuthSplitLayout } from "./AuthSplitLayout";
 import { useAuth } from "../context/auth-context";
@@ -14,6 +15,7 @@ import { homePathForRole } from "../lib/static-users";
 export function RegisterForm() {
   const { applySession, user, ready } = useAuth();
   const router = useRouter();
+  const skipHomeRedirect = useRef(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -23,7 +25,7 @@ export function RegisterForm() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!ready || !user) return;
+    if (!ready || !user || skipHomeRedirect.current) return;
     router.replace(homePathForRole(user.role));
   }, [ready, user, router]);
 
@@ -45,8 +47,10 @@ export function RegisterForm() {
         password,
         confirmPassword,
       });
+      skipHomeRedirect.current = true;
       const redirectTo = applySession(result);
-      router.push(redirectTo);
+      const userId = String(result.user.id);
+      router.push(hasCompletedOnboarding(userId) ? redirectTo : "/onboarding");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(Object.values(err.body?.errors ?? {})[0]?.[0] ?? err.message);

@@ -61,6 +61,30 @@ const dict: Dictionary = {
   },
   "catalog.title": { km: "រុករកវគ្គសិក្សា", en: "Explore courses" },
   "catalog.track": { km: "ផ្លូវសិក្សា", en: "Learning track" },
+  "onboarding.eyebrow": { km: "ស្វាគមន៍មកកាន់ LSIH", en: "Welcome to LSIH" },
+  "onboarding.title": { km: "តើអ្នកកំពុងស្វែងរកអ្វី?", en: "What are you looking for?" },
+  "onboarding.subtitle": {
+    km: "ជ្រើសមួយ ដើម្បីឲ្យយើងណែនាំផ្លូវសិក្សា និងវគ្គសមស្រប។",
+    en: "Pick one so we can recommend the right learning track and courses.",
+  },
+  "onboarding.grade12": {
+    km: "ខ្ញុំកំពុងត្រៀមប្រឡងបាក់ឌុប",
+    en: "I’m preparing for the Grade 12 exam",
+  },
+  "onboarding.leadership": {
+    km: "ខ្ញុំចង់ពង្រឹងភាពជាអ្នកដឹកនាំ",
+    en: "I want to improve my leadership",
+  },
+  "onboarding.job": {
+    km: "ខ្ញុំត្រូវការជំនាញត្រៀមការងារ",
+    en: "I need job readiness skills",
+  },
+  "onboarding.life": {
+    km: "ខ្ញុំចង់រៀនជំនាញជីវិត",
+    en: "I want to learn life skills",
+  },
+  "onboarding.continue": { km: "បន្តមើលវគ្គសិក្សា", en: "Continue to courses" },
+  "onboarding.skip": { km: "រំលងសម្រាប់ពេលនេះ", en: "Skip for now" },
 };
 
 type LocaleContextValue = {
