@@ -1,17 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthSplitLayout } from "./AuthSplitLayout";
 import { useAuth } from "../context/auth-context";
 import { homePathForRole } from "../lib/static-users";
+import { hasCompletedOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import { PasswordInput } from "@/shared/components/ui/PasswordInput";
+import { useLocale } from "@/shared/i18n/locale-context";
 
 export function LoginForm() {
   const { login, user, ready } = useAuth();
   const router = useRouter();
+  const { t } = useLocale();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,6 +21,14 @@ export function LoginForm() {
 
   useEffect(() => {
     if (!ready || !user) return;
+    if (
+      user.role === "student" &&
+      !user.onboardingTrack &&
+      !hasCompletedOnboarding(user.id)
+    ) {
+      router.replace("/onboarding");
+      return;
+    }
     router.replace(homePathForRole(user.role));
   }, [ready, user, router]);
 
@@ -30,9 +40,8 @@ export function LoginForm() {
     setSubmitting(false);
     if (!result.ok) {
       setError(result.message);
-      return;
     }
-    router.push(result.redirectTo);
+    // Successful login sets `user`; the effect above chooses home vs onboarding.
   }
 
   if (ready && user) {
@@ -40,30 +49,18 @@ export function LoginForm() {
   }
 
   return (
-    <AuthSplitLayout>
-      <div className="mb-8 flex justify-center lg:hidden">
-        <Link href="/">
-          <Image
-            src="/assets/logo-full.png"
-            alt="LSIH"
-            width={150}
-            height={44}
-            className="h-10 w-auto object-contain"
-          />
-        </Link>
-      </div>
-
+    <AuthSplitLayout welcomeTitle={t("auth.loginWelcomeTitle")} welcomeSubtitle={t("auth.loginWelcomeSubtitle")}>
       <div className="text-center">
-        <h2 className="font-display text-2xl font-semibold text-[var(--brand)]">Login Account</h2>
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          Sign in with your username or email to continue learning.
-        </p>
+        <h2 className="font-display text-2xl font-semibold text-[var(--brand)]">
+          {t("auth.loginTitle")}
+        </h2>
+        <p className="mt-2 text-sm text-[var(--muted)]">{t("auth.loginSubtitle")}</p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4" autoComplete="on">
         <div className="space-y-2 text-sm text-[var(--ink)]">
           <label htmlFor="login-username" className="font-semibold">
-            Username or email
+            {t("auth.usernameEmail")}
           </label>
           <input
             id="login-username"
@@ -73,13 +70,13 @@ export function LoginForm() {
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="username or email"
+            placeholder={t("auth.usernameEmailPlaceholder")}
             required
           />
         </div>
         <div className="space-y-2 text-sm text-[var(--ink)]">
           <label htmlFor="login-password" className="font-semibold">
-            Password
+            {t("auth.password")}
           </label>
           <PasswordInput
             id="login-password"
@@ -98,14 +95,14 @@ export function LoginForm() {
           className="btn btn-primary mt-2 w-full !rounded-full uppercase tracking-wide"
           disabled={submitting}
         >
-          {submitting ? "Logging in…" : "Log in"}
+          {submitting ? t("auth.loggingIn") : t("auth.login")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-[var(--muted)]">
-        Don&apos;t have an account?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href="/register" className="font-semibold text-[var(--brand)] hover:underline">
-          Register
+          {t("auth.registerLink")}
         </Link>
       </p>
     </AuthSplitLayout>

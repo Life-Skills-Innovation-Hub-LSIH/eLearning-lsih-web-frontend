@@ -12,8 +12,11 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import { updateProfileWithApi } from "@/features/auth/api/auth-api";
 import { useAuth } from "@/features/auth/context/auth-context";
+import { loadToken } from "@/features/auth/lib/storage";
 import { useLocale } from "@/shared/i18n/locale-context";
+import type { OnboardingTrack } from "@/shared/types";
 import { trackHref, type LearningTrackId } from "@/shared/lib/learning-tracks";
 import {
   getOnboardingChoice,
@@ -36,19 +39,25 @@ const options: Array<{
   { track: "life-skills", icon: Sparkles, labelKey: "onboarding.life" },
 ];
 
-function redirectForCompletedChoice(choice: string | null) {
+function redirectForCompletedChoice(choice: string | null | undefined) {
   if (choice && choice !== "skipped") {
     return trackHref(choice as LearningTrackId);
   }
   return "/courses";
 }
 
+function isCompleted(choice: string | null | undefined) {
+  return Boolean(choice);
+}
+
 export function OnboardingForm() {
   const router = useRouter();
-  const { user, ready } = useAuth();
+  const { user, ready, refreshUser } = useAuth();
   const { t, locale, toggleLocale } = useLocale();
   const [selected, setSelected] = useState<LearningTrackId | null>(null);
   const [checking, setChecking] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!ready) return;
@@ -58,24 +67,48 @@ export function OnboardingForm() {
       return;
     }
 
-    if (hasCompletedOnboarding(user.id)) {
-      router.replace(redirectForCompletedChoice(getOnboardingChoice(user.id)));
+    const serverChoice = user.onboardingTrack ?? null;
+    const localChoice = getOnboardingChoice(user.id);
+    if (isCompleted(serverChoice) || hasCompletedOnboarding(user.id)) {
+      if (serverChoice && !localChoice) {
+        markOnboardingComplete(user.id, serverChoice as LearningTrackId | "skipped");
+      }
+      router.replace(redirectForCompletedChoice(serverChoice ?? localChoice));
       return;
     }
 
     setChecking(false);
   }, [ready, user, router]);
 
+  async function persistChoice(choice: OnboardingTrack) {
+    if (!user) return;
+    setSaving(true);
+    setError("");
+    try {
+      const token = loadToken();
+      if (token) {
+        await updateProfileWithApi(token, { onboardingTrack: choice });
+        await refreshUser();
+      }
+      markOnboardingComplete(user.id, choice);
+      router.push(redirectForCompletedChoice(choice));
+    } catch (err) {
+      markOnboardingComplete(user.id, choice);
+      setError(err instanceof Error ? err.message : "Could not save preference.");
+      router.push(redirectForCompletedChoice(choice));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function continueNext() {
-    if (!selected || !user) return;
-    markOnboardingComplete(user.id, selected);
-    router.push(trackHref(selected));
+    if (!selected || saving) return;
+    void persistChoice(selected);
   }
 
   function skip() {
-    if (!user) return;
-    markOnboardingComplete(user.id, "skipped");
-    router.push("/courses");
+    if (saving) return;
+    void persistChoice("skipped");
   }
 
   if (!ready || checking) {
@@ -129,6 +162,7 @@ export function OnboardingForm() {
                   key={option.track}
                   type="button"
                   onClick={() => setSelected(option.track)}
+                  disabled={saving}
                   className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition sm:px-5 ${
                     active
                       ? "border-[var(--brand)] bg-[var(--brand-soft)] shadow-[0_8px_24px_rgba(5,77,161,0.12)]"
@@ -161,19 +195,22 @@ export function OnboardingForm() {
             })}
           </div>
 
+          {error ? <p className="mt-4 text-sm text-red-700">{error}</p> : null}
+
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={continueNext}
-              disabled={!selected}
+              disabled={!selected || saving}
               className="btn btn-primary !rounded-full disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {t("onboarding.continue")}
+              {saving ? "…" : t("onboarding.continue")}
             </button>
             <button
               type="button"
               onClick={skip}
-              className="text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--brand)]"
+              disabled={saving}
+              className="text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--brand)] disabled:opacity-50"
             >
               {t("onboarding.skip")}
             </button>

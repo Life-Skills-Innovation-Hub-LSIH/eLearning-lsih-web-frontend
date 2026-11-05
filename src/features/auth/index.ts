@@ -15,5 +15,6 @@ export {
   logoutWithApi,
   mapAuthUser,
   registerWithApi,
+  updateProfileWithApi,
 } from "./api/auth-api";
 export type { ApiUser, AuthSessionResponse } from "./api/auth-api";

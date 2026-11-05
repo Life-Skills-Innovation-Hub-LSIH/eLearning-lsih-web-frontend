@@ -42,13 +42,13 @@ export function AuthSplitLayout({
         />
 
         <div className="relative z-10 flex w-full flex-col justify-between px-12 py-12 xl:px-16">
-          <Link href="/" className="inline-flex w-fit items-center gap-3">
+          <Link href="/" className="inline-flex w-fit items-center rounded-xl bg-white px-3 py-2 shadow-sm">
             <Image
               src="/assets/logo-full.png"
               alt="Life Skills Innovation Hub"
               width={168}
               height={48}
-              className="h-10 w-auto brightness-0 invert"
+              className="h-10 w-auto object-contain"
               priority
             />
           </Link>
@@ -70,7 +70,21 @@ export function AuthSplitLayout({
       </section>
 
       <section className="flex items-center justify-center px-5 py-10 sm:px-8">
-        <div className="w-full max-w-[420px]">{children}</div>
+        <div className="w-full max-w-[420px]">
+          <div className="mb-8 flex justify-center lg:hidden">
+            <Link href="/">
+              <Image
+                src="/assets/logo-full.png"
+                alt="Life Skills Innovation Hub"
+                width={168}
+                height={48}
+                className="h-11 w-auto object-contain"
+                priority
+              />
+            </Link>
+          </div>
+          {children}
+        </div>
       </section>
     </main>
   );

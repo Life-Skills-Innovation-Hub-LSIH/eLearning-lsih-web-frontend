@@ -9,36 +9,49 @@ import {
   useAuth,
 } from "@/features/auth";
 import { ApiError } from "@/shared/api/client";
+import { useLocale } from "@/shared/i18n/locale-context";
 
 type Props = {
   courseId: string;
   slug: string;
   price: number;
+  variant?: "default" | "hero" | "bar";
 };
 
-export function EnrollButton({ courseId, slug, price }: Props) {
+export function EnrollButton({ courseId, slug, price, variant = "default" }: Props) {
   const { user, ready, token, isEnrolled, enroll } = useAuth();
+  const { t } = useLocale();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const enrolled = isEnrolled(courseId);
   const canEnroll = hasActiveSubscription(user);
+  const hero = variant === "hero";
+  const bar = variant === "bar";
+  const buttonClass = hero
+    ? "btn btn-primary inline-flex min-h-[56px] min-w-[220px] flex-col items-center justify-center px-10 py-3 text-center !text-white"
+    : bar
+      ? "btn btn-primary inline-flex h-11 min-w-[180px] items-center justify-center px-6 !text-white"
+      : "btn btn-primary w-full !text-white";
 
   if (!ready) {
-    return <div className="btn btn-secondary w-full opacity-60">Loading…</div>;
+    return <div className={`${buttonClass} opacity-60`}>…</div>;
   }
 
   if (!user) {
     return (
-      <Link href="/login" className="btn btn-primary w-full">
-        Login to enroll
+      <Link href="/register" className={buttonClass}>
+        {t("course.enrollFree")}
+        {hero ? (
+          <span className="mt-0.5 text-xs font-normal text-white/90">{t("course.enrollSub")}</span>
+        ) : null}
       </Link>
     );
   }
 
   if (user.role !== "student") {
     return (
-      <Link href="/admin/courses" className="btn btn-secondary w-full">
+      <Link href="/admin/courses" className={bar || hero ? `${buttonClass} bg-[var(--brand-strong)]` : "btn btn-secondary w-full"}>
         Manage in admin
       </Link>
     );
@@ -46,7 +59,7 @@ export function EnrollButton({ courseId, slug, price }: Props) {
 
   if (enrolled) {
     return (
-      <Link href={`/learn/${slug}`} className="btn btn-primary w-full">
+      <Link href={`/learn/${slug}`} className={buttonClass}>
         Continue learning
       </Link>
     );
@@ -55,12 +68,14 @@ export function EnrollButton({ courseId, slug, price }: Props) {
   if (!canEnroll) {
     return (
       <div className="space-y-2">
-        <button type="button" className="btn btn-secondary w-full cursor-not-allowed opacity-70" disabled>
+        <button type="button" className={`${buttonClass} cursor-not-allowed opacity-70`} disabled>
           Subscription required
         </button>
-        <p className="text-center text-xs text-[var(--muted)]">
-          {subscriptionBlockedMessage(user)}
-        </p>
+        {variant === "default" ? (
+          <p className="text-center text-xs text-[var(--muted)]">
+            {subscriptionBlockedMessage(user)}
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -69,7 +84,7 @@ export function EnrollButton({ courseId, slug, price }: Props) {
     <div className="space-y-2">
       <button
         type="button"
-        className="btn btn-primary w-full"
+        className={buttonClass}
         disabled={loading || !token}
         onClick={() => {
           setLoading(true);
@@ -88,11 +103,10 @@ export function EnrollButton({ courseId, slug, price }: Props) {
             .finally(() => setLoading(false));
         }}
       >
-        {loading
-          ? "Enrolling…"
-          : price === 0
-            ? "Enroll for free"
-            : "Enroll in course"}
+        {loading ? "Enrolling…" : price === 0 ? t("course.enrollFree") : "Enroll in course"}
+        {hero && !loading ? (
+          <span className="mt-0.5 text-xs font-normal text-white/90">{t("course.enrollSub")}</span>
+        ) : null}
       </button>
       {error ? <p className="text-center text-xs text-red-600">{error}</p> : null}
     </div>

@@ -1,7 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/features/auth";
 
 export function SiteFooter() {
+  const { user } = useAuth();
+  const isStudent = user?.role === "student";
+  const isGuest = !user;
+
   return (
     <footer className="mt-auto border-t border-[var(--line)] bg-white">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -14,7 +21,7 @@ export function SiteFooter() {
             className="h-11 w-auto object-contain"
           />
           <p className="max-w-xs text-sm leading-relaxed text-[var(--muted)]">
-            បណ្តុះបណ្តាលជំនាញជីវិត ភាពជាអ្នកដឹកនាំ និងអាជីពជាក់ស្តែងសម្រាប់អ្នកសិក្សាទូទាំងកម្ពុជា។
+            បណ្តុះបណ្តាលបំណិនជីវិត ភាពជាអ្នកដឹកនាំ និងការត្រៀមខ្លួនចូលធ្វើការសម្រាប់អ្នកសិក្សាទូទាំងកម្ពុជា។
           </p>
         </div>
 
@@ -28,21 +35,27 @@ export function SiteFooter() {
                 វគ្គសិក្សាទាំងអស់
               </Link>
             </li>
-            <li>
-              <Link href="/dashboard" className="transition hover:text-[var(--brand)]">
-                ផ្ទាំងគ្រប់គ្រងសិស្ស
-              </Link>
-            </li>
-            <li>
-              <Link href="/my-courses" className="transition hover:text-[var(--brand)]">
-                វគ្គសិក្សារខ្ញុំ
-              </Link>
-            </li>
-            <li>
-              <Link href="/register" className="transition hover:text-[var(--brand)]">
-                បង្កើតគណនី
-              </Link>
-            </li>
+            {isStudent ? (
+              <>
+                <li>
+                  <Link href="/dashboard" className="transition hover:text-[var(--brand)]">
+                    ផ្ទាំងគ្រប់គ្រងសិស្ស
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/my-courses" className="transition hover:text-[var(--brand)]">
+                    វគ្គសិក្សារខ្ញុំ
+                  </Link>
+                </li>
+              </>
+            ) : null}
+            {isGuest ? (
+              <li>
+                <Link href="/register" className="transition hover:text-[var(--brand)]">
+                  បង្កើតគណនី
+                </Link>
+              </li>
+            ) : null}
           </ul>
         </div>
 

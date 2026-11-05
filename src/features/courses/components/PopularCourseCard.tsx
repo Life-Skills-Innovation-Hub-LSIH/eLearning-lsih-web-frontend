@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Clock, Star } from "lucide-react";
 import { getLevelLabel } from "@/shared/lib/course-labels";
 import { resolveMediaUrl } from "@/shared/lib/media";
 
@@ -12,6 +13,9 @@ export type CatalogCourseCardModel = {
   lecturer?: { id?: number | string; name: string } | null;
   subjects?: Array<{ id: number | string; name: string; slug?: string }>;
   modules_count?: number;
+  duration_minutes?: number | null;
+  rating?: number | null;
+  reviews_count?: number;
 };
 
 type Props = {
@@ -19,14 +23,24 @@ type Props = {
   compact?: boolean;
 };
 
+function formatDuration(minutes?: number | null) {
+  if (!minutes || minutes <= 0) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}m` : `${hours}h`;
+}
+
 export function PopularCourseCard({ course, compact = false }: Props) {
   const cover = resolveMediaUrl(course.cover_image);
   const provider = course.lecturer?.name?.trim() || "Life Skills Innovation Hub";
+  const duration = formatDuration(course.duration_minutes);
   const metaParts = [
     getLevelLabel(course.level),
     course.modules_count != null
       ? `${course.modules_count} module${course.modules_count === 1 ? "" : "s"}`
       : null,
+    duration,
   ].filter(Boolean);
 
   return (
@@ -77,7 +91,20 @@ export function PopularCourseCard({ course, compact = false }: Props) {
           {course.title}
         </h3>
 
-        <p className="mt-auto pt-4 text-xs text-[var(--muted)]">{metaParts.join(" · ")}</p>
+        <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs text-[var(--muted)]">
+          <p className="min-w-0 truncate">{metaParts.join(" · ")}</p>
+          {course.rating != null ? (
+            <span className="inline-flex shrink-0 items-center gap-1 font-semibold text-[var(--ink)]">
+              <Star className="h-3.5 w-3.5 fill-[var(--accent-brand)] text-[var(--accent-brand)]" />
+              {course.rating.toFixed(1)}
+            </span>
+          ) : duration ? (
+            <span className="inline-flex shrink-0 items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              {duration}
+            </span>
+          ) : null}
+        </div>
       </div>
     </Link>
   );

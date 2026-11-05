@@ -1,5 +1,10 @@
 import { apiRequest } from "@/shared/api/client";
-import type { PaymentDuration, User, UserPaymentStatus } from "@/shared/types";
+import type {
+  OnboardingTrack,
+  PaymentDuration,
+  User,
+  UserPaymentStatus,
+} from "@/shared/types";
 
 export type ApiUser = {
   id: number | string;
@@ -8,6 +13,7 @@ export type ApiUser = {
   username: string;
   email?: string;
   avatar?: string | null;
+  onboarding_track?: OnboardingTrack | null;
   role: User["role"];
   status: UserPaymentStatus;
   payment_duration?: PaymentDuration | null;
@@ -37,6 +43,7 @@ export function mapAuthUser(user: ApiUser): User {
     username: user.username,
     email: user.email || `${user.username}@lsih.local`,
     avatar: user.avatar ?? null,
+    onboardingTrack: user.onboarding_track ?? null,
     role: role as User["role"],
     status: user.status,
     paymentDuration: user.payment_duration ?? null,
@@ -100,4 +107,32 @@ export async function changePasswordWithApi(
       password_confirmation: input.confirmPassword,
     },
   });
+}
+
+export async function updateProfileWithApi(
+  token: string,
+  input: {
+    onboardingTrack?: OnboardingTrack | null;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    email?: string;
+    avatar?: string | null;
+  },
+): Promise<User> {
+  const body: Record<string, unknown> = {};
+  if (input.onboardingTrack !== undefined) body.onboarding_track = input.onboardingTrack;
+  if (input.firstName !== undefined) body.first_name = input.firstName;
+  if (input.lastName !== undefined) body.last_name = input.lastName;
+  if (input.username !== undefined) body.username = input.username;
+  if (input.email !== undefined) body.email = input.email;
+  if (input.avatar !== undefined) body.avatar = input.avatar;
+
+  const response = await apiRequest<{ data: ApiUser } | ApiUser>("/user/profile", {
+    method: "PUT",
+    token,
+    body,
+  });
+  const user = "data" in response && response.data ? response.data : (response as ApiUser);
+  return mapAuthUser(user);
 }

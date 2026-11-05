@@ -199,6 +199,11 @@ input:disabled {
   box-shadow: 0 6px 16px rgba(5, 77, 161, 0.22);
 }
 
+a.btn-primary,
+a.btn-primary span {
+  color: white !important;
+}
+
 .btn-primary:hover {
   background: var(--brand-strong);
   box-shadow: 0 8px 20px rgba(5, 77, 161, 0.28);

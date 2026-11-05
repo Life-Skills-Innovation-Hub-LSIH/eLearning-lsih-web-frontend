@@ -125,6 +125,13 @@ export interface ManagedModule {
   updatedAt?: string;
 }
 
+export type OnboardingTrack =
+  | "grade12"
+  | "life-skills"
+  | "leadership"
+  | "job-ready"
+  | "skipped";
+
 export interface User {
   id: string;
   name: string;
@@ -133,6 +140,7 @@ export interface User {
   username?: string;
   email: string;
   avatar?: string | null;
+  onboardingTrack?: OnboardingTrack | null;
   role: Exclude<Role, "guest">;
   status?: UserPaymentStatus;
   paymentDuration?: PaymentDuration | null;

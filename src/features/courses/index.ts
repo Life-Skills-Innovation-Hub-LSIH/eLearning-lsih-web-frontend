@@ -6,6 +6,8 @@ export {
   PopularCourseCard,
   type CatalogCourseCardModel,
 } from "./components/PopularCourseCard";
+export { CourseReviewsSection } from "./components/CourseReviewsSection";
+export { CourseCatalogDetail } from "./components/CourseCatalogDetail";
 export {
   countLessons,
   countQuizzes,

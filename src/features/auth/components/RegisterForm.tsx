@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/shared/api/client";
 import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { hasCompletedOnboarding } from "@/features/onboarding/lib/onboarding-storage";
+import { useLocale } from "@/shared/i18n/locale-context";
 import { registerWithApi } from "../api/auth-api";
 import { AuthSplitLayout } from "./AuthSplitLayout";
 import { useAuth } from "../context/auth-context";
@@ -15,6 +15,7 @@ import { homePathForRole } from "../lib/static-users";
 export function RegisterForm() {
   const { applySession, user, ready } = useAuth();
   const router = useRouter();
+  const { t } = useLocale();
   const skipHomeRedirect = useRef(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -34,7 +35,7 @@ export function RegisterForm() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Password and confirm password do not match.");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
@@ -50,7 +51,9 @@ export function RegisterForm() {
       skipHomeRedirect.current = true;
       const redirectTo = applySession(result);
       const userId = String(result.user.id);
-      router.push(hasCompletedOnboarding(userId) ? redirectTo : "/onboarding");
+      const alreadyDone =
+        Boolean(result.user.onboarding_track) || hasCompletedOnboarding(userId);
+      router.push(alreadyDone ? redirectTo : "/onboarding");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(Object.values(err.body?.errors ?? {})[0]?.[0] ?? err.message);
@@ -67,30 +70,18 @@ export function RegisterForm() {
   }
 
   return (
-    <AuthSplitLayout welcomeSubtitle="Join LSIH" welcomeTitle="Get started">
-      <div className="mb-8 flex justify-center lg:hidden">
-        <Link href="/">
-          <Image
-            src="/assets/logo-full.png"
-            alt="LSIH"
-            width={150}
-            height={44}
-            className="h-10 w-auto object-contain"
-          />
-        </Link>
-      </div>
-
+    <AuthSplitLayout welcomeSubtitle={t("auth.welcomeSubtitle")} welcomeTitle={t("auth.welcomeTitle")}>
       <div className="text-center">
-        <h2 className="font-display text-2xl font-semibold text-[var(--brand)]">Create account</h2>
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          Register as a student to browse courses and start learning.
-        </p>
+        <h2 className="font-display text-2xl font-semibold text-[var(--brand)]">
+          {t("auth.registerTitle")}
+        </h2>
+        <p className="mt-2 text-sm text-[var(--muted)]">{t("auth.registerSubtitle")}</p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-2 text-sm text-[var(--ink)]">
-            <span className="font-semibold">First name</span>
+            <span className="font-semibold">{t("auth.firstName")}</span>
             <input
               className="input border-transparent bg-[#f3f6fb] font-normal"
               value={firstName}
@@ -99,7 +90,7 @@ export function RegisterForm() {
             />
           </label>
           <label className="block space-y-2 text-sm text-[var(--ink)]">
-            <span className="font-semibold">Last name</span>
+            <span className="font-semibold">{t("auth.lastName")}</span>
             <input
               className="input border-transparent bg-[#f3f6fb] font-normal"
               value={lastName}
@@ -109,7 +100,7 @@ export function RegisterForm() {
           </label>
         </div>
         <label className="block space-y-2 text-sm text-[var(--ink)]">
-          <span className="font-semibold">Username</span>
+          <span className="font-semibold">{t("auth.username")}</span>
           <input
             className="input border-transparent bg-[#f3f6fb] font-normal"
             value={username}
@@ -119,7 +110,7 @@ export function RegisterForm() {
           />
         </label>
         <label className="block space-y-2 text-sm text-[var(--ink)]">
-          <span className="font-semibold">Password</span>
+          <span className="font-semibold">{t("auth.password")}</span>
           <PasswordInput
             inputClassName="input border-transparent bg-[#f3f6fb] font-normal"
             value={password}
@@ -129,7 +120,7 @@ export function RegisterForm() {
           />
         </label>
         <label className="block space-y-2 text-sm text-[var(--ink)]">
-          <span className="font-semibold">Confirm password</span>
+          <span className="font-semibold">{t("auth.confirmPassword")}</span>
           <PasswordInput
             inputClassName="input border-transparent bg-[#f3f6fb] font-normal"
             value={confirmPassword}
@@ -144,14 +135,14 @@ export function RegisterForm() {
           className="btn btn-primary mt-2 w-full !rounded-full uppercase tracking-wide"
           disabled={submitting}
         >
-          {submitting ? "Creating account…" : "Register"}
+          {submitting ? t("auth.registering") : t("auth.register")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-[var(--muted)]">
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link href="/login" className="font-semibold text-[var(--brand)] hover:underline">
-          Log in
+          {t("auth.login")}
         </Link>
       </p>
     </AuthSplitLayout>

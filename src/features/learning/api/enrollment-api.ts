@@ -12,10 +12,35 @@ export type CatalogCourse = {
   level?: string | null;
   price?: number;
   status?: string;
-  lecturer?: { id: number; name: string; title?: string | null } | null;
+  lecturer?: {
+    id: number;
+    name: string;
+    title?: string | null;
+    avatar?: string | null;
+  } | null;
   subjects?: Array<{ id: number; name: string; slug: string }>;
   modules?: CatalogModule[];
   modules_count?: number;
+  duration_minutes?: number | null;
+  rating?: number | null;
+  reviews_count?: number;
+  enrollments_count?: number;
+};
+
+export type CourseReview = {
+  id: number | string;
+  course_id: number | string;
+  rating: number;
+  comment?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  user?: {
+    id: number | string;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    avatar?: string | null;
+  } | null;
 };
 
 export type CatalogLesson = {
@@ -179,6 +204,51 @@ export async function fetchCatalogCourses(
   return unwrapList(payload);
 }
 
+export type CatalogCoursesPage = {
+  data: CatalogCourse[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+export async function fetchCatalogCoursesPage(options?: {
+  search?: string;
+  subjectId?: string | number;
+  page?: number;
+  perPage?: number;
+  levels?: string[];
+  durations?: string[];
+}): Promise<CatalogCoursesPage> {
+  const params = new URLSearchParams();
+  params.set("paginate", "1");
+  params.set("page", String(options?.page ?? 1));
+  params.set("per_page", String(options?.perPage ?? 15));
+  if (options?.search?.trim()) params.set("search", options.search.trim());
+  if (options?.subjectId != null && String(options.subjectId).trim() !== "") {
+    params.set("subject_id", String(options.subjectId));
+  }
+  for (const level of options?.levels ?? []) params.append("level[]", level);
+  for (const duration of options?.durations ?? []) params.append("duration[]", duration);
+
+  const payload = await apiRequest<{
+    data?: CatalogCourse[];
+    meta?: CatalogCoursesPage["meta"];
+  }>(`/catalog/courses?${params.toString()}`);
+
+  return {
+    data: unwrapList(payload),
+    meta: payload.meta ?? {
+      current_page: options?.page ?? 1,
+      last_page: 1,
+      per_page: options?.perPage ?? 15,
+      total: unwrapList(payload).length,
+    },
+  };
+}
+
 export async function fetchCatalogSubjects(): Promise<CatalogSubject[]> {
   const payload = await apiRequest<{ data?: CatalogSubject[] } | CatalogSubject[]>(
     "/catalog/subjects",
@@ -191,6 +261,43 @@ export async function fetchCatalogCourse(slugOrId: string): Promise<CatalogCours
     `/catalog/courses/${encodeURIComponent(slugOrId)}`,
   );
   return unwrapData(payload);
+}
+
+export async function fetchCourseReviews(slugOrId: string): Promise<CourseReview[]> {
+  const payload = await apiRequest<{ data?: CourseReview[] } | CourseReview[]>(
+    `/catalog/courses/${encodeURIComponent(slugOrId)}/reviews`,
+  );
+  return unwrapList(payload);
+}
+
+export async function submitCourseReview(
+  token: string,
+  slugOrId: string,
+  input: { rating: number; comment?: string },
+): Promise<CourseReview> {
+  const payload = await apiRequest<{ data?: CourseReview } | CourseReview>(
+    `/catalog/courses/${encodeURIComponent(slugOrId)}/reviews`,
+    {
+      method: "POST",
+      token,
+      body: {
+        rating: input.rating,
+        comment: input.comment?.trim() || null,
+      },
+    },
+  );
+  return unwrapData(payload);
+}
+
+export async function deleteCourseReview(
+  token: string,
+  slugOrId: string,
+  reviewId: string | number,
+): Promise<void> {
+  await apiRequest(
+    `/catalog/courses/${encodeURIComponent(slugOrId)}/reviews/${encodeURIComponent(String(reviewId))}`,
+    { method: "DELETE", token },
+  );
 }
 
 export async function fetchMyEnrollments(token: string): Promise<EnrollmentRecord[]> {

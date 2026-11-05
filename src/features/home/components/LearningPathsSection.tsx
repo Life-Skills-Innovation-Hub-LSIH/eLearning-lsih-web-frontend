@@ -15,14 +15,14 @@ const paths: Array<{
   {
     track: "grade12",
     icon: GraduationCap,
-    titleKm: "ប្រឡងបាក់ឌុប",
+    titleKm: "ការត្រៀមខ្លួនសម្រាប់ថ្នាក់ទី១២",
     titleEn: "Grade 12 Readiness",
     accent: "from-[#dbe7fb] to-[#c5d8f5]",
   },
   {
     track: "life-skills",
     icon: Award,
-    titleKm: "ជំនាញជីវិត",
+    titleKm: "បំណិនជីវិត",
     titleEn: "Life Skills",
     accent: "from-[#e8e0f7] to-[#d4c8ef]",
   },
@@ -36,7 +36,7 @@ const paths: Array<{
   {
     track: "job-ready",
     icon: Briefcase,
-    titleKm: "ត្រៀមសម្រាប់ការងារ",
+    titleKm: "ការត្រៀមខ្លួនចូលធ្វើការ",
     titleEn: "Job Ready",
     accent: "from-[#e6e0f5] to-[#d2c6ec]",
   },
