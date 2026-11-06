@@ -1,3 +1,10 @@
+import {
+  getStaticCourse,
+  getStaticReviews,
+  getStaticSubjects,
+  paginateStaticCourses,
+  queryStaticCourses,
+} from "@/data/static-catalog";
 import { apiRequest } from "@/shared/api/client";
 import type { EnrollmentProgress } from "@/shared/types";
 
@@ -192,16 +199,7 @@ export async function fetchCatalogCourses(
   search?: string,
   options?: { subjectId?: string | number },
 ): Promise<CatalogCourse[]> {
-  const params = new URLSearchParams();
-  if (search?.trim()) params.set("search", search.trim());
-  if (options?.subjectId != null && String(options.subjectId).trim() !== "") {
-    params.set("subject_id", String(options.subjectId));
-  }
-  const query = params.toString() ? `?${params.toString()}` : "";
-  const payload = await apiRequest<{ data?: CatalogCourse[] } | CatalogCourse[]>(
-    `/catalog/courses${query}`,
-  );
-  return unwrapList(payload);
+  return queryStaticCourses({ search, subjectId: options?.subjectId });
 }
 
 export type CatalogCoursesPage = {
@@ -222,52 +220,23 @@ export async function fetchCatalogCoursesPage(options?: {
   levels?: string[];
   durations?: string[];
 }): Promise<CatalogCoursesPage> {
-  const params = new URLSearchParams();
-  params.set("paginate", "1");
-  params.set("page", String(options?.page ?? 1));
-  params.set("per_page", String(options?.perPage ?? 15));
-  if (options?.search?.trim()) params.set("search", options.search.trim());
-  if (options?.subjectId != null && String(options.subjectId).trim() !== "") {
-    params.set("subject_id", String(options.subjectId));
-  }
-  for (const level of options?.levels ?? []) params.append("level[]", level);
-  for (const duration of options?.durations ?? []) params.append("duration[]", duration);
-
-  const payload = await apiRequest<{
-    data?: CatalogCourse[];
-    meta?: CatalogCoursesPage["meta"];
-  }>(`/catalog/courses?${params.toString()}`);
-
-  return {
-    data: unwrapList(payload),
-    meta: payload.meta ?? {
-      current_page: options?.page ?? 1,
-      last_page: 1,
-      per_page: options?.perPage ?? 15,
-      total: unwrapList(payload).length,
-    },
-  };
+  return paginateStaticCourses(options);
 }
 
 export async function fetchCatalogSubjects(): Promise<CatalogSubject[]> {
-  const payload = await apiRequest<{ data?: CatalogSubject[] } | CatalogSubject[]>(
-    "/catalog/subjects",
-  );
-  return unwrapList(payload);
+  return getStaticSubjects();
 }
 
 export async function fetchCatalogCourse(slugOrId: string): Promise<CatalogCourse> {
-  const payload = await apiRequest<{ data?: CatalogCourse } | CatalogCourse>(
-    `/catalog/courses/${encodeURIComponent(slugOrId)}`,
-  );
-  return unwrapData(payload);
+  const course = getStaticCourse(slugOrId);
+  if (!course) {
+    throw new Error("Course not found.");
+  }
+  return course;
 }
 
 export async function fetchCourseReviews(slugOrId: string): Promise<CourseReview[]> {
-  const payload = await apiRequest<{ data?: CourseReview[] } | CourseReview[]>(
-    `/catalog/courses/${encodeURIComponent(slugOrId)}/reviews`,
-  );
-  return unwrapList(payload);
+  return getStaticReviews(slugOrId);
 }
 
 export async function submitCourseReview(

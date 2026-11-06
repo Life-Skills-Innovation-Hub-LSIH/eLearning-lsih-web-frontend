@@ -1,0 +1,1111 @@
+{
+  "subjects": [
+    {
+      "id": 1,
+      "name": "Artificial Intelligence",
+      "slug": "artificial-intelligence",
+      "code": "SUB-AI",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    },
+    {
+      "id": 2,
+      "name": "Cybersecurity",
+      "slug": "cybersecurity",
+      "code": "SUB-CYB",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    },
+    {
+      "id": 3,
+      "name": "Cloud Computing",
+      "slug": "cloud-computing",
+      "code": "SUB-CLD",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    },
+    {
+      "id": 4,
+      "name": "Database Management",
+      "slug": "database-management",
+      "code": "SUB-DB",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    },
+    {
+      "id": 5,
+      "name": "Network Engineer",
+      "slug": "network-engineer",
+      "code": "SUB-NET",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    },
+    {
+      "id": 6,
+      "name": "Information Technology Engineering",
+      "slug": "information-technology-engineering",
+      "code": "SUB-ITE",
+      "description": null,
+      "icon": null,
+      "status": "published",
+      "courses_count": 1
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "title": "Artificial Intelligence",
+      "slug": "artificial-intelligence",
+      "code": "CRS-0001",
+      "short_description": "Foundations of AI concepts, terminology, and practical applications.",
+      "description": "Learn what AI is, how models work at a high level, and how to apply AI thinking in real projects.",
+      "cover_image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=80",
+      "level": "beginner",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 1,
+        "name": "Mr. One Piece",
+        "title": "AI Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 1,
+          "name": "Artificial Intelligence",
+          "slug": "artificial-intelligence"
+        }
+      ],
+      "modules": [
+        {
+          "id": 1,
+          "title": "What is AI?",
+          "description": "Core ideas behind artificial intelligence.",
+          "lessons": [
+            {
+              "id": 1,
+              "title": "Introduction to AI",
+              "slug": "introduction-to-ai",
+              "content_type": "text",
+              "body": "AI is the field of building systems that perform tasks that typically require human intelligence.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 1
+            },
+            {
+              "id": 2,
+              "title": "AI vs Machine Learning",
+              "slug": "ai-vs-machine-learning",
+              "content_type": "text",
+              "body": "Machine learning is a subset of AI focused on learning patterns from data.",
+              "media_url": null,
+              "duration_minutes": 15,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 1,
+              "lesson_id": 1,
+              "title": "AI Basics Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 1,
+                  "question_text": "What does AI stand for?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 1,
+                      "option_text": "Artificial Intelligence",
+                      "position": 1
+                    },
+                    {
+                      "id": 2,
+                      "option_text": "Automated Internet",
+                      "position": 2
+                    },
+                    {
+                      "id": 3,
+                      "option_text": "Advanced Interface",
+                      "position": 3
+                    }
+                  ]
+                },
+                {
+                  "id": 2,
+                  "question_text": "Machine learning is part of AI.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 4,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 5,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": 2,
+              "lesson_id": null,
+              "title": "Module 1 Checkpoint",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 3,
+                  "question_text": "Which is an AI application?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 6,
+                      "option_text": "Image recognition",
+                      "position": 1
+                    },
+                    {
+                      "id": 7,
+                      "option_text": "A static HTML page",
+                      "position": 2
+                    },
+                    {
+                      "id": 8,
+                      "option_text": "A paper notebook",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Practical AI",
+          "description": "Where AI is used in the real world.",
+          "lessons": [
+            {
+              "id": 3,
+              "title": "AI in Daily Life",
+              "slug": "ai-in-daily-life",
+              "content_type": "text",
+              "body": "From recommendations to voice assistants, AI is already part of everyday products.",
+              "media_url": null,
+              "duration_minutes": 10,
+              "position": 1
+            },
+            {
+              "id": 4,
+              "title": "Ethics and Responsibility",
+              "slug": "ethics-and-responsibility",
+              "content_type": "text",
+              "body": "Responsible AI considers bias, privacy, transparency, and human oversight.",
+              "media_url": null,
+              "duration_minutes": 14,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 3,
+              "lesson_id": 4,
+              "title": "Practical AI Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 4,
+                  "question_text": "Why does AI ethics matter?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 9,
+                      "option_text": "To reduce harmful bias and protect users",
+                      "position": 1
+                    },
+                    {
+                      "id": 10,
+                      "option_text": "Only to make models slower",
+                      "position": 2
+                    },
+                    {
+                      "id": 11,
+                      "option_text": "It does not matter",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 3,
+      "duration_minutes": 51,
+      "rating": 4.8,
+      "reviews_count": 86,
+      "enrollments_count": 312
+    },
+    {
+      "id": 2,
+      "title": "Cybersecurity Essentials",
+      "slug": "cybersecurity-essentials",
+      "code": "CRS-0002",
+      "short_description": "Protect systems, networks, and data from common threats.",
+      "description": "A practical intro to cybersecurity concepts, attacks, and defensive basics.",
+      "cover_image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1600&q=80",
+      "level": "beginner",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 2,
+        "name": "Goku",
+        "title": "IT Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 2,
+          "name": "Cybersecurity",
+          "slug": "cybersecurity"
+        }
+      ],
+      "modules": [
+        {
+          "id": 3,
+          "title": "Security Foundations",
+          "description": "CIA triad and threat landscape.",
+          "lessons": [
+            {
+              "id": 5,
+              "title": "CIA Triad Explained",
+              "slug": "cia-triad-explained",
+              "content_type": "text",
+              "body": "Confidentiality, Integrity, and Availability are the core pillars of information security.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 1
+            },
+            {
+              "id": 6,
+              "title": "Common Attack Types",
+              "slug": "common-attack-types",
+              "content_type": "text",
+              "body": "Phishing, malware, ransomware, and social engineering are frequent attack vectors.",
+              "media_url": null,
+              "duration_minutes": 16,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 4,
+              "lesson_id": 5,
+              "title": "Security Basics Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 5,
+                  "question_text": "What does the “C” in CIA triad stand for?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 12,
+                      "option_text": "Confidentiality",
+                      "position": 1
+                    },
+                    {
+                      "id": 13,
+                      "option_text": "Connectivity",
+                      "position": 2
+                    },
+                    {
+                      "id": 14,
+                      "option_text": "Compatibility",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": 5,
+              "lesson_id": null,
+              "title": "Module Checkpoint",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 6,
+                  "question_text": "Phishing is a type of social engineering.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 15,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 16,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Defensive Practices",
+          "description": "How to reduce risk.",
+          "lessons": [
+            {
+              "id": 7,
+              "title": "Password Hygiene",
+              "slug": "password-hygiene",
+              "content_type": "text",
+              "body": "Use unique passwords, a password manager, and enable MFA wherever possible.",
+              "media_url": null,
+              "duration_minutes": 10,
+              "position": 1
+            },
+            {
+              "id": 8,
+              "title": "Safe Browsing Habits",
+              "slug": "safe-browsing-habits",
+              "content_type": "text",
+              "body": "Verify URLs, avoid unknown attachments, and keep software updated.",
+              "media_url": null,
+              "duration_minutes": 11,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 6,
+              "lesson_id": 7,
+              "title": "Defense Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 7,
+                  "question_text": "MFA stands for Multi-Factor Authentication.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 17,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 18,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 3,
+      "duration_minutes": 49,
+      "rating": 4.9,
+      "reviews_count": 124,
+      "enrollments_count": 418
+    },
+    {
+      "id": 3,
+      "title": "Cloud Computing Fundamentals",
+      "slug": "cloud-computing-fundamentals",
+      "code": "CRS-0003",
+      "short_description": "Understand cloud models, services, and deployment patterns.",
+      "description": "Learn IaaS, PaaS, SaaS and how cloud platforms support modern applications.",
+      "cover_image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80",
+      "level": "beginner",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 2,
+        "name": "Goku",
+        "title": "IT Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 3,
+          "name": "Cloud Computing",
+          "slug": "cloud-computing"
+        }
+      ],
+      "modules": [
+        {
+          "id": 5,
+          "title": "Cloud Basics",
+          "description": "What cloud computing is and why it matters.",
+          "lessons": [
+            {
+              "id": 9,
+              "title": "What is Cloud Computing?",
+              "slug": "what-is-cloud-computing",
+              "content_type": "text",
+              "body": "Cloud computing delivers compute, storage, and services over the internet on demand.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 1
+            },
+            {
+              "id": 10,
+              "title": "IaaS, PaaS, SaaS",
+              "slug": "iaas-paas-saas",
+              "content_type": "text",
+              "body": "These service models define how much you manage versus what the provider manages.",
+              "media_url": null,
+              "duration_minutes": 14,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 7,
+              "lesson_id": 10,
+              "title": "Cloud Models Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 8,
+                  "question_text": "Gmail is typically an example of SaaS.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 19,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 20,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Cloud in Practice",
+          "description": "Deployment and operations basics.",
+          "lessons": [
+            {
+              "id": 11,
+              "title": "Regions and Availability",
+              "slug": "regions-and-availability",
+              "content_type": "text",
+              "body": "Cloud regions and availability zones help you design for resilience and latency.",
+              "media_url": null,
+              "duration_minutes": 11,
+              "position": 1
+            },
+            {
+              "id": 12,
+              "title": "Cost Awareness",
+              "slug": "cost-awareness",
+              "content_type": "text",
+              "body": "Monitor usage, right-size resources, and turn off unused services to control cost.",
+              "media_url": null,
+              "duration_minutes": 10,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 8,
+              "lesson_id": null,
+              "title": "Cloud Practice Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 9,
+                  "question_text": "Why do cloud regions matter?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 21,
+                      "option_text": "Latency, compliance, and resilience",
+                      "position": 1
+                    },
+                    {
+                      "id": 22,
+                      "option_text": "Only for changing logo colors",
+                      "position": 2
+                    },
+                    {
+                      "id": 23,
+                      "option_text": "They do not matter",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 2,
+      "duration_minutes": 47,
+      "rating": 4.7,
+      "reviews_count": 73,
+      "enrollments_count": 256
+    },
+    {
+      "id": 4,
+      "title": "Database Management Basics",
+      "slug": "database-management-basics",
+      "code": "CRS-0004",
+      "short_description": "Relational databases, SQL, and data modeling essentials.",
+      "description": "Learn tables, keys, relationships, and practical SQL for everyday development.",
+      "cover_image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1600&q=80",
+      "level": "beginner",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 3,
+        "name": "Dr. Sotheavann Chhorn",
+        "title": "Lead Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 4,
+          "name": "Database Management",
+          "slug": "database-management"
+        }
+      ],
+      "modules": [
+        {
+          "id": 7,
+          "title": "Data Modeling",
+          "description": "Structure data correctly.",
+          "lessons": [
+            {
+              "id": 13,
+              "title": "Tables and Keys",
+              "slug": "tables-and-keys",
+              "content_type": "text",
+              "body": "Primary keys uniquely identify rows. Foreign keys connect related tables.",
+              "media_url": null,
+              "duration_minutes": 13,
+              "position": 1
+            },
+            {
+              "id": 14,
+              "title": "Relationships",
+              "slug": "relationships",
+              "content_type": "text",
+              "body": "One-to-one, one-to-many, and many-to-many relationships shape schema design.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 9,
+              "lesson_id": 13,
+              "title": "Modeling Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 10,
+                  "question_text": "A primary key must be unique.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 24,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 25,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "SQL Essentials",
+          "description": "Query and modify data.",
+          "lessons": [
+            {
+              "id": 15,
+              "title": "SELECT Queries",
+              "slug": "select-queries",
+              "content_type": "text",
+              "body": "SELECT retrieves rows. Use WHERE, ORDER BY, and LIMIT to refine results.",
+              "media_url": null,
+              "duration_minutes": 15,
+              "position": 1
+            },
+            {
+              "id": 16,
+              "title": "INSERT UPDATE DELETE",
+              "slug": "insert-update-delete",
+              "content_type": "text",
+              "body": "These statements create, change, and remove records in a controlled way.",
+              "media_url": null,
+              "duration_minutes": 14,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 10,
+              "lesson_id": 15,
+              "title": "SQL Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 11,
+                  "question_text": "Which statement reads data?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 26,
+                      "option_text": "SELECT",
+                      "position": 1
+                    },
+                    {
+                      "id": 27,
+                      "option_text": "INSERT",
+                      "position": 2
+                    },
+                    {
+                      "id": 28,
+                      "option_text": "DROP",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": 11,
+              "lesson_id": null,
+              "title": "SQL Module Checkpoint",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 12,
+                  "question_text": "DELETE removes rows from a table.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 29,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 30,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 3,
+      "duration_minutes": 54,
+      "rating": 4.6,
+      "reviews_count": 61,
+      "enrollments_count": 198
+    },
+    {
+      "id": 5,
+      "title": "Network Engineering Intro",
+      "slug": "network-engineering-intro",
+      "code": "CRS-0005",
+      "short_description": "Networking fundamentals for modern IT roles.",
+      "description": "IP, DNS, routing basics, and how devices communicate across networks.",
+      "cover_image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1600&q=80",
+      "level": "beginner",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 4,
+        "name": "Naruto Uzumaki",
+        "title": "Network Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 5,
+          "name": "Network Engineer",
+          "slug": "network-engineer"
+        }
+      ],
+      "modules": [
+        {
+          "id": 9,
+          "title": "Network Foundations",
+          "description": "How networks communicate.",
+          "lessons": [
+            {
+              "id": 17,
+              "title": "OSI Model Overview",
+              "slug": "osi-model-overview",
+              "content_type": "text",
+              "body": "The OSI model separates networking into layers from physical media to applications.",
+              "media_url": null,
+              "duration_minutes": 14,
+              "position": 1
+            },
+            {
+              "id": 18,
+              "title": "IP Addressing Basics",
+              "slug": "ip-addressing-basics",
+              "content_type": "text",
+              "body": "IPv4 addresses identify hosts. Subnets group devices in the same network range.",
+              "media_url": null,
+              "duration_minutes": 15,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 12,
+              "lesson_id": 18,
+              "title": "Networking Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 13,
+                  "question_text": "DNS translates domain names to IP addresses.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 31,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 32,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "Connectivity Tools",
+          "description": "Diagnose and understand traffic flow.",
+          "lessons": [
+            {
+              "id": 19,
+              "title": "Ping and Traceroute",
+              "slug": "ping-and-traceroute",
+              "content_type": "text",
+              "body": "Ping checks reachability. Traceroute shows the path packets take.",
+              "media_url": null,
+              "duration_minutes": 10,
+              "position": 1
+            },
+            {
+              "id": 20,
+              "title": "Switches vs Routers",
+              "slug": "switches-vs-routers",
+              "content_type": "text",
+              "body": "Switches connect devices in a LAN. Routers connect different networks.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 13,
+              "lesson_id": null,
+              "title": "Tools Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 14,
+                  "question_text": "A router connects different networks.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 33,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 34,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 2,
+      "duration_minutes": 51,
+      "rating": 4.7,
+      "reviews_count": 54,
+      "enrollments_count": 167
+    },
+    {
+      "id": 6,
+      "title": "ITE Core Skills",
+      "slug": "ite-core-skills",
+      "code": "CRS-0006",
+      "short_description": "Core IT engineering skills across systems, web, and operations.",
+      "description": "A practical course covering software foundations, APIs, and delivery basics.",
+      "cover_image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1600&q=80",
+      "level": "intermediate",
+      "price": 0,
+      "status": "published",
+      "lecturer": {
+        "id": 3,
+        "name": "Dr. Sotheavann Chhorn",
+        "title": "Lead Instructor",
+        "avatar": null
+      },
+      "subjects": [
+        {
+          "id": 6,
+          "name": "Information Technology Engineering",
+          "slug": "information-technology-engineering"
+        }
+      ],
+      "modules": [
+        {
+          "id": 11,
+          "title": "Software Foundations",
+          "description": "How modern applications are built.",
+          "lessons": [
+            {
+              "id": 21,
+              "title": "Frontend vs Backend",
+              "slug": "frontend-vs-backend",
+              "content_type": "text",
+              "body": "Frontend focuses on UI. Backend handles business logic, data, and APIs.",
+              "media_url": null,
+              "duration_minutes": 12,
+              "position": 1
+            },
+            {
+              "id": 22,
+              "title": "APIs and JSON",
+              "slug": "apis-and-json",
+              "content_type": "text",
+              "body": "APIs let systems communicate. JSON is a common data format for web APIs.",
+              "media_url": null,
+              "duration_minutes": 13,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 14,
+              "lesson_id": 22,
+              "title": "Foundations Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 15,
+                  "question_text": "JSON is commonly used in web APIs.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 35,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 36,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "title": "Delivery Basics",
+          "description": "Ship and maintain software.",
+          "lessons": [
+            {
+              "id": 23,
+              "title": "Version Control with Git",
+              "slug": "version-control-with-git",
+              "content_type": "text",
+              "body": "Git tracks changes so teams can collaborate and recover previous versions.",
+              "media_url": null,
+              "duration_minutes": 14,
+              "position": 1
+            },
+            {
+              "id": 24,
+              "title": "Testing Mindset",
+              "slug": "testing-mindset",
+              "content_type": "text",
+              "body": "Testing reduces bugs by verifying behavior before users find problems.",
+              "media_url": null,
+              "duration_minutes": 11,
+              "position": 2
+            }
+          ],
+          "quizzes": [
+            {
+              "id": 15,
+              "lesson_id": 23,
+              "title": "Delivery Quiz",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 16,
+                  "question_text": "Git helps teams collaborate on code.",
+                  "type": "true_false",
+                  "options": [
+                    {
+                      "id": 37,
+                      "option_text": "True",
+                      "position": 1
+                    },
+                    {
+                      "id": 38,
+                      "option_text": "False",
+                      "position": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": 16,
+              "lesson_id": null,
+              "title": "Course Final Checkpoint",
+              "pass_score": 70,
+              "questions": [
+                {
+                  "id": 17,
+                  "question_text": "Which is a backend responsibility?",
+                  "type": "multiple_choice",
+                  "options": [
+                    {
+                      "id": 39,
+                      "option_text": "Business logic and databases",
+                      "position": 1
+                    },
+                    {
+                      "id": 40,
+                      "option_text": "Only CSS styling",
+                      "position": 2
+                    },
+                    {
+                      "id": 41,
+                      "option_text": "Only button colors",
+                      "position": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules_count": 2,
+      "lessons_count": 4,
+      "quizzes_count": 3,
+      "duration_minutes": 50,
+      "rating": 4.8,
+      "reviews_count": 92,
+      "enrollments_count": 284
+    }
+  ],
+  "reviews": [
+    {
+      "id": 1,
+      "course_id": 2,
+      "rating": 5,
+      "comment": "Clear intro to cybersecurity. The password and phishing lessons are practical.",
+      "created_at": "2026-09-12T08:00:00.000Z",
+      "user": {
+        "id": 101,
+        "first_name": "Sreypov",
+        "last_name": "Chan",
+        "username": "sreypov"
+      }
+    },
+    {
+      "id": 2,
+      "course_id": 2,
+      "rating": 5,
+      "comment": "Good pace and simple examples. I finally understand the CIA triad.",
+      "created_at": "2026-10-02T08:00:00.000Z",
+      "user": {
+        "id": 102,
+        "first_name": "Vicheka",
+        "last_name": "Lim",
+        "username": "vicheka"
+      }
+    },
+    {
+      "id": 3,
+      "course_id": 1,
+      "rating": 5,
+      "comment": "Helpful overview of AI without too much math.",
+      "created_at": "2026-08-21T08:00:00.000Z",
+      "user": {
+        "id": 103,
+        "first_name": "Dara",
+        "last_name": "Sok",
+        "username": "dara"
+      }
+    }
+  ]
+}
