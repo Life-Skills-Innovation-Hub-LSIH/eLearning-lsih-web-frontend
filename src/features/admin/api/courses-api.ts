@@ -95,7 +95,8 @@ function bodyFromInput(input: CourseFormInput) {
     description: input.description?.trim() || null,
     cover_image: input.coverImage?.trim() || null,
     level: input.level || null,
-      status: input.status ?? "published",
+    price: input.price ?? 0,
+    status: input.status ?? "published",
     lecturer_id: input.lecturerId ? Number(input.lecturerId) : null,
     subject_ids: (input.subjectIds ?? []).map((id) => Number(id)),
   };

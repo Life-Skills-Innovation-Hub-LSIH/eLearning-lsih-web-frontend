@@ -9,13 +9,11 @@ import {
   ChevronDown,
   ChevronRight,
   Clock,
-  FileText,
   GraduationCap,
-  HelpCircle,
+  Lock,
   Home,
   BadgeCheck,
   CircleHelp,
-  PlayCircle,
   Star,
 } from "lucide-react";
 import { EnrollButton } from "./EnrollButton";
@@ -133,7 +131,7 @@ const SECTION_IDS: Tab[] = ["about", "outcomes", "courses", "testimonials", "rev
 export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
   const { t, locale } = useLocale();
   const [tab, setTab] = useState<Tab>("about");
-  const [openModule, setOpenModule] = useState<string | number | null>(null);
+  const [collapsedModules, setCollapsedModules] = useState<Set<string>>(() => new Set());
   const [compactNav, setCompactNav] = useState(false);
   const [pendingSection, setPendingSection] = useState<Tab | null>(null);
 
@@ -455,74 +453,54 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
               ) : (
                 <ul className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
                   {modules.map((module, index) => {
-                    const open = openModule === module.id;
+                    const open = !collapsedModules.has(String(module.id));
                     const minutes = moduleMinutes(module);
+                    const lessons = module.lessons ?? [];
+                    const lessonLabel = t("course.lessonsCount").replace("{n}", String(lessons.length));
                     return (
                       <li key={String(module.id)}>
                         <button
                           type="button"
                           className="flex w-full items-center gap-4 py-4 text-left"
-                          onClick={() => setOpenModule(open ? null : module.id)}
+                          aria-expanded={open}
+                          onClick={() =>
+                            setCollapsedModules((current) => {
+                              const next = new Set(current);
+                              const key = String(module.id);
+                              if (next.has(key)) next.delete(key);
+                              else next.add(key);
+                              return next;
+                            })
+                          }
                         >
                           {cover ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={cover}
                               alt=""
-                              className="h-12 w-12 shrink-0 rounded-md object-cover"
+                              className="h-20 w-20 shrink-0 rounded-lg object-cover"
                             />
                           ) : (
-                            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[var(--brand-soft)] text-[var(--brand)]">
-                              <BookOpen className="h-5 w-5" />
+                            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-soft)] text-[var(--brand)]">
+                              <BookOpen className="h-7 w-7" />
                             </span>
                           )}
                           <span className="min-w-0 flex-1">
-                            <span className="block font-semibold text-[var(--brand)] underline-offset-2 hover:underline">
+                            <span className="block font-semibold text-[var(--ink)] underline decoration-[var(--ink)] underline-offset-2">
                               {module.title}
                             </span>
-                            <span className="mt-0.5 block text-sm text-[var(--muted)]">
+                            <span className="mt-0.5 block text-sm text-[#6b7785]">
                               {t("course.moduleLabel").replace("{n}", String(index + 1))}
-                              {minutes
-                                ? ` · ${formatDuration(minutes, t)}`
-                                : ` · ${t("course.lessonsCount").replace("{n}", String(module.lessons?.length ?? 0))}`}
+                              {minutes ? ` · ${formatDuration(minutes, t)}` : lessons.length ? ` · ${lessonLabel}` : ""}
                             </span>
                           </span>
-                          <span className="hidden text-sm font-semibold text-[var(--brand)] sm:inline">
-                            {t("course.courseDetails")}
+                          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[var(--brand)]">
+                            <span className="hidden sm:inline">{t("course.courseDetails")}</span>
+                            <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
                           </span>
-                          <ChevronDown className={`h-5 w-5 text-[var(--muted)] transition ${open ? "rotate-180" : ""}`} />
                         </button>
                         {open ? (
-                          <ul className="space-y-2 pb-4 pl-16">
-                            {(module.lessons ?? []).map((lesson) => (
-                              <li key={String(lesson.id)} className="flex items-start gap-2 text-sm">
-                                {lesson.content_type === "video" ? (
-                                  <PlayCircle className="mt-0.5 h-4 w-4 text-[var(--brand)]" />
-                                ) : lesson.content_type === "file" ? (
-                                  <FileText className="mt-0.5 h-4 w-4 text-[var(--brand)]" />
-                                ) : (
-                                  <BookOpen className="mt-0.5 h-4 w-4 text-[var(--brand)]" />
-                                )}
-                                <span>
-                                  <span className="font-medium text-[var(--ink)]">{lesson.title}</span>
-                                  {lesson.duration_minutes ? (
-                                    <span className="text-[var(--muted)]">
-                                      {" "}
-                                      · {t("course.durationMinutes").replace("{n}", String(lesson.duration_minutes))}
-                                    </span>
-                                  ) : null}
-                                </span>
-                              </li>
-                            ))}
-                            {(module.quizzes ?? []).map((quiz) => (
-                              <li key={String(quiz.id)} className="flex items-start gap-2 text-sm">
-                                <HelpCircle className="mt-0.5 h-4 w-4 text-[var(--accent-brand)]" />
-                                <span className="font-medium text-[var(--ink)]">
-                                  {t("course.quizLabel").replace("{title}", quiz.title)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                          <ModuleDetails module={module} paid={(course.price ?? 0) > 0} t={t} />
                         ) : null}
                       </li>
                     );
@@ -552,10 +530,10 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
               </div>
             </div>
 
-            <aside className="space-y-6 lg:border-l lg:border-[var(--line)] lg:pl-6">
+            <aside className="h-fit space-y-5 rounded-xl border border-[var(--line)] p-5 lg:sticky lg:top-36">
               <div>
                 <h3 className="mb-4 font-semibold text-[var(--ink)]">
-                  {locale === "km" ? "គ្រូបង្រៀន" : "Instructors"}
+                  {locale === "km" ? "គ្រូបង្រៀន" : "Instructor"}
                 </h3>
                 <div className="flex items-start gap-3">
                   {lecturerAvatar ? (
@@ -567,7 +545,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
                     </span>
                   )}
                   <div>
-                    <p className="font-semibold text-[var(--brand)] underline-offset-2">
+                    <p className="font-semibold text-[var(--brand)] underline decoration-[var(--brand)] underline-offset-2">
                       {course.lecturer?.name ?? t("course.instructorTba")}
                     </p>
                     {course.lecturer?.title ? (
@@ -580,7 +558,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
                   </div>
                 </div>
               </div>
-              <div>
+              <div className="border-t border-[var(--line)] pt-5">
                 <h3 className="mb-3 font-semibold text-[var(--ink)]">{t("course.offeredBy")}</h3>
                 <p className="text-sm font-medium text-[var(--ink)]">Life Skills Innovation Hub</p>
               </div>
@@ -615,6 +593,81 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
         </section>
       </div>
     </main>
+  );
+}
+
+function ModuleDetails({
+  module,
+  paid,
+  t,
+}: {
+  module: CatalogModule;
+  paid: boolean;
+  t: ReturnType<typeof useLocale>["t"];
+}) {
+  const lessons = module.lessons ?? [];
+  const quizzes = module.quizzes ?? [];
+  const openLessons = lessons.filter((lesson) => !lesson.locked);
+  const lockedLessons = lessons.filter((lesson) => lesson.locked);
+  const openQuizzes = quizzes.filter((quiz) => !quiz.locked);
+  const lockedQuizzes = quizzes.filter((quiz) => quiz.locked);
+  const skills = openLessons.some((lesson) => lesson.body?.trim())
+    ? openLessons.map((lesson) => lesson.title)
+    : [];
+
+  return (
+    <div className="space-y-5 pb-6 pl-24">
+      {openLessons.length > 0 || openQuizzes.length > 0 ? (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">{t("course.whatYouLearn")}</h3>
+          <ul className="space-y-3">
+            {openLessons.map((lesson) => (
+              <li key={String(lesson.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[var(--ink)]">
+                <Check className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
+                <span>{lesson.body?.trim() ? `${lesson.title}. ${lesson.body.trim()}` : lesson.title}</span>
+              </li>
+            ))}
+            {openQuizzes.map((quiz) => (
+              <li key={String(quiz.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[var(--ink)]">
+                <Check className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
+                <span>{t("course.quizLabel").replace("{title}", quiz.title)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {paid && (lockedLessons.length > 0 || lockedQuizzes.length > 0) ? (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">Unlock with $1 for 1 month</h3>
+          <ul className="space-y-3">
+            {lockedLessons.map((lesson) => (
+              <li key={String(lesson.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[#6b7785]">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
+                <span>{lesson.title}</span>
+              </li>
+            ))}
+            {lockedQuizzes.map((quiz) => (
+              <li key={String(quiz.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[#6b7785]">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.2} />
+                <span>{t("course.quizLabel").replace("{title}", quiz.title)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {skills.length > 0 ? (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">{t("course.skillsGain")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((skill) => (
+              <span key={skill} className="rounded-full bg-[#e8edf3] px-3 py-1.5 text-sm text-[#3d4a5c]">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

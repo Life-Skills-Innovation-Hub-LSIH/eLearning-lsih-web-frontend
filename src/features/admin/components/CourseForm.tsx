@@ -51,6 +51,7 @@ export function CourseForm({ mode, courseId }: Props) {
   const [coverImage, setCoverImage] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [level, setLevel] = useState<CourseLevel | "">("");
+  const [access, setAccess] = useState<"free" | "paid">("free");
   const [status, setStatus] = useState<CoursePublishStatus>("published");
   const [lecturerId, setLecturerId] = useState("");
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
@@ -70,6 +71,10 @@ export function CourseForm({ mode, courseId }: Props) {
   const statusItems = [
     { value: "draft", label: "Draft" },
     { value: "published", label: "Published" },
+  ];
+  const accessItems = [
+    { value: "free", label: "Free" },
+    { value: "paid", label: "Paid" },
   ];
   const lecturerItems = [
     { value: "__none__", label: "No lecturer" },
@@ -112,6 +117,7 @@ export function CourseForm({ mode, courseId }: Props) {
           setCoverImage(course.coverImage ?? "");
           setCoverFile(null);
           setLevel(course.level ?? "");
+          setAccess((course.price ?? 0) > 0 ? "paid" : "free");
           setStatus(course.status);
           setLecturerId(course.lecturerId ?? "");
           setSubjectIds(selectedIds);
@@ -161,6 +167,7 @@ export function CourseForm({ mode, courseId }: Props) {
         description: description.trim() || null,
         coverImage: nextCoverImage,
         level: level || null,
+        price: access === "paid" ? 1 : 0,
         status,
         lecturerId: lecturerId || null,
         subjectIds,
@@ -289,7 +296,7 @@ export function CourseForm({ mode, courseId }: Props) {
             ) : null}
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-3">
             <AdminFormField id="level" label="Level">
               <Select
                 value={level || "__none__"}
@@ -301,6 +308,24 @@ export function CourseForm({ mode, courseId }: Props) {
                 </SelectTrigger>
                 <SelectContent>
                   {levelItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </AdminFormField>
+            <AdminFormField id="access" label="Access" required>
+              <Select
+                value={access}
+                onValueChange={(value) => setAccess(value === "paid" ? "paid" : "free")}
+                items={accessItems}
+              >
+                <SelectTrigger className="admin-form-input w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {accessItems.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
                       {item.label}
                     </SelectItem>
@@ -327,6 +352,9 @@ export function CourseForm({ mode, courseId }: Props) {
               </Select>
             </AdminFormField>
           </div>
+          <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
+            Free opens the whole course after login. Paid shows the first 2 lessons until the learner pays $1 for 1 month.
+          </p>
 
           <AdminFormField id="lecturer" label="Lecturer">
             <Select

@@ -31,6 +31,7 @@ import {
   fetchCatalogCourse,
   fetchCertificateStatus,
   fetchLearnCourse,
+  purchaseCourseCertificate,
   type CatalogLesson,
   type CatalogModule,
   type CatalogQuiz,
@@ -49,7 +50,7 @@ function selectionKey(selection: Selection | null): string | null {
 
 export default function LearnPage() {
   return (
-    <RequireAuth roles={["student"]}>
+    <RequireAuth roles={["student", "admin"]}>
       <LearnContent />
     </RequireAuth>
   );
@@ -76,6 +77,10 @@ function LearnContent() {
   const [enrolling, setEnrolling] = useState(false);
   const [lessonSaving, setLessonSaving] = useState(false);
   const [certEligible, setCertEligible] = useState(false);
+  const [certPaid, setCertPaid] = useState(true);
+  const [certPrice, setCertPrice] = useState(0);
+  const [access, setAccess] = useState<"full" | "preview">("full");
+  const [coursePrice, setCoursePrice] = useState(0);
   const [certDownloading, setCertDownloading] = useState(false);
   const [certError, setCertError] = useState("");
 
@@ -89,6 +94,8 @@ function LearnContent() {
     try {
       const status = await fetchCertificateStatus(token, slugOrId);
       setCertEligible(status.eligible);
+      setCertPaid(status.certificate_paid !== false);
+      setCertPrice(status.certificate_price ?? 0);
     } catch {
       setCertEligible(false);
     }
@@ -108,19 +115,22 @@ function LearnContent() {
       const data = await fetchLearnCourse(token, params.slug);
       setCourseTitle(data.course.title);
       setCourseId(String(data.course.id));
+      setCoursePrice(data.course.price ?? 0);
+      setAccess(data.access ?? "full");
       setModules(data.modules ?? []);
       setProgress(data.progress);
       applyProgressSummary(String(data.course.id), data.progress);
       setCertEligible(Boolean(data.enrollment?.certificate_eligible));
       void refreshCertificate(params.slug);
 
-      const firstModule = data.modules?.[0];
-      const firstLesson = firstModule?.lessons?.[0];
-      if (firstLesson && firstModule) {
+      const firstOpen = (data.modules ?? [])
+        .flatMap((module) => (module.lessons ?? []).map((lesson) => ({ lesson, module })))
+        .find((item) => !item.lesson.locked);
+      if (firstOpen) {
         setSelection({
           kind: "lesson",
-          lesson: firstLesson,
-          moduleTitle: firstModule.title,
+          lesson: firstOpen.lesson,
+          moduleTitle: firstOpen.module.title,
         });
       } else {
         setSelection(null);
@@ -132,6 +142,7 @@ function LearnContent() {
           const catalog = await fetchCatalogCourse(params.slug);
           setCourseTitle(catalog.title);
           setCourseId(String(catalog.id));
+          setCoursePrice(catalog.price ?? 0);
         } catch {
           // ignore
         }
@@ -163,6 +174,10 @@ function LearnContent() {
     setCertError("");
     try {
       const status = await fetchCertificateStatus(token, params.slug);
+      if (status.certificate_paid === false) {
+        await purchaseCourseCertificate(token, params.slug);
+        setCertPaid(true);
+      }
       if (!status.eligible) {
         setCertEligible(false);
         throw new Error(
@@ -187,7 +202,7 @@ function LearnContent() {
   }
 
   if (needsEnroll) {
-    const canEnroll = hasActiveSubscription(user);
+    const canEnroll = coursePrice <= 0 || hasActiveSubscription(user);
     return (
       <main className="container-page py-12">
         <div className="surface mx-auto max-w-xl space-y-6 p-8">
@@ -286,6 +301,11 @@ function LearnContent() {
             <ProgressBar value={progress?.percent ?? 0} label="Progress" />
           </div>
 
+          {access === "preview" ? (
+            <p className="mt-4 rounded-xl bg-[var(--brand-soft)]/50 px-3 py-2.5 text-xs leading-relaxed text-[var(--muted)]">
+              The first 2 lessons are open. Pay $1 for 1 month to unlock the rest of this course.
+            </p>
+          ) : null}
           {certEligible ? (
             <button
               type="button"
@@ -294,11 +314,17 @@ function LearnContent() {
               onClick={() => void onDownloadCertificate()}
             >
               <Award className="h-4 w-4" aria-hidden />
-              {certDownloading ? "Preparing PDF…" : "Download certificate"}
+              {certDownloading
+                ? "Preparing…"
+                : !certPaid
+                  ? `Pay $${certPrice.toFixed(2)} for certificate`
+                  : "Download certificate"}
             </button>
           ) : (
             <p className="mt-4 rounded-xl bg-[var(--brand-soft)]/50 px-3 py-2.5 text-xs leading-relaxed text-[var(--muted)]">
-              Finish all lessons and pass every quiz to unlock your certificate (usually 70%+).
+              {coursePrice <= 0
+                ? "Finish every lesson and quiz, then pay $0.50 for the certificate."
+                : "Finish every lesson and quiz. The certificate is included with this paid course."}
             </p>
           )}
           {certError ? <p className="mt-2 text-xs text-red-600">{certError}</p> : null}
@@ -320,14 +346,18 @@ function LearnContent() {
                     const key = `lesson-${lesson.id}`;
                     const active = activeKey === key;
                     const done = completedLessonIds.has(String(lesson.id));
-                    const meta = `${lesson.content_type === "file" ? "PDF" : lesson.content_type}${
-                      lesson.duration_minutes ? ` · ${lesson.duration_minutes}m` : ""
-                    }`;
+                    const locked = Boolean(lesson.locked);
+                    const meta = locked
+                      ? "Locked"
+                      : `${lesson.content_type === "file" ? "PDF" : lesson.content_type}${
+                          lesson.duration_minutes ? ` · ${lesson.duration_minutes}m` : ""
+                        }`;
 
                     return (
                       <li key={key}>
                         <button
                           type="button"
+                          disabled={locked}
                           onClick={() =>
                             setSelection({
                               kind: "lesson",
@@ -337,14 +367,18 @@ function LearnContent() {
                           }
                           className={cn(
                             "flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm transition",
-                            active
-                              ? "border-[var(--brand)]/40 bg-[var(--brand-soft)] shadow-sm ring-1 ring-[var(--brand)]/15"
-                              : "border-transparent hover:border-[var(--line)] hover:bg-[var(--background)]",
+                            locked
+                              ? "cursor-not-allowed border-transparent opacity-70"
+                              : active
+                                ? "border-[var(--brand)]/40 bg-[var(--brand-soft)] shadow-sm ring-1 ring-[var(--brand)]/15"
+                                : "border-transparent hover:border-[var(--line)] hover:bg-[var(--background)]",
                           )}
                           aria-current={active ? "true" : undefined}
                         >
                           <span className="mt-0.5 shrink-0 text-[var(--brand)]">
-                            {done ? (
+                            {locked ? (
+                              <Lock className="h-4 w-4" aria-label="Locked" />
+                            ) : done ? (
                               <CheckCircle2 className="h-4 w-4" aria-label="Completed" />
                             ) : lesson.content_type === "video" ? (
                               <PlayCircle className="h-4 w-4" aria-hidden />
@@ -373,24 +407,30 @@ function LearnContent() {
                     const key = `quiz-${quiz.id}`;
                     const active = activeKey === key;
                     const done = completedQuizIds.has(String(quiz.id));
+                    const locked = Boolean(quiz.locked);
 
                     return (
                       <li key={key}>
                         <button
                           type="button"
+                          disabled={locked}
                           onClick={() =>
                             setSelection({ kind: "quiz", quiz, moduleTitle: module.title })
                           }
                           className={cn(
                             "flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm transition",
-                            active
-                              ? "border-[var(--brand)]/40 bg-[var(--brand-soft)] shadow-sm ring-1 ring-[var(--brand)]/15"
-                              : "border-transparent hover:border-[var(--line)] hover:bg-[var(--background)]",
+                            locked
+                              ? "cursor-not-allowed border-transparent opacity-70"
+                              : active
+                                ? "border-[var(--brand)]/40 bg-[var(--brand-soft)] shadow-sm ring-1 ring-[var(--brand)]/15"
+                                : "border-transparent hover:border-[var(--line)] hover:bg-[var(--background)]",
                           )}
                           aria-current={active ? "true" : undefined}
                         >
                           <span className="mt-0.5 shrink-0 text-[var(--brand)]">
-                            {done ? (
+                            {locked ? (
+                              <Lock className="h-4 w-4" aria-label="Locked" />
+                            ) : done ? (
                               <CheckCircle2 className="h-4 w-4" aria-label="Passed" />
                             ) : (
                               <HelpCircle className="h-4 w-4" aria-hidden />
@@ -406,7 +446,7 @@ function LearnContent() {
                               Quiz: {quiz.title}
                             </span>
                             <span className="mt-0.5 block text-xs text-[var(--muted)]">
-                              Pass {quiz.pass_score}%
+                              {locked ? "Locked" : `Pass ${quiz.pass_score}%`}
                             </span>
                           </span>
                         </button>

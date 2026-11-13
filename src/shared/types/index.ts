@@ -1,7 +1,7 @@
 export type Role = "guest" | "student" | "admin";
 
 export type UserPaymentStatus = "paid" | "unpaid";
-export type PaymentDuration = "1_year";
+export type PaymentDuration = "1_month" | "1_year";
 
 export interface ManagedUser {
   id: string;

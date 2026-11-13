@@ -276,16 +276,28 @@ export function CoursesManagement() {
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4">
-                    <Badge
-                      variant="outline"
-                      className={
-                        course.status === "published"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-amber-200 bg-amber-50 text-amber-700"
-                      }
-                    >
-                      {course.status === "published" ? "Published" : "Draft"}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className={
+                          (course.price ?? 0) > 0
+                            ? "border-sky-200 bg-sky-50 text-sky-700"
+                            : "border-slate-200 bg-slate-50 text-slate-700"
+                        }
+                      >
+                        {(course.price ?? 0) > 0 ? "Paid" : "Free"}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={
+                          course.status === "published"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-amber-200 bg-amber-50 text-amber-700"
+                        }
+                      >
+                        {course.status === "published" ? "Published" : "Draft"}
+                      </Badge>
+                    </div>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-muted-foreground">
                     {formatDate(course.createdAt)}
