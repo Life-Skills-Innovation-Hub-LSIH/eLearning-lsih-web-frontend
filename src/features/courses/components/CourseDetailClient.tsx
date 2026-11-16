@@ -71,7 +71,7 @@ export function CourseDetailClient({ course }: Props) {
               <li>{countLessons(course)} lessons (video + PDF)</li>
               <li>{countQuizzes(course)} quizzes (module + course)</li>
             </ul>
-            <EnrollButton courseId={course.id} slug={course.slug} price={course.price} />
+            <EnrollButton courseId={course.id} slug={course.slug} title={course.title} price={course.price} />
           </div>
         </div>
       </section>

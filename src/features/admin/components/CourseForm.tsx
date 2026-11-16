@@ -52,6 +52,7 @@ export function CourseForm({ mode, courseId }: Props) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [level, setLevel] = useState<CourseLevel | "">("");
   const [access, setAccess] = useState<"free" | "paid">("free");
+  const [price, setPrice] = useState("1.00");
   const [status, setStatus] = useState<CoursePublishStatus>("published");
   const [lecturerId, setLecturerId] = useState("");
   const [subjectIds, setSubjectIds] = useState<string[]>([]);
@@ -118,6 +119,7 @@ export function CourseForm({ mode, courseId }: Props) {
           setCoverFile(null);
           setLevel(course.level ?? "");
           setAccess((course.price ?? 0) > 0 ? "paid" : "free");
+          setPrice((course.price ?? 0) > 0 ? Number(course.price).toFixed(2) : "1.00");
           setStatus(course.status);
           setLecturerId(course.lecturerId ?? "");
           setSubjectIds(selectedIds);
@@ -146,6 +148,12 @@ export function CourseForm({ mode, courseId }: Props) {
       return;
     }
 
+    const amount = access === "paid" ? Number(price) : 0;
+    if (access === "paid" && (!Number.isFinite(amount) || amount <= 0)) {
+      setError("Enter a price above 0, or choose Free.");
+      return;
+    }
+
     setSubmitting(true);
     let uploadedCoverUrl: string | null = null;
 
@@ -167,7 +175,7 @@ export function CourseForm({ mode, courseId }: Props) {
         description: description.trim() || null,
         coverImage: nextCoverImage,
         level: level || null,
-        price: access === "paid" ? 1 : 0,
+        price: amount,
         status,
         lecturerId: lecturerId || null,
         subjectIds,
@@ -352,8 +360,26 @@ export function CourseForm({ mode, courseId }: Props) {
               </Select>
             </AdminFormField>
           </div>
+          {access === "paid" ? (
+            <AdminFormField
+              id="price"
+              label="Price (USD)"
+              required
+              hint="Set 1, 2, 5, or any amount. 0.01 is only for testing. Coupons can make this free or take a percent off."
+            >
+              <AdminFormInput
+                id="price"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+                required
+              />
+            </AdminFormField>
+          ) : null}
           <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
-            Free opens the whole course after login. Paid shows the first 2 lessons until the learner pays $1 for 1 month.
+            Free opens the whole course after login. Paid shows the first 2 lessons until the learner pays this price for 1 month.
           </p>
 
           <AdminFormField id="lecturer" label="Lecturer">

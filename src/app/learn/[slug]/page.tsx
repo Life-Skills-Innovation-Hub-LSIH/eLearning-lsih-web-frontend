@@ -21,6 +21,7 @@ import {
   useAuth,
 } from "@/features/auth";
 import { QuizPanel } from "@/features/learning";
+import { BakongCheckoutDialog } from "@/features/learning/components/BakongCheckout";
 import { LessonMediaPlayer } from "@/shared/components/ui/LessonMediaPlayer";
 import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
@@ -31,7 +32,8 @@ import {
   fetchCatalogCourse,
   fetchCertificateStatus,
   fetchLearnCourse,
-  purchaseCourseCertificate,
+  startCertificateCheckout,
+  type BakongCheckout,
   type CatalogLesson,
   type CatalogModule,
   type CatalogQuiz,
@@ -83,6 +85,7 @@ function LearnContent() {
   const [coursePrice, setCoursePrice] = useState(0);
   const [certDownloading, setCertDownloading] = useState(false);
   const [certError, setCertError] = useState("");
+  const [checkout, setCheckout] = useState<BakongCheckout | null>(null);
 
   const activeKey = selectionKey(selection);
 
@@ -175,7 +178,11 @@ function LearnContent() {
     try {
       const status = await fetchCertificateStatus(token, params.slug);
       if (status.certificate_paid === false) {
-        await purchaseCourseCertificate(token, params.slug);
+        const session = await startCertificateCheckout(token, params.slug);
+        if (session.status !== "paid" && !session.paid) {
+          setCheckout(session);
+          return;
+        }
         setCertPaid(true);
       }
       if (!status.eligible) {
@@ -303,7 +310,7 @@ function LearnContent() {
 
           {access === "preview" ? (
             <p className="mt-4 rounded-xl bg-[var(--brand-soft)]/50 px-3 py-2.5 text-xs leading-relaxed text-[var(--muted)]">
-              The first 2 lessons are open. Pay $1 for 1 month to unlock the rest of this course.
+              The first 2 lessons are open. Pay ${coursePrice.toFixed(2)} for 1 month to unlock the rest of this course.
             </p>
           ) : null}
           {certEligible ? (
@@ -559,6 +566,21 @@ function LearnContent() {
           />
         )}
       </section>
+      {checkout?.id && token ? (
+        <BakongCheckoutDialog
+          token={token}
+          checkout={checkout}
+          onClose={() => setCheckout(null)}
+          onRetry={() =>
+            params.slug ? startCertificateCheckout(token, params.slug).then(setCheckout) : Promise.resolve()
+          }
+          onPaid={() => {
+            setCheckout(null);
+            setCertPaid(true);
+            void onDownloadCertificate();
+          }}
+        />
+      ) : null}
     </main>
   );
 }

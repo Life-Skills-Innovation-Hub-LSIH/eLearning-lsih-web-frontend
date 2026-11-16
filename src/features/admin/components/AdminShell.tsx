@@ -9,6 +9,7 @@ import {
   BookMarked,
   BookOpen,
   GraduationCap,
+  Ticket,
   LayoutDashboard,
   LogOut,
   PanelLeft,
@@ -53,6 +54,7 @@ const mainNavItems: NavItem[] = [
   { href: "/admin/subjects", label: "Subjects", icon: BookMarked, adminOnly: true },
   { href: "/admin/lecturers", label: "Lecturers", icon: UserRound, adminOnly: true },
   { href: "/admin/courses", label: "Courses", icon: BookOpen, adminOnly: true },
+  { href: "/admin/coupons", label: "Coupons", icon: Ticket, adminOnly: true },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -71,6 +73,7 @@ function breadcrumbLabel(pathname: string) {
   if (pathname.includes("/edit") && pathname.startsWith("/admin/courses")) return "Edit course";
   if (pathname.startsWith("/admin/courses/create")) return "Add course";
   if (pathname.startsWith("/admin/courses")) return "Courses";
+  if (pathname.startsWith("/admin/coupons")) return "Coupons";
   if (pathname.includes("/edit") && pathname.startsWith("/admin/lecturers")) return "Edit lecturer";
   if (pathname.startsWith("/admin/lecturers/create")) return "Add lecturer";
   if (pathname.startsWith("/admin/lecturers")) return "Lecturers";

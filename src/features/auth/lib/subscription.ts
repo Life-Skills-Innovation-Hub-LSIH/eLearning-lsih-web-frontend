@@ -16,7 +16,7 @@ export function subscriptionBlockedMessage(user: User | null | undefined): strin
     user.subscriptionExpiresAt &&
     new Date(user.subscriptionExpiresAt).getTime() <= Date.now()
   ) {
-    return "Your 1-month access has ended. Pay $1 to continue paid courses.";
+    return "Your 1-month access has ended. Pay the course price to continue.";
   }
-  return "Pay $1 for 1 month to unlock paid courses. Free courses stay open with your account.";
+  return "Pay the course price for 1 month. A coupon can lower it. Free courses stay open with your account.";
 }

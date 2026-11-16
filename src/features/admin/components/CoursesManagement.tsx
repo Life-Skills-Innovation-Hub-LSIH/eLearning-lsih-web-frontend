@@ -285,7 +285,7 @@ export function CoursesManagement() {
                             : "border-slate-200 bg-slate-50 text-slate-700"
                         }
                       >
-                        {(course.price ?? 0) > 0 ? "Paid" : "Free"}
+                        {(course.price ?? 0) > 0 ? `$${Number(course.price).toFixed(2)}` : "Free"}
                       </Badge>
                       <Badge
                         variant="outline"

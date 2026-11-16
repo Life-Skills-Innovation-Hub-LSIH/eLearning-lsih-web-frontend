@@ -4,16 +4,19 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   Award,
+  BadgeCheck,
   BookOpen,
   Check,
   ChevronDown,
   ChevronRight,
-  Clock,
-  GraduationCap,
-  Lock,
-  Home,
-  BadgeCheck,
   CircleHelp,
+  ClipboardList,
+  Clock,
+  FileText,
+  GraduationCap,
+  Home,
+  Lock,
+  SquarePlay,
   Star,
 } from "lucide-react";
 import { EnrollButton } from "./EnrollButton";
@@ -71,6 +74,17 @@ function formatDuration(
 
 function moduleMinutes(module: CatalogModule) {
   return (module.lessons ?? []).reduce((sum, lesson) => sum + (lesson.duration_minutes ?? 0), 0);
+}
+
+function moduleIncludes(module: CatalogModule) {
+  const lessons = module.lessons ?? [];
+  return {
+    videos: lessons.filter((lesson) => lesson.content_type === "video").length,
+    readings: lessons.filter(
+      (lesson) => lesson.content_type === "text" || lesson.content_type === "file",
+    ).length,
+    assignments: (module.quizzes ?? []).length,
+  };
 }
 
 function learningPoints(course: CatalogCourse, modules: CatalogModule[], locale: "km" | "en") {
@@ -131,7 +145,12 @@ const SECTION_IDS: Tab[] = ["about", "outcomes", "courses", "testimonials", "rev
 export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
   const { t, locale } = useLocale();
   const [tab, setTab] = useState<Tab>("about");
-  const [collapsedModules, setCollapsedModules] = useState<Set<string>>(() => new Set());
+  const [openModules, setOpenModules] = useState<Set<string>>(() => {
+    const first = course.modules?.[0];
+    return new Set(first ? [String(first.id)] : []);
+  });
+  const [contentOpen, setContentOpen] = useState<Set<string>>(() => new Set());
+  const [introOpen, setIntroOpen] = useState(false);
   const [compactNav, setCompactNav] = useState(false);
   const [pendingSection, setPendingSection] = useState<Tab | null>(null);
 
@@ -146,6 +165,8 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
       : modules.reduce((sum, module) => sum + moduleMinutes(module), 0);
   const durationLabel = formatDuration(totalMinutes, t);
   const outcomes = useMemo(() => learningPoints(course, modules, locale), [course, modules, locale]);
+  const descriptionText = (course.description || course.short_description || "").trim();
+  const benefitPoints = outcomes.filter((item) => !descriptionText.includes(item));
   const tools = useMemo(() => toolPills(modules, locale), [modules, locale]);
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "about", label: t("course.tabAbout") },
@@ -311,6 +332,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
               <EnrollButton
                 courseId={String(course.id)}
                 slug={course.slug}
+                title={course.title}
                 price={course.price ?? 0}
                 variant="hero"
               />
@@ -320,54 +342,50 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
       </section>
 
       <div className="container-page relative z-20 -mt-14">
-            <div className="grid overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_2px_4px_rgba(15,23,42,0.04),0_12px_32px_rgba(15,23,42,0.06)] sm:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.7fr_0.7fr_0.9fr]">
-              <StatCell
-                variant="featured"
-                icon={
-                  <span className="flex items-center text-[#e2b13c]">
-                    <Award className="h-11 w-11 fill-[#f3d27a] text-[#e2b13c]" strokeWidth={1.4} />
-                    <Award className="h-11 w-11 -ml-2.5 fill-[#f3d27a] text-[#e2b13c]" strokeWidth={1.4} />
-                  </span>
-                }
-                title={t("course.moduleSeries").replace("{n}", String(modules.length))}
-                hint={t("course.moduleSeriesHint")}
-              />
-              <StatCell
-                variant="metric"
-                title={durationLabel ?? "—"}
-                hint={t("course.totalTime")}
-              />
-              <StatCell
-                variant="metric"
-                title={(course.enrollments_count ?? 0).toLocaleString()}
-                hint={t("course.statEnrolled")}
-              />
-              <StatCell
-                variant="metric"
-                title={
-                  <span className="inline-flex items-center gap-1.5">
-                    {course.rating != null ? course.rating.toFixed(1) : "—"}
-                    <Star className="h-5 w-5 fill-[#1a1f2e] text-[#1a1f2e]" />
-                  </span>
-                }
-                hint={
-                  course.reviews_count
-                    ? t("course.statReviews").replace("{n}", String(course.reviews_count))
-                    : t("reviews.noRatings")
-                }
-              />
-              <StatCell
-                variant="label"
-                title={
-                  <span className="inline-flex items-center gap-1.5">
-                    {levelCopy(course.level, locale)}
-                    <CircleHelp className="h-4 w-4 text-[#8b97a6]" strokeWidth={2} />
-                  </span>
-                }
-                hint={t("course.levelHint")}
-                last
-              />
-            </div>
+        <div className="grid overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_2px_4px_rgba(15,23,42,0.04),0_12px_32px_rgba(15,23,42,0.06)] sm:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_0.7fr_0.7fr_0.9fr]">
+          <StatCell
+            variant="featured"
+            icon={
+              <span className="flex items-center text-[#e2b13c]">
+                <Award className="h-11 w-11 fill-[#f3d27a] text-[#e2b13c]" strokeWidth={1.4} />
+                <Award className="h-11 w-11 -ml-2.5 fill-[#f3d27a] text-[#e2b13c]" strokeWidth={1.4} />
+              </span>
+            }
+            title={t("course.moduleSeries").replace("{n}", String(modules.length))}
+            hint={t("course.moduleSeriesHint")}
+          />
+          <StatCell variant="metric" title={durationLabel ?? "—"} hint={t("course.totalTime")} />
+          <StatCell
+            variant="metric"
+            title={(course.enrollments_count ?? 0).toLocaleString()}
+            hint={t("course.statEnrolled")}
+          />
+          <StatCell
+            variant="metric"
+            title={
+              <span className="inline-flex items-center gap-1.5">
+                {course.rating != null ? course.rating.toFixed(1) : "—"}
+                <Star className="h-5 w-5 fill-[#1a1f2e] text-[#1a1f2e]" />
+              </span>
+            }
+            hint={
+              course.reviews_count
+                ? t("course.statReviews").replace("{n}", String(course.reviews_count))
+                : t("reviews.noRatings")
+            }
+          />
+          <StatCell
+            variant="label"
+            title={
+              <span className="inline-flex items-center gap-1.5">
+                {levelCopy(course.level, locale)}
+                <CircleHelp className="h-4 w-4 text-[#8b97a6]" strokeWidth={2} />
+              </span>
+            }
+            hint={t("course.levelHint")}
+            last
+          />
+        </div>
       </div>
 
       <div data-course-nav className="sticky top-16 z-30 mt-10 border-b border-[var(--line)] bg-white/95 backdrop-blur-sm">
@@ -377,6 +395,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
             <EnrollButton
               courseId={String(course.id)}
               slug={course.slug}
+              title={course.title}
               price={course.price ?? 0}
               variant="bar"
             />
@@ -401,7 +420,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
       </div>
 
       <div className="container-page space-y-16 py-10 sm:space-y-20 sm:py-14">
-        <section id="course-about" className="scroll-mt-[14rem]">
+        <section id="course-about" className="scroll-mt-[12rem]">
           <AboutPanel
             outcomes={outcomes}
             skills={subjects.map((s) => s.name)}
@@ -413,7 +432,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
           />
         </section>
 
-        <section id="course-outcomes" className="scroll-mt-[14rem]">
+        <section id="course-outcomes" className="scroll-mt-[12rem]">
           <div className="grid items-center gap-10 lg:grid-cols-[1fr_minmax(280px,420px)]">
             <div>
               <h2 className="mb-5 text-2xl font-semibold text-[var(--ink)]">{t("course.partnersTitle")}</h2>
@@ -436,76 +455,147 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
           </div>
         </section>
 
-        <section id="course-courses" className="scroll-mt-[14rem]">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <section id="course-courses" className="scroll-mt-[12rem]">
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
             <div>
-              <h2 className="mb-2 text-xl font-semibold text-[var(--ink)]">
-                {t("course.moduleSeries").replace("{n}", String(modules.length))}
-                {durationLabel ? ` · ${durationLabel}` : ""}
+              <h2 className="text-[1.35rem] font-semibold text-[#1b1f24]">
+                {t("course.thereAreModules").replace("{n}", String(modules.length))}
               </h2>
-              <p className="mb-4 max-w-3xl text-sm leading-relaxed text-[var(--muted)]">
-                {course.description || course.short_description}
-              </p>
+              <div className="mt-4 max-w-3xl space-y-3 text-[0.95rem] leading-7 text-[#3c4043]">
+                {descriptionText ? (
+                  <p className={introOpen ? "" : "line-clamp-3"}>
+                    <span className="font-semibold text-[#1b1f24]">{t("course.descriptionLabel")} </span>
+                    {descriptionText}
+                  </p>
+                ) : null}
+                {benefitPoints.length > 0 ? (
+                  <p className={introOpen ? "" : "line-clamp-2"}>
+                    <span className="font-semibold text-[#1b1f24]">{t("course.benefitsLabel")} </span>
+                    {introOpen ? benefitPoints.join(" ") : benefitPoints[0]}
+                  </p>
+                ) : null}
+              </div>
+              {descriptionText.length > 160 || benefitPoints.length > 1 ? (
+                <button
+                  type="button"
+                  className="mt-2 text-sm font-semibold text-[var(--brand)]"
+                  onClick={() => setIntroOpen((open) => !open)}
+                >
+                  {introOpen ? t("course.showLess") : t("course.showMore")}
+                </button>
+              ) : null}
+
               {modules.length === 0 ? (
-                <p className="rounded-xl border border-[var(--line)] p-6 text-[var(--muted)]">
+                <p className="mt-8 rounded-xl border border-[var(--line)] p-6 text-[var(--muted)]">
                   {t("course.noModules")}
                 </p>
               ) : (
-                <ul className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
+                <div className="mt-8 space-y-1">
                   {modules.map((module, index) => {
-                    const open = !collapsedModules.has(String(module.id));
+                    const key = String(module.id);
+                    const open = openModules.has(key);
                     const minutes = moduleMinutes(module);
-                    const lessons = module.lessons ?? [];
-                    const lessonLabel = t("course.lessonsCount").replace("{n}", String(lessons.length));
+                    const duration = formatDuration(minutes, t);
+                    const includes = moduleIncludes(module);
+                    const included: Array<{ icon: typeof SquarePlay; label: string }> = [];
+                    if (includes.videos > 0) {
+                      included.push({
+                        icon: SquarePlay,
+                        label: t(includes.videos === 1 ? "course.videoCount" : "course.videosCount").replace(
+                          "{n}",
+                          String(includes.videos),
+                        ),
+                      });
+                    }
+                    if (includes.readings > 0) {
+                      included.push({
+                        icon: FileText,
+                        label: t(includes.readings === 1 ? "course.readingCount" : "course.readingsCount").replace(
+                          "{n}",
+                          String(includes.readings),
+                        ),
+                      });
+                    }
+                    if (includes.assignments > 0) {
+                      included.push({
+                        icon: ClipboardList,
+                        label: t(
+                          includes.assignments === 1 ? "course.assignmentCount" : "course.assignmentsCount",
+                        ).replace("{n}", String(includes.assignments)),
+                      });
+                    }
+                    const showingContent = contentOpen.has(key);
                     return (
-                      <li key={String(module.id)}>
+                      <article
+                        key={key}
+                        className={open ? "rounded-lg border border-[#e6e8ec] bg-white px-5 py-5 sm:px-6" : "px-5 py-4"}
+                      >
                         <button
                           type="button"
-                          className="flex w-full items-center gap-4 py-4 text-left"
+                          className="flex w-full items-start justify-between gap-4 text-left"
                           aria-expanded={open}
                           onClick={() =>
-                            setCollapsedModules((current) => {
+                            setOpenModules((current) => {
                               const next = new Set(current);
-                              const key = String(module.id);
                               if (next.has(key)) next.delete(key);
                               else next.add(key);
                               return next;
                             })
                           }
                         >
-                          {cover ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={cover}
-                              alt=""
-                              className="h-20 w-20 shrink-0 rounded-lg object-cover"
-                            />
-                          ) : (
-                            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-soft)] text-[var(--brand)]">
-                              <BookOpen className="h-7 w-7" />
-                            </span>
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block font-semibold text-[var(--ink)] underline decoration-[var(--ink)] underline-offset-2">
-                              {module.title}
-                            </span>
-                            <span className="mt-0.5 block text-sm text-[#6b7785]">
-                              {t("course.moduleLabel").replace("{n}", String(index + 1))}
-                              {minutes ? ` · ${formatDuration(minutes, t)}` : lessons.length ? ` · ${lessonLabel}` : ""}
-                            </span>
-                          </span>
-                          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[var(--brand)]">
-                            <span className="hidden sm:inline">{t("course.courseDetails")}</span>
+                          <span className="text-[1.05rem] font-semibold text-[#1b1f24]">{module.title}</span>
+                          <span className="inline-flex shrink-0 items-center gap-1 pt-0.5 text-sm font-semibold text-[var(--brand)]">
+                            {open ? <span>{t("course.courseDetails")}</span> : null}
                             <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
                           </span>
                         </button>
+                        <p className="mt-1 text-sm text-[#5f6368]">
+                          {t("course.moduleLabel").replace("{n}", String(index + 1))}
+                          {duration ? ` · ${t("course.toComplete").replace("{n}", duration)}` : ""}
+                        </p>
                         {open ? (
-                          <ModuleDetails module={module} paid={(course.price ?? 0) > 0} t={t} />
+                          <div className="mt-4 max-w-3xl">
+                            {module.description ? (
+                              <p className="text-sm leading-relaxed text-[#3c4043]">{module.description}</p>
+                            ) : null}
+                            {included.length > 0 ? (
+                              <div className={module.description ? "mt-5" : ""}>
+                                <p className="text-sm font-semibold text-[#1b1f24]">{t("course.whatsIncluded")}</p>
+                                <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+                                  {included.map((item) => (
+                                    <li key={item.label} className="inline-flex items-center gap-2 text-sm text-[#3c4043]">
+                                      <item.icon className="h-4 w-4 text-[#5f6368]" strokeWidth={1.75} />
+                                      {item.label}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
+                            <button
+                              type="button"
+                              className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand)]"
+                              aria-expanded={showingContent}
+                              onClick={() =>
+                                setContentOpen((current) => {
+                                  const next = new Set(current);
+                                  if (next.has(key)) next.delete(key);
+                                  else next.add(key);
+                                  return next;
+                                })
+                              }
+                            >
+                              {showingContent ? t("course.hideModuleContent") : t("course.showModuleContent")}
+                              <ChevronDown className={`h-4 w-4 transition ${showingContent ? "rotate-180" : ""}`} />
+                            </button>
+                            {showingContent ? (
+                              <ModuleDetails module={module} price={course.price ?? 0} t={t} />
+                            ) : null}
+                          </div>
                         ) : null}
-                      </li>
+                      </article>
                     );
                   })}
-                </ul>
+                </div>
               )}
 
               <div className="mt-8 space-y-6">
@@ -530,43 +620,59 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
               </div>
             </div>
 
-            <aside className="h-fit space-y-5 rounded-xl border border-[var(--line)] p-5 lg:sticky lg:top-36">
-              <div>
-                <h3 className="mb-4 font-semibold text-[var(--ink)]">
-                  {locale === "km" ? "គ្រូបង្រៀន" : "Instructor"}
-                </h3>
-                <div className="flex items-start gap-3">
-                  {lecturerAvatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={lecturerAvatar} alt="" className="h-12 w-12 rounded-full object-cover" />
-                  ) : (
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand)] text-white">
-                      {(course.lecturer?.name ?? "L").slice(0, 1)}
-                    </span>
-                  )}
-                  <div>
-                    <p className="font-semibold text-[var(--brand)] underline decoration-[var(--brand)] underline-offset-2">
-                      {course.lecturer?.name ?? t("course.instructorTba")}
-                    </p>
-                    {course.lecturer?.title ? (
-                      <p className="text-sm text-[var(--muted)]">{course.lecturer.title}</p>
-                    ) : null}
-                    <p className="mt-1 text-xs text-[var(--muted)]">
-                      {t("course.learningModules").replace("{n}", String(modules.length))}
-                      {lessonCount ? ` · ${t("course.lessonsCount").replace("{n}", String(lessonCount))}` : ""}
-                    </p>
-                  </div>
+            <aside className="h-fit rounded-xl border border-[#e6e8ec] p-5 lg:sticky lg:top-44">
+              <h3 className="text-base font-semibold text-[#1b1f24]">
+                {locale === "km" ? "គ្រូបង្រៀន" : "Instructor"}
+              </h3>
+              {course.rating != null ? (
+                <p className="mt-3 flex flex-wrap items-center gap-1.5 text-sm text-[#5f6368]">
+                  <span>{t("course.instructorRatings")}</span>
+                  <span className="font-semibold text-[#1b1f24]">{course.rating.toFixed(1)}</span>
+                  <Star className="h-4 w-4 fill-[#1b1f24] text-[#1b1f24]" />
+                  {course.reviews_count ? (
+                    <span>({course.reviews_count.toLocaleString()})</span>
+                  ) : null}
+                </p>
+              ) : null}
+              <div className="mt-4 flex items-start gap-3">
+                {lecturerAvatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={lecturerAvatar} alt="" className="h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1b1f24] text-sm font-semibold text-white">
+                    {(course.lecturer?.name ?? "L").slice(0, 1)}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-[var(--brand)]">
+                    {course.lecturer?.name ?? t("course.instructorTba")}
+                  </p>
+                  {course.lecturer?.title ? (
+                    <p className="text-sm text-[#5f6368]">{course.lecturer.title}</p>
+                  ) : null}
+                  <p className="mt-1 text-sm text-[#5f6368]">
+                    {t("course.learningModules").replace("{n}", String(modules.length))}
+                    {course.enrollments_count
+                      ? ` · ${t("course.learnersCount").replace("{n}", course.enrollments_count.toLocaleString())}`
+                      : lessonCount
+                        ? ` · ${t("course.lessonsCount").replace("{n}", String(lessonCount))}`
+                        : ""}
+                  </p>
                 </div>
               </div>
-              <div className="border-t border-[var(--line)] pt-5">
-                <h3 className="mb-3 font-semibold text-[var(--ink)]">{t("course.offeredBy")}</h3>
-                <p className="text-sm font-medium text-[var(--ink)]">Life Skills Innovation Hub</p>
+              <div className="mt-5 border-t border-[#e6e8ec] pt-5">
+                <h3 className="text-base font-semibold text-[#1b1f24]">{t("course.offeredBy")}</h3>
+                <div className="mt-3 flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/assets/partners/logoLSIH.png" alt="" className="h-10 w-10 object-contain" />
+                  <p className="text-sm font-semibold text-[var(--brand)]">Life Skills Innovation Hub</p>
+                </div>
               </div>
             </aside>
           </div>
         </section>
 
-        <section id="course-testimonials" className="scroll-mt-[14rem]">
+        <section id="course-testimonials" className="scroll-mt-[12rem]">
           <h2 className="font-display text-2xl font-semibold text-[var(--ink)]">{t("course.whyChoose")}</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {TESTIMONIALS.map((item) => (
@@ -582,7 +688,7 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
           </div>
         </section>
 
-        <section id="course-reviews" className="scroll-mt-[14rem]">
+        <section id="course-reviews" className="scroll-mt-[12rem]">
           <CourseReviewsSection
             embedded
             courseSlug={course.slug}
@@ -598,11 +704,11 @@ export function CourseCatalogDetail({ course }: { course: CatalogCourse }) {
 
 function ModuleDetails({
   module,
-  paid,
+  price,
   t,
 }: {
   module: CatalogModule;
-  paid: boolean;
+  price: number;
   t: ReturnType<typeof useLocale>["t"];
 }) {
   const lessons = module.lessons ?? [];
@@ -611,20 +717,16 @@ function ModuleDetails({
   const lockedLessons = lessons.filter((lesson) => lesson.locked);
   const openQuizzes = quizzes.filter((quiz) => !quiz.locked);
   const lockedQuizzes = quizzes.filter((quiz) => quiz.locked);
-  const skills = openLessons.some((lesson) => lesson.body?.trim())
-    ? openLessons.map((lesson) => lesson.title)
-    : [];
 
   return (
-    <div className="space-y-5 pb-6 pl-24">
+    <div className="mt-4 space-y-4 border-t border-[#e3e8ef] pt-4">
       {openLessons.length > 0 || openQuizzes.length > 0 ? (
         <div>
-          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">{t("course.whatYouLearn")}</h3>
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {openLessons.map((lesson) => (
               <li key={String(lesson.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[var(--ink)]">
                 <Check className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
-                <span>{lesson.body?.trim() ? `${lesson.title}. ${lesson.body.trim()}` : lesson.title}</span>
+                <span>{lesson.title}</span>
               </li>
             ))}
             {openQuizzes.map((quiz) => (
@@ -636,9 +738,11 @@ function ModuleDetails({
           </ul>
         </div>
       ) : null}
-      {paid && (lockedLessons.length > 0 || lockedQuizzes.length > 0) ? (
+      {price > 0 && (lockedLessons.length > 0 || lockedQuizzes.length > 0) ? (
         <div>
-          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">Unlock with $1 for 1 month</h3>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">
+            Unlock with ${price.toFixed(2)} for 1 month
+          </h3>
           <ul className="space-y-3">
             {lockedLessons.map((lesson) => (
               <li key={String(lesson.id)} className="flex items-start gap-3 text-sm leading-relaxed text-[#6b7785]">
@@ -653,18 +757,6 @@ function ModuleDetails({
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-      {skills.length > 0 ? (
-        <div>
-          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">{t("course.skillsGain")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <span key={skill} className="rounded-full bg-[#e8edf3] px-3 py-1.5 text-sm text-[#3d4a5c]">
-                {skill}
-              </span>
-            ))}
-          </div>
         </div>
       ) : null}
     </div>
@@ -702,9 +794,7 @@ function StatCell({
   }
 
   return (
-    <div
-      className={`flex items-center gap-3 px-5 py-7 ${last ? "" : "lg:border-r lg:border-[#eceff3]"}`}
-    >
+    <div className={`flex items-center gap-3 px-5 py-7 ${last ? "" : "lg:border-r lg:border-[#eceff3]"}`}>
       {icon ? <div className="shrink-0">{icon}</div> : null}
       <div className="min-w-0">
         <div className={titleClass}>{title}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RequireAuth, useAuth } from "@/features/auth";
 import { StudentNav } from "@/features/learning";
@@ -12,16 +12,21 @@ import {
 
 export default function MyCoursesPage() {
   return (
-    <RequireAuth roles={["student"]}>
+    <RequireAuth roles={["student", "admin"]}>
       <Content />
     </RequireAuth>
   );
 }
 
 function Content() {
-  const { token, enrollmentRecords, ready } = useAuth();
+  const { token, enrollmentRecords, ready, refreshEnrollments } = useAuth();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState("");
+
+  useEffect(() => {
+    if (!ready || !token) return;
+    void refreshEnrollments().catch(() => undefined);
+  }, [ready, token, refreshEnrollments]);
 
   async function onDownloadCertificate(
     courseId: string | number,
@@ -53,7 +58,9 @@ function Content() {
       <StudentNav />
 
       <h1 className="font-display text-3xl text-[var(--ink)] sm:text-4xl">My Courses</h1>
-      <p className="mt-2 text-[var(--muted)]">Courses you have enrolled in.</p>
+      <p className="mt-2 text-[var(--muted)]">
+        Courses you have enrolled in, with your progress in each one.
+      </p>
 
       {downloadError ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -95,6 +102,13 @@ function Content() {
                     <p className="mt-1 text-sm text-[var(--muted)] capitalize">{item.status}</p>
                     <div className="mt-4">
                       <ProgressBar value={percent} label="Progress" />
+                      <p className="mt-2 text-xs text-[var(--muted)]">
+                        {item.progress?.completed_lessons ?? 0} of {item.progress?.total_lessons ?? 0}{" "}
+                        lessons
+                        {(item.progress?.total_quizzes ?? 0) > 0
+                          ? ` · ${item.progress?.passed_quizzes ?? 0} of ${item.progress?.total_quizzes} quizzes`
+                          : ""}
+                      </p>
                     </div>
                   </Link>
 

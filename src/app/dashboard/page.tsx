@@ -12,7 +12,7 @@ import { ProgressBar } from "@/shared/components/ui/ProgressBar";
 
 export default function StudentDashboardPage() {
   return (
-    <RequireAuth roles={["student"]}>
+    <RequireAuth roles={["student", "admin"]}>
       <DashboardContent />
     </RequireAuth>
   );

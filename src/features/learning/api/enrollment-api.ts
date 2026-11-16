@@ -325,22 +325,51 @@ export async function enrollInCourseApi(
   return unwrapData(payload);
 }
 
-export async function subscribeForMonth(token: string): Promise<{ expires_at?: string | null }> {
-  const payload = await apiRequest<{ data: { expires_at?: string | null } }>("/billing/subscribe", {
+export type BakongCheckout = {
+  id?: number;
+  status: "pending" | "paid" | "expired" | "failed";
+  kind?: "subscription" | "certificate";
+  amount: number;
+  currency: string;
+  merchant_name?: string;
+  deeplink?: string | null;
+  qr_image?: string | null;
+  expires_at?: string | null;
+  paid?: boolean;
+};
+
+export async function startSubscriptionCheckout(
+  token: string,
+  courseId: string,
+  couponCode?: string,
+): Promise<BakongCheckout> {
+  const payload = await apiRequest<{ data: BakongCheckout }>("/billing/subscribe", {
     method: "POST",
     token,
+    body: {
+      course_id: Number(courseId),
+      coupon_code: couponCode?.trim() || undefined,
+    },
   });
   return payload.data;
 }
 
-export async function purchaseCourseCertificate(
+export async function startCertificateCheckout(
   token: string,
   courseIdOrSlug: string | number,
-): Promise<void> {
-  await apiRequest(`/billing/certificates/${encodeURIComponent(String(courseIdOrSlug))}`, {
-    method: "POST",
+): Promise<BakongCheckout> {
+  const payload = await apiRequest<{ data: BakongCheckout }>(
+    `/billing/certificates/${encodeURIComponent(String(courseIdOrSlug))}`,
+    { method: "POST", token },
+  );
+  return payload.data;
+}
+
+export async function checkBillingPayment(token: string, paymentId: number): Promise<BakongCheckout> {
+  const payload = await apiRequest<{ data: BakongCheckout }>(`/billing/payments/${paymentId}`, {
     token,
   });
+  return payload.data;
 }
 
 export async function fetchLearnCourse(token: string, slugOrId: string) {

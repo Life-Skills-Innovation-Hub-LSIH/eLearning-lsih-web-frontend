@@ -115,12 +115,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(savedToken);
         setUser(nextUser);
         saveUser(nextUser);
-        if (nextUser.role === "student") {
-          const records = await fetchMyEnrollments(savedToken);
-          applyEnrollmentRecords(records);
-        } else {
-          applyEnrollmentRecords([]);
-        }
+        const records = await fetchMyEnrollments(savedToken);
+        applyEnrollmentRecords(records);
       } catch {
         saveToken(null);
         saveUser(null);
@@ -146,13 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(result.token);
       saveUser(nextUser);
       saveToken(result.token, result.expires_at);
-      if (nextUser.role === "student") {
-        void fetchMyEnrollments(result.token)
-          .then(applyEnrollmentRecords)
-          .catch(() => applyEnrollmentRecords([]));
-      } else {
-        applyEnrollmentRecords([]);
-      }
+      void fetchMyEnrollments(result.token)
+        .then(applyEnrollmentRecords)
+        .catch(() => applyEnrollmentRecords([]));
       return homePathForRole(nextUser.role);
     },
     [applyEnrollmentRecords],

@@ -126,7 +126,7 @@ export function SiteHeader() {
     "site-header-nav-item inline-flex h-9 items-center rounded-[var(--radius)] px-3 text-sm font-medium transition hover:bg-[var(--brand-soft)]";
 
   return (
-    <header className="sticky top-0 z-[60] overflow-visible rounded-b-[28px] border-b border-[var(--line)]/80 bg-white shadow-[0_8px_24px_rgba(5,77,161,0.08)]">
+    <header className="sticky top-0 z-[60] overflow-visible rounded-b-[28px] border-b border-[var(--line)]/80 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-5 lg:gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" onClick={() => setMenuOpen(false)}>
@@ -218,7 +218,7 @@ export function SiteHeader() {
 
             {isAuthed ? (
               <Link
-                href={user?.role === "student" ? "/my-courses" : homeHref}
+                href="/my-courses"
                 className={`${headerNavItemClass}${
                   pathname === "/my-courses" || pathname.startsWith("/my-courses/")
                     ? " is-active"
@@ -307,6 +307,14 @@ export function SiteHeader() {
                           >
                             <LayoutDashboard className="h-4 w-4 text-[var(--brand)]" />
                             Admin
+                          </Link>
+                          <Link
+                            href="/my-courses"
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                            onClick={() => setProfileOpen(false)}
+                          >
+                            <BookOpen className="h-4 w-4 text-[var(--brand)]" />
+                            My courses
                           </Link>
                           <Link
                             href={accountHref}
@@ -435,6 +443,13 @@ export function SiteHeader() {
                       onClick={() => setMenuOpen(false)}
                     >
                       Admin
+                    </Link>
+                    <Link
+                      href="/my-courses"
+                      className="block rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-[var(--ink)] hover:bg-[var(--brand-soft)]"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      My courses
                     </Link>
                     <Link
                       href={accountHref}

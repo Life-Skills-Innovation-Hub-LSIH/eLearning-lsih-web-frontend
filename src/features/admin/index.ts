@@ -18,6 +18,7 @@ export { LecturerForm } from "./components/LecturerForm";
 export { LecturersManagement } from "./components/LecturersManagement";
 export { CourseForm } from "./components/CourseForm";
 export { CoursesManagement } from "./components/CoursesManagement";
+export { CouponsManagement } from "./components/CouponsManagement";
 export { UsersManagement } from "./components/UsersManagement";
 export {
   createSubjectApi,

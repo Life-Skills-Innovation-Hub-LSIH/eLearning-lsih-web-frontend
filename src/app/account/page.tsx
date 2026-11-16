@@ -17,7 +17,7 @@ import { loadToken } from "@/features/auth/lib/storage";
 
 export default function AccountPage() {
   return (
-    <RequireAuth roles={["student"]}>
+    <RequireAuth roles={["student", "admin"]}>
       <AccountContent />
     </RequireAuth>
   );

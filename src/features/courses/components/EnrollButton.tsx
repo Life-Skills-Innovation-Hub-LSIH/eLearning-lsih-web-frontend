@@ -4,23 +4,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { hasActiveSubscription, useAuth } from "@/features/auth";
-import { subscribeForMonth } from "@/features/learning/api/enrollment-api";
+import { BakongCheckoutDialog } from "@/features/learning/components/BakongCheckout";
+import { startSubscriptionCheckout, type BakongCheckout } from "@/features/learning/api/enrollment-api";
 import { ApiError } from "@/shared/api/client";
 import { useLocale } from "@/shared/i18n/locale-context";
 
 type Props = {
   courseId: string;
   slug: string;
+  title?: string;
   price: number;
   variant?: "default" | "hero" | "bar";
 };
 
-export function EnrollButton({ courseId, slug, price, variant = "default" }: Props) {
+export function EnrollButton({ courseId, slug, title, price, variant = "default" }: Props) {
   const { user, ready, token, isEnrolled, enroll, refreshUser } = useAuth();
   const { t } = useLocale();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [checkout, setCheckout] = useState<BakongCheckout | null>(null);
   const enrolled = isEnrolled(courseId);
   const subscribed = hasActiveSubscription(user);
   const isFree = price <= 0;
@@ -29,7 +32,7 @@ export function EnrollButton({ courseId, slug, price, variant = "default" }: Pro
   const buttonClass = hero
     ? "btn btn-primary inline-flex min-h-[56px] min-w-[220px] flex-col items-center justify-center px-10 py-3 text-center !text-white"
     : bar
-      ? "btn btn-primary inline-flex h-11 min-w-[180px] items-center justify-center px-6 !text-white"
+      ? "btn btn-primary inline-flex h-11 w-[13.5rem] shrink-0 items-center justify-center whitespace-nowrap px-5 !text-white"
       : "btn btn-primary w-full !text-white";
 
   function fail(err: unknown) {
@@ -93,8 +96,10 @@ export function EnrollButton({ courseId, slug, price, variant = "default" }: Pro
     );
   }
 
+  const payLabel = `Pay $${price.toFixed(2)} for 1 month`;
+
   return (
-    <div className={bar ? "shrink-0" : "flex w-fit flex-col items-start gap-2"}>
+    <div className={bar ? "flex w-[13.5rem] shrink-0 flex-col items-stretch gap-1" : "flex w-fit flex-col items-start gap-2"}>
       <button
         type="button"
         className={buttonClass}
@@ -102,22 +107,58 @@ export function EnrollButton({ courseId, slug, price, variant = "default" }: Pro
         onClick={() => {
           setLoading(true);
           setError("");
-          void subscribeForMonth(token)
-            .then(() => refreshUser())
-            .then(() => enroll(courseId))
-            .then(() => router.push(`/learn/${slug}`))
+          void startSubscriptionCheckout(token, courseId)
+            .then((session) => {
+              if ((session.status === "paid" || session.paid) && !session.id) {
+                return refreshUser()
+                  .then(() => enroll(courseId))
+                  .then(() => router.push(`/learn/${slug}`));
+              }
+              setCheckout(session);
+            })
             .catch(fail)
             .finally(() => setLoading(false));
         }}
       >
-        {loading ? "Confirming payment…" : "Pay $1 for 1 month"}
+        {loading ? "Opening payment…" : payLabel}
         {hero && !loading ? (
           <span className="mt-0.5 text-xs font-normal text-white/90">
-            Unlocks every paid course
+            Unlocks this course for 1 month
           </span>
         ) : null}
       </button>
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {error ? (
+        <p className={`text-xs leading-snug text-red-600 ${bar ? "text-right" : ""}`}>{error}</p>
+      ) : null}
+      {checkout?.id ? (
+        <BakongCheckoutDialog
+          token={token}
+          checkout={checkout}
+          summary={{
+            title: title || "Course access",
+            listPrice: price,
+            accessLabel: "1 month",
+            included: [
+              "Full course access for 1 month",
+              "All lessons and quizzes",
+              "Certificate included",
+              "Scan with ABA or any banking app",
+            ],
+          }}
+          onClose={() => setCheckout(null)}
+          onRetry={() => startSubscriptionCheckout(token, courseId).then(setCheckout)}
+          onApplyCoupon={(code) => startSubscriptionCheckout(token, courseId, code).then(setCheckout)}
+          onPaid={() => {
+            setCheckout(null);
+            setLoading(true);
+            void refreshUser()
+              .then(() => enroll(courseId))
+              .then(() => router.push(`/learn/${slug}`))
+              .catch(fail)
+              .finally(() => setLoading(false));
+          }}
+        />
+      ) : null}
     </div>
   );
 }
